@@ -20,12 +20,10 @@ export default [
     },
 
     rules: {
-      // ===== Code Quality =====
       "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-      "no-console": "warn",
+      "no-console": "off",
       "no-undef": "error",
 
-      // ===== Style =====
       indent: ["warn", 2],
       semi: ["error", "never"],
       quotes: ["error", "single"],
@@ -35,7 +33,6 @@ export default [
       "arrow-spacing": "warn",
       "keyword-spacing": "warn",
 
-      // ===== Safety =====
       "no-constant-condition": "warn",
       "no-extra-boolean-cast": "off",
     },

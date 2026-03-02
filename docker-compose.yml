@@ -1,22 +1,21 @@
 services:
-
-  crm-backend:
+  backend:
     build:
-      context: ./backend
+      context: .
       dockerfile: docker/Dockerfile
-    container_name: crm_backend
+    container_name: backend
     env_file:
       - .env
     ports:
-      - "5000:${BACKEND_PORT}"
+      - "4000:${BACKEND_PORT}"
     volumes:
-      - ./backend:/app
+      - .:/app
     depends_on:
-      - crm-db
+      - db
 
-  crm-db:
+  db:
     image: postgres:16
-    container_name: crm_db
+    container_name: database
     restart: always
     env_file:
       - .env
@@ -28,7 +27,7 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
 
 volumes:
   pgdata:
