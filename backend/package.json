@@ -1,8 +1,10 @@
 {
   "name": "crm-mini",
   "type": "module",
-    "scripts": {
-    "dev": "node --watch src/server.js"
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
   },
   "dependencies": {
     "@prisma/client": "^7.4.1",
@@ -11,5 +13,10 @@
     "express": "^5.2.1",
     "init": "^0.1.2",
     "prisma": "^7.4.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.2",
+    "globals": "^17.3.0"
   }
 }
