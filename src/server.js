@@ -1,10 +1,10 @@
 import express from 'express'
-import CONNECT_DB from './configs/config.db.js'
-import { environments } from './configs/environments.js'
+import CONNECT_DB from './configs/db.config.js'
+import { environments } from './configs/env.config.js.js'
 
 const START_SERVER = async () => {
   const app = express()
-  const port = environments.API_PORT || 8017
+  const port = environments.BACKEND_PORT || 8017
 
   // Fix from disk cache
   app.use((req, res, next) => {

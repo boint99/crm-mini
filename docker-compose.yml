@@ -8,9 +8,9 @@ services:
       - .env
     environment:
       - NODE_ENV=development
-      - PORT=${FRONTEND_PORT:-3000}
+      - PORT=${FRONTEND_PORT}
     ports:
-      - "${FRONTEND_PORT:-3000}:${FRONTEND_PORT:-3000}"
+      - "3000:${FRONTEND_PORT}"
     volumes:
       - ./web:/app
       - /app/node_modules
@@ -29,9 +29,9 @@ services:
       - .env
     environment:
       - NODE_ENV=development
-      - PORT=${BACKEND_PORT:-4000}
+      - PORT=${BACKEND_PORT}
     ports:
-      - "${BACKEND_PORT:-4000}:${BACKEND_PORT:-4000}"
+      - "5000:${BACKEND_PORT}"
     volumes:
       - .:/app
       - /app/node_modules
