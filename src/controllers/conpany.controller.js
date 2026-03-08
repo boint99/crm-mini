@@ -3,7 +3,7 @@ import { companyService } from '../services/company.service.js'
 import { companyModel } from '../models/company.model.js'
 
 export const companyController = {
-  createNew: async (req, res) => {
+  createNew: async (req, res, next) => {
     try {
       const data = req.body
 
@@ -15,14 +15,10 @@ export const companyController = {
         data: result
       })
     } catch (error) {
-      const status = error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR
-      return res.status(status).json({
-        success: false,
-        message: error.message || 'Lỗi máy chủ nội bộ'
-      })
+      next(error)
     }},
   // controller get all company
-  getList: async (req, res) =>  {
+  getList: async (req, res, next) =>  {
     try {
       const result = await companyModel.listCompany()
 
@@ -32,13 +28,10 @@ export const companyController = {
         data: result
       })
     } catch (error) {
-      return res.status(error.statusCode).json({
-        success: false,
-        message: error.message || 'Lỗi máy chủ nội bộ'
-      })
+      next(error)
     }
   },
-  update: async (req, res) => {
+  update: async (req, res, next) => {
     try {
       const id = Number(req.params.id)
       const data = req.body
@@ -51,13 +44,9 @@ export const companyController = {
         data: result
       })
     } catch (error) {
-      const status = error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR
-      return res.status(status).json({
-        success: false,
-        message: error.message || 'Lỗi máy chủ nội bộ!'
-      })
+      next(error)
     }},
-  delete: async (req, res) => {
+  delete: async (req, res, next) => {
     try {
       const id = Number(req.params.id)
 
@@ -68,10 +57,6 @@ export const companyController = {
         message: 'Delete a successful company.'
       })
     } catch (error) {
-      const status = error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR
-      return res.status(status).json({
-        success: false,
-        message: error.message || 'Lỗi máy chủ nội bộ!'
-      })
+      next(error)
     }}
 }

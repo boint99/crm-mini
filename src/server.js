@@ -4,6 +4,7 @@ import CONNECT_DB from './configs/db.config.js'
 import { environments } from './configs/env.config.js'
 import { APIs_Routes } from './routes/index.js'
 import { swaggerSpec } from './configs/swagger.config.js'
+import { errorMiddleware } from './middleware/error.middleware.js'
 
 const START_SERVER = async () => {
   const app = express()
@@ -19,14 +20,14 @@ const START_SERVER = async () => {
 
   app.use('/api', APIs_Routes)
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
-
+  app.use(errorMiddleware)
   app.get('/', (req, res) => {
     res.send('Welcome to the CRM project')
   })
 
   app.listen(port, () => {
     console.log(`🚀 CRM mini APIs is running at http://localhost:${port}`)
-    console.log(`🚀 CRM mini APIs is running at http://localhost:${port}/api-docs`)
+    console.log(`🚀 CRM mini DOC is running at http://localhost:${port}/api-docs`)
   })
 }
 (async () => {
