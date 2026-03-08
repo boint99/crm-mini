@@ -1,0 +1,97 @@
+paths:
+  /api/companies:
+    get:
+      summary: Get all companies
+      tags:
+        - Companies
+      responses:
+        200:
+          description: List of companies retrieved successfully
+
+    post:
+      summary: Create a new company
+      tags:
+        - Companies
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyInput'
+      responses:
+        201:
+          description: Company created successfully
+
+  /api/companies/{id}:
+    put:
+      summary: Update a company
+      tags:
+        - Companies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The unique ID of the company
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyInput'
+      responses:
+        200:
+          description: Company updated successfully
+        404:
+          description: Company not found
+
+    delete:
+      summary: Delete a company
+      tags:
+        - Companies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The unique ID of the company
+      responses:
+        200:
+          description: Company deleted successfully
+        404:
+          description: Company not found
+
+components:
+  schemas:
+    Company:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        COMPANY_NAME:
+          type: string
+          example: Company ABC
+        STATUS:
+          type: string
+          enum:
+            - ENABLE
+            - DISABLE
+          example: ENABLE
+
+    CompanyInput:
+      type: object
+      required:
+        - COMPANY_NAME
+      properties:
+        COMPANY_NAME:
+          type: string
+          example: Company ABC
+        STATUS:
+          type: string
+          enum:
+            - ENABLE
+            - DISABLE
+          example: ENABLE
