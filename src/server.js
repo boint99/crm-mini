@@ -18,12 +18,13 @@ const START_SERVER = async () => {
 
   app.use(express.json())
 
-  app.use('/api', APIs_Routes)
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
-  app.use(errorMiddleware)
   app.get('/', (req, res) => {
     res.send('Welcome to the CRM project')
   })
+
+  app.use('/api', APIs_Routes)
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+  app.use(errorMiddleware)
 
   app.listen(port, () => {
     console.log(`🚀 CRM mini APIs is running at http://localhost:${port}`)

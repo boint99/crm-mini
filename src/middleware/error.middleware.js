@@ -23,7 +23,7 @@ export const errorMiddleware = (err, req, res) => {
   const response = {
     success: false,
     message: message,
-    stack: process.env.NODE_ENV ? err.stack : undefined
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
   }
 
   res.status(statusCode).json(response)

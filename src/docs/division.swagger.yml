@@ -1,0 +1,118 @@
+paths:
+  /api/division/list:
+    get:
+      summary: Get all divisions
+      tags:
+        - Divisions
+      responses:
+        200:
+          description: List of divisions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Division'
+
+  /api/division:
+    post:
+      summary: Create a new division
+      tags:
+        - Divisions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DivisionInput'
+      responses:
+        201:
+          description: Division created successfully
+
+    put:
+      summary: Update a division
+      description: Update division details. DIVISION_ID must be included in the request body.
+      tags:
+        - Divisions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DivisionUpdateInput'
+      responses:
+        200:
+          description: Division updated successfully
+        404:
+          description: Division not found
+        400:
+          description: Invalid input or missing ID
+
+    delete:
+      summary: Delete a division
+      tags:
+        - Divisions
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: The unique ID of the division to delete
+      responses:
+        200:
+          description: Division deleted successfully
+        404:
+          description: Division not found
+
+components:
+  schemas:
+    Division:
+      type: object
+      properties:
+        DIVISION_ID:
+          type: integer
+          example: 1
+        DIVISION_NAME:
+          type: string
+          example: Technology Department
+        COMPANY_ID:
+          type: integer
+          example: 1
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLE]
+          example: ENABLE
+
+    DivisionInput:
+      type: object
+      required:
+        - DIVISION_NAME
+        # - COMPANY_ID
+      properties:
+        DIVISION_NAME:
+          type: string
+          example: Sales Department
+        COMPANY_ID:
+          type: integer
+          example: 1
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLE]
+          default: ENABLE
+
+    DivisionUpdateInput:
+      type: object
+      required:
+        - DIVISION_ID
+      properties:
+        DIVISION_ID:
+          type: integer
+          example: 1
+        DIVISION_NAME:
+          type: string
+          example: Marketing Department
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLE]
+          example: DISABLE
