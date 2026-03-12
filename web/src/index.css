@@ -1,19 +1,36 @@
 @import "tailwindcss";
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.87);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+@theme {
+
+  /* Colors */
+  --color-primary: #2563eb;
+  --color-secondary: #9333ea;
+  --color-success: #16a34a;
+  --color-white: #ffffff;
+  --color-white-base: #ffffff;
+
+  /* sidebar */
+  --color-sidebar: #2563eb;
+  /* Font */
+  --font-sans: "Roboto", sans-serif;
+
+  /* Font size */
+  --font-size-base: 0.875rem;
+
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+:root {
+  font-family: var(--font-sans);
+  line-height: 1;
+  font-weight: 400;
+  font-size: var(--font-size-base);
+
+  color: rgba(255, 255, 255, 0.87);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
