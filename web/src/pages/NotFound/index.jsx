@@ -12,8 +12,12 @@ function NotFound() {
                         <div>
                             <p className="text-sm font-semibold text-indigo-600">404</p>
                             <h1 className="mt-2 text-2xl font-semibold text-gray-900 sm:text-3xl">
-                                Trang web không tồn tại!
+                                Không tìm thấy trang
                             </h1>
+                            <p className="mt-2 text-sm text-gray-600">
+                                Đường dẫn <span className="font-mono text-[13px]">{location.pathname}</span> không tồn tại
+                                hoặc bạn không có quyền truy cập.
+                            </p>
                         </div>
 
                         <div className="shrink-0">
@@ -33,7 +37,7 @@ function NotFound() {
                         <button
                             type="button"
                             onClick={() => navigate(-1)}
-                            className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50 cursor-pointer"
+                            className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
                         >
                             Quay lại
                         </button>

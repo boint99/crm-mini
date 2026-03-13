@@ -1,8 +1,42 @@
 import { employeesAPI } from '@/api/employeesAPI'
+import { useMemo, useState } from 'react'
+import AddEmployeeModal from '@/pages/Employees/AddEmployeeModal'
 
 function Employees() {
+  const [openAdd, setOpenAdd] = useState(false)
+  const [query, setQuery] = useState('')
+  const [rows, setRows] = useState(employeesAPI)
+
+  const filteredRows = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return rows
+    return rows.filter((e) => {
+      const hay = [
+        e.EMPLOYEE_CODE,
+        e.FIRST_NAME,
+        e.LAST_NAME,
+        e.EMAIL,
+        e.PHONE,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+      return hay.includes(q)
+    })
+  }, [query, rows])
+
+  const handleCreate = (payload) => {
+    const maxId = rows.reduce((m, r) => Math.max(m, Number(r.EMPLOYEE_ID) || 0), 0)
+    const next = {
+      EMPLOYEE_ID: maxId + 1,
+      ...payload,
+    }
+    setRows((prev) => [next, ...prev])
+    setOpenAdd(false)
+  }
+
   return (
-    <div>
+    <div className="p-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-gray-900">
@@ -11,7 +45,8 @@ function Employees() {
         </div>
         <button
           type="button"
-          className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+          onClick={() => setOpenAdd(true)}
+          className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 cursor-pointer"
         >
           + Thêm nhân viên
         </button>
@@ -27,6 +62,8 @@ function Employees() {
             <input
               type="text"
               placeholder="Tìm theo mã, tên, email..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
               className="w-64 border border-gray-300 rounded-lg px-3 py-2 text-sm
            placeholder:text-gray-400
            focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
@@ -73,7 +110,7 @@ function Employees() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
-              {employeesAPI.map((emp) => (
+              {filteredRows.map((emp) => (
                 <tr key={emp.EMPLOYEE_ID} className="hover:bg-gray-50">
                   <td className="px-4 py-2 text-gray-700 whitespace-nowrap">
                     {emp.EMPLOYEE_ID}
@@ -133,6 +170,12 @@ function Employees() {
           </table>
         </div>
       </div>
+
+      <AddEmployeeModal
+        open={openAdd}
+        onClose={() => setOpenAdd(false)}
+        onSubmit={handleCreate}
+      />
     </div>
   )
 }
