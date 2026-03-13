@@ -12,7 +12,7 @@ function StatCard({ label, value, subtext }) {
 
 function Dashboard() {
   return (
-    <div className="p-6">
+    <div>
       <div className="flex items-end justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold text-gray-900">Dashboard</h2>

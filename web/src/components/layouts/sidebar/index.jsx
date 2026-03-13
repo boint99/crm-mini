@@ -11,8 +11,15 @@ import {
   MonitorSmartphone,
 } from 'lucide-react'
 
-const NavIcon = ({ children }) => (
-  <span className="grid h-9 w-9 place-items-center rounded-lg bg-gray-50 text-gray-700 group-hover:bg-gray-100">
+const NavIcon = ({ children, active }) => (
+  <span
+    className={[
+      'grid h-9 w-9 place-items-center rounded-lg transition-colors',
+      active
+        ? 'bg-white/10 text-white'
+        : 'bg-gray-50 text-gray-700 group-hover:bg-gray-100',
+    ].join(' ')}
+  >
     {children}
   </span>
 )
@@ -90,8 +97,12 @@ function Sidebar() {
                     ].join(' ')
                   }
                 >
-                  <NavIcon>{it.icon}</NavIcon>
-                  {!collapsed ? <span className="truncate">{it.label}</span> : null}
+                  {({ isActive }) => (
+                    <>
+                      <NavIcon active={isActive}>{it.icon}</NavIcon>
+                      {!collapsed ? <span className="truncate">{it.label}</span> : null}
+                    </>
+                  )}
                 </NavLink>
               ) : (
                 <button

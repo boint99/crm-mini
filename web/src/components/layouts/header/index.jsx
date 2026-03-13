@@ -51,7 +51,7 @@ function Header() {
             type="button"
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm hover:bg-gray-50"
             aria-label="Background settings"
-            onClick={() => {}}
+            onClick={() => { }}
           >
             <svg
               viewBox="0 0 24 24"
@@ -70,7 +70,7 @@ function Header() {
             type="button"
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm hover:bg-gray-50"
             aria-label="Notifications"
-            onClick={() => {}}
+            onClick={() => { }}
           >
             <svg
               viewBox="0 0 24 24"
@@ -94,7 +94,7 @@ function Header() {
               aria-expanded={open}
               onClick={() => setOpen((v) => !v)}
             >
-              <div className="grid h-8 w-8 place-items-center rounded-full bg-indigo-600 text-sm font-semibold text-white">
+              <div className="grid h-8 w-8 place-items-center rounded-full bg-primary text-sm font-semibold text-white">
                 A
               </div>
               <div className="hidden sm:block">
