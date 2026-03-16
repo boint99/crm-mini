@@ -8,9 +8,9 @@ services:
       - .env
     environment:
       - NODE_ENV=development
-      - PORT=${FRONTEND_PORT}
+      - PORT=${DEV_PORT_FE}
     ports:
-      - "3000:${FRONTEND_PORT}"
+      - "${DEV_PORT_FE}:${DEV_PORT_FE}"
     volumes:
       - ./web:/app
       - /app/node_modules
@@ -29,9 +29,9 @@ services:
       - .env
     environment:
       - NODE_ENV=development
-      - PORT=${BACKEND_PORT}
+      - PORT=${DEV_PORT_BE}
     ports:
-      - "5000:${BACKEND_PORT}"
+      - "${DEV_PORT_BE}:${DEV_PORT_BE}"
     volumes:
       - .:/app
       - /app/node_modules
@@ -48,18 +48,18 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
-      POSTGRES_DB: ${DB_NAME:-appdb}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "${DB_PORT}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - app-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
