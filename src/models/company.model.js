@@ -1,43 +1,44 @@
-import { PRISMA } from '../configs/db.config.js'
+import BaseModel from './BaseModel.js'
 
-export const companyModel = {
-  create: async (data) => {
-    return await PRISMA.cOMPANY.create({
+class CompanyModel extends BaseModel {
+  constructor() {
+    super('cOMPANY', 'COMPANY_ID')
+  }
+
+  async listAll() {
+    return await super.ListAll()
+  }
+
+  async create(data) {
+    return await this.model.create({
       data: {
         COMPANY_NAME: data.COMPANY_NAME,
         STATUS: data.STATUS
       }
     })
-  },
+  }
 
-  listCompany: async () => {
-    return await PRISMA.cOMPANY.findMany()
-  },
-  findById: async (id) => {
-    return await PRISMA.cOMPANY.findUnique({
-      where: { COMPANY_ID: id }
+  async findByName(name) {
+    return await this.model.findFirst({
+      where: { COMPANY_NAME: name }
     })
-  },
+  }
 
-  findByName: async (data) => {
-    console.log('🚀 ~ data:', data)
-    return await PRISMA.cOMPANY.findFirst({
-      where: {
-        COMPANY_NAME: data
-      }
-    })
-  },
-  updateById: async (id, updateData) => {
-    console.log('🚀 ~ updateData:', updateData)
-    return await PRISMA.cOMPANY.update({
+  async updateById(id, updateData) {
+    return await this.model.update({
       where: { COMPANY_ID: id },
       data: updateData
     })
-  },
-  deleteById: async (id) => {
-    return await PRISMA.cOMPANY.delete({
-      where: { COMPANY_ID: id }
-    })
+  }
+
+  async findById(id) {
+    return await this.FindById(id, 'COMPANY_ID')
+  }
+
+  async deleteById(id) {
+    return await super.DeleteById(id, 'COMPANY_ID')
   }
 }
+
+export const companyModel = new CompanyModel()
 

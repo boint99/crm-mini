@@ -9,7 +9,7 @@ Router.get('/status', (req, res) => {
   res.status(200).json({ message: 'APIs are ready to use.' })
 })
 
-Router.use('/companies', companyRoutes)
+Router.use('/company', companyRoutes)
 
 Router.use('/division', divisionsRoutes)
 

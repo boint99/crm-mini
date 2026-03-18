@@ -1,12 +1,21 @@
 import { divisionController } from '../controllers/division.controller.js'
 import express from 'express'
+import DivisionValidate from '../validates/division.validate.js'
 
 const Router = express.Router()
 
-Router.get('/list', divisionController.list)
-Router.post('/', divisionController.create)
-Router.put('/', divisionController.update)
-Router.delete('/', divisionController.delete)
+// GET - /api/division/lists
+Router.get('/lists', divisionController.lists)
 
+// POST /api/division
+Router.post('/', DivisionValidate.create.bind(DivisionValidate), divisionController.create)
+
+// update PUT /api/division/
+// Note: add DIVISION_ID
+Router.put('/', DivisionValidate.update.bind(DivisionValidate), divisionController.update)
+
+// DELETE /api/division/
+// Note: add DIVISION_ID
+Router.delete('/', DivisionValidate.delete.bind(DivisionValidate), divisionController.delete)
 
 export const divisionsRoutes = Router

@@ -27,8 +27,8 @@ const START_SERVER = async () => {
   app.use(errorMiddleware)
 
   app.listen(port, () => {
-    console.log(`🚀 CRM mini APIs is running at http://${environments.HOST}:${environments.API_PORT}`)
-    console.log(`🚀 CRM mini DOCs is running at http://${environments.HOST}:${environments.API_PORT}/api-docs`)
+    console.log(`🚀 CRM mini APIs is running at http://${environments.HOST}:${port}`)
+    console.log(`🚀 CRM mini DOCs is running at http://${environments.HOST}:${port}/api-docs`)
   })
 }
 (async () => {

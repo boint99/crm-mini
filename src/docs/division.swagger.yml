@@ -1,22 +1,25 @@
 paths:
-  /api/division/list:
+  # ========================
+  # DIVISION APIs
+  # ========================
+  /api/division/lists:
     get:
-      summary: Get all divisions
+      summary: Get division list
+      description: Retrieve list of all divisions.
       tags:
         - Divisions
       responses:
         200:
-          description: List of divisions retrieved successfully
+          description: Success response
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Division'
+                $ref: '#/components/schemas/DivisionListResponse'
 
   /api/division:
     post:
-      summary: Create a new division
+      summary: Create division
+      description: Create a new division using request body data.
       tags:
         - Divisions
       requestBody:
@@ -26,12 +29,16 @@ paths:
             schema:
               $ref: '#/components/schemas/DivisionInput'
       responses:
-        201:
+        200:
           description: Division created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
 
     put:
-      summary: Update a division
-      description: Update division details. DIVISION_ID must be included in the request body.
+      summary: Update division
+      description: Update division information. DIVISION_ID is required in request body.
       tags:
         - Divisions
       requestBody:
@@ -43,63 +50,84 @@ paths:
       responses:
         200:
           description: Division updated successfully
-        404:
-          description: Division not found
-        400:
-          description: Invalid input or missing ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
 
     delete:
-      summary: Delete a division
+      summary: Delete division
+      description: Delete a division using DIVISION_ID from request body.
       tags:
         - Divisions
-      parameters:
-        - name: id
-          in: query
-          required: true
-          schema:
-            type: integer
-          description: The unique ID of the division to delete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DivisionDeleteInput'
       responses:
         200:
           description: Division deleted successfully
-        404:
-          description: Division not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
 
 components:
   schemas:
+
+    # ========================
+    # Common Response
+    # ========================
+    BaseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Success"
+
+    # ========================
+    # DIVISION
+    # ========================
     Division:
       type: object
       properties:
         DIVISION_ID:
           type: integer
-          example: 1
         DIVISION_NAME:
           type: string
-          example: Technology Department
-        COMPANY_ID:
-          type: integer
-          example: 1
         STATUS:
           type: string
-          enum: [ENABLE, DISABLE]
-          example: ENABLE
+          enum: [ENABLE, DISABLED]
+
+    DivisionListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Division'
 
     DivisionInput:
       type: object
       required:
         - DIVISION_NAME
-        # - COMPANY_ID
       properties:
         DIVISION_NAME:
           type: string
-          example: Sales Department
         COMPANY_ID:
           type: integer
-          example: 1
         STATUS:
           type: string
-          enum: [ENABLE, DISABLE]
-          default: ENABLE
+          enum: [ENABLE, DISABLED]
 
     DivisionUpdateInput:
       type: object
@@ -108,11 +136,18 @@ components:
       properties:
         DIVISION_ID:
           type: integer
-          example: 1
         DIVISION_NAME:
           type: string
-          example: Marketing Department
+        COMPANY_ID:
+          type: integer
         STATUS:
           type: string
-          enum: [ENABLE, DISABLE]
-          example: DISABLE
+          enum: [ENABLE, DISABLED]
+
+    DivisionDeleteInput:
+      type: object
+      required:
+        - DIVISION_ID
+      properties:
+        DIVISION_ID:
+          type: integer

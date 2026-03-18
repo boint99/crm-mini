@@ -1,15 +1,25 @@
 paths:
-  /api/companies:
+  # ========================
+  # COMPANY APIs
+  # ========================
+  /api/company/lists:
     get:
-      summary: Get all companies
+      summary: Get company list
+      description: Retrieve list of all companies.
       tags:
         - Companies
       responses:
         200:
-          description: List of companies retrieved successfully
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyListResponse'
 
+  /api/company:
     post:
-      summary: Create a new company
+      summary: Create company
+      description: Create a new company using request body data.
       tags:
         - Companies
       requestBody:
@@ -19,67 +29,92 @@ paths:
             schema:
               $ref: '#/components/schemas/CompanyInput'
       responses:
-        201:
+        200:
           description: Company created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
 
-  /api/companies/{id}:
     put:
-      summary: Update a company
+      summary: Update company
+      description: Update company information. COMPANY_ID is required in request body.
       tags:
         - Companies
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: The unique ID of the company
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CompanyInput'
+              $ref: '#/components/schemas/CompanyUpdateInput'
       responses:
         200:
           description: Company updated successfully
-        404:
-          description: Company not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
 
     delete:
-      summary: Delete a company
+      summary: Delete company
+      description: Delete a company using COMPANY_ID from request body.
       tags:
         - Companies
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: The unique ID of the company
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyDeleteInput'
       responses:
         200:
           description: Company deleted successfully
-        404:
-          description: Company not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
 
 components:
   schemas:
+
+    # ========================
+    # Common Response
+    # ========================
+    BaseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Success"
+
+    # ========================
+    # COMPANY
+    # ========================
     Company:
       type: object
       properties:
-        id:
+        COMPANY_ID:
           type: integer
-          example: 1
         COMPANY_NAME:
           type: string
-          example: Company ABC
         STATUS:
           type: string
-          enum:
-            - ENABLE
-            - DISABLE
-          example: ENABLE
+          enum: [ENABLE, DISABLED]
+
+    CompanyListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Company'
 
     CompanyInput:
       type: object
@@ -88,10 +123,27 @@ components:
       properties:
         COMPANY_NAME:
           type: string
-          example: Company ABC
         STATUS:
           type: string
-          enum:
-            - ENABLE
-            - DISABLE
-          example: ENABLE
+          enum: [ENABLE, DISABLED]
+
+    CompanyUpdateInput:
+      type: object
+      required:
+        - COMPANY_ID
+      properties:
+        COMPANY_ID:
+          type: integer
+        COMPANY_NAME:
+          type: string
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLED]
+
+    CompanyDeleteInput:
+      type: object
+      required:
+        - COMPANY_ID
+      properties:
+        COMPANY_ID:
+          type: integer

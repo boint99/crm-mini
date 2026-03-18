@@ -1,30 +1,31 @@
 import { StatusCodes } from 'http-status-codes'
-import 'dotenv/config'
 
-export const errorMiddleware = (err, req, res) => {
-  let statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR
-  let message = err.message || 'Internal Server Error'
+class PrismaErrorHandler {
+  static handle(err) {
+    let statusCode = StatusCodes.INTERNAL_SERVER_ERROR
+    let message = err.message || 'Internal Server Error'
 
-  if (err.code === 'P2025') {
-    statusCode = StatusCodes.NOT_FOUND
-    message = 'The requested record was not found.'
+    if (err.code === 'P2025') {
+      statusCode = StatusCodes.NOT_FOUND
+      message = 'The requested record was not found.'
+    }
+
+    if (err.code === 'P2002') {
+      statusCode = StatusCodes.CONFLICT
+      message = `Duplicate field: ${err.meta?.target?.join(', ')}`
+    }
+
+    return { statusCode, message }
   }
+}
 
-  if (err.code === 'P2002') {
-    statusCode = StatusCodes.CONFLICT
-    message = `Duplicate field value: ${err.meta?.target?.join(', ')}. Please use another value.`
-  }
+// eslint-disable-next-line no-unused-vars
+export const errorMiddleware = (err, req, res, next) => {
+  const { statusCode, message } = PrismaErrorHandler.handle(err)
 
-  if (err.name === 'PrismaClientValidationError') {
-    statusCode = StatusCodes.BAD_REQUEST
-    message = 'Invalid data format or missing required fields.'
-  }
-
-  const response = {
+  res.status(statusCode).json({
     success: false,
-    message: message,
+    message,
     stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-  }
-
-  res.status(statusCode).json(response)
+  })
 }
