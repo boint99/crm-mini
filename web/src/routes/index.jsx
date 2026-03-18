@@ -1,32 +1,66 @@
-import MainLayout from '@/components/layouts/MainLayout'
+import { lazy, Suspense } from "react";
+import MainLayout from "@/components/layouts/MainLayout";
+import Auth from "@/pages/Auth";
+import NotFound from "@/pages/NotFound";
+import Loading from "@/components/ui/Loading";
 
-import Dashboard from '@/pages/Dashboard'
-import Employees from '@/pages/Employees'
-import NotFound from '@/pages/NotFound'
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const Employees = lazy(() => import("@/pages/Employees"));
+const Login = lazy(() => import("@/pages/Auth/Login"));
+const Register = lazy(() => import("@/pages/Auth/Register"));
 
-import Auth from '@/pages/Auth'
-import Login from '@/pages/auth/Login'
-import Register from '@/pages/auth/Register'
+// Wrapper dùng chung
+const WithSpinner = ({ children }) => (
+  <Suspense fallback={<Loading />}>{children}</Suspense>
+);
 
 const routes = [
-    {
-        path: '/',
-        element: <MainLayout />,
-        children: [
-            { index: true, element: <Dashboard /> },
-            { path: 'employees', element: <Employees /> },
-            { path: '*', element: <NotFound /> },
-        ],
-    },
-    {
-        path: '/auth',
-        element: <Auth />,
-        children: [
-            { path: 'login', element: <Login /> },
-            { path: 'register', element: <Register /> },
-            { path: '*', element: <NotFound /> },
-        ],
-    },
-]
+  {
+    path: "/",
+    element: <MainLayout />,
+    children: [
+      {
+        index: true,
+        element: (
+          <WithSpinner>
+            <Dashboard />
+          </WithSpinner>
+        ),
+      },
+      {
+        path: "employees",
+        element: (
+          <WithSpinner>
+            <Employees />
+          </WithSpinner>
+        ),
+      },
+      { path: "*", element: <NotFound /> },
+    ],
+  },
+  {
+    path: "/auth",
+    element: <Auth />,
+    children: [
+      {
+        path: "login",
+        element: (
+          <WithSpinner>
+            <Login />
+          </WithSpinner>
+        ),
+      },
+      {
+        path: "register",
+        element: (
+          <WithSpinner>
+            <Register />
+          </WithSpinner>
+        ),
+      },
+      { path: "*", element: <NotFound /> },
+    ],
+  },
+];
 
-export default routes
+export default routes;
