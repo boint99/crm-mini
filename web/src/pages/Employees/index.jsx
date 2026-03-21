@@ -36,7 +36,7 @@ function Employees() {
   }
 
   return (
-    <div className="p-6">
+    <div >
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-gray-900">

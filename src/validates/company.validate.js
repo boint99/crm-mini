@@ -37,8 +37,8 @@ class companyValidate extends BaseValidates {
   // Validate delete company
   static delete(req, res, next) {
     try {
-      const { COMPANY_ID } = req.body
-      this.validateId(COMPANY_ID, 'COMPANY_ID is required!.')
+      const { id } = req.params
+      this.validateId(id, 'COMPANY_ID is required!.')
 
       next()
     } catch (error) {

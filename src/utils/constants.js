@@ -2,6 +2,11 @@ import ApiError from './ApiError.js'
 
 export const ALLOWED_STATUS = ['ENABLE', 'DISABLED']
 
+export const WHITELIST_DOMAINS = [
+  // 'http://192.168.1.234:3000',
+  // 'http://192.168.1.234:3001'
+]
+
 /**
  * Validates if a value exists within a permitted list of constants (Enum).
  * @param {string|number} value - The value to be checked (e.g., payload.STATUS).

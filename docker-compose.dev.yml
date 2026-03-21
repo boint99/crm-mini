@@ -33,7 +33,7 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=${DEV_PORT_BE}
-      - HOST=0.0.0.0
+      - HOST=192.168.1.234
     ports:
       - "${DEV_PORT_BE}:${DEV_PORT_BE}"
     volumes:

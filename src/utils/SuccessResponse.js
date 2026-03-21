@@ -4,13 +4,13 @@ class SuccessResponse {
   constructor({
     res,
     message = 'Success',
-    data = {},
+    data = [],
     statusCode = StatusCodes.OK
   }) {
     return res.status(statusCode).json({
       success: true,
       message,
-      data
+      data: data
     })
   }
 }

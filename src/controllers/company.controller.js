@@ -45,9 +45,8 @@ class CompanyController {
   // delete by id
   async delete(req, res, next) {
     try {
-      const { COMPANY_ID } = req.body
-
-      await companyService.delete(COMPANY_ID)
+      const { id } = req.params
+      await companyService.delete(id)
       new SuccessResponse({
         res: res,
         message: 'Complete the deletion of a company.'

@@ -1,3 +1,4 @@
+import cors from 'cors'
 import express from 'express'
 import swaggerUi from 'swagger-ui-express'
 import CONNECT_DB from './configs/db.config.js'
@@ -5,10 +6,11 @@ import { environments } from './configs/env.config.js'
 import { APIs_Routes } from './routes/index.js'
 import { swaggerSpec } from './configs/swagger.config.js'
 import { errorMiddleware } from './middleware/error.middleware.js'
+import { corsOptions } from './configs/cors.config.js'
 
 const START_SERVER = async () => {
   const app = express()
-  const port = environments.BACKEND_PORT || 8017
+  const port = environments.API_PORT || 8017
 
   // Fix from disk cache
   app.use((req, res, next) => {
@@ -16,6 +18,8 @@ const START_SERVER = async () => {
     next()
   })
 
+
+  app.use(cors(corsOptions))
   app.use(express.json())
 
   app.get('/', (req, res) => {
@@ -26,7 +30,7 @@ const START_SERVER = async () => {
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
   app.use(errorMiddleware)
 
-  app.listen(port, () => {
+  app.listen(port, environments.HOST, () => {
     console.log(`🚀 CRM mini APIs is running at http://${environments.HOST}:${port}`)
     console.log(`🚀 CRM mini DOCs is running at http://${environments.HOST}:${port}/api-docs`)
   })
