@@ -1,0 +1,36 @@
+export const ROOT_DOMAIN = 'http://192.168.1.234:8017/api' || 'http://localhost:8017/api'
+
+export const dispatchAsync = async (dispatch, action, options = {}) => {
+    const { onSuccess, onError, successMessage, errorMessage } = options;
+
+    try {
+      const result = await dispatch(action).unwrap();
+
+      if (successMessage) console.log(successMessage);
+      if (onSuccess) onSuccess(result);
+
+      return result;
+    } catch (error) {
+      console.error(errorMessage || error);
+      if (onError) onError(error);
+      throw error;
+    }
+  };
+
+
+export const formatDateTime = (isoString) => {
+  if (!isoString) return ''
+
+  const date = new Date(isoString)
+
+  const pad = (n) => n.toString().padStart(2, '0')
+
+  const day = pad(date.getDate())
+  const month = pad(date.getMonth() + 1)
+  const year = date.getFullYear()
+
+  const hours = pad(date.getHours())
+  const minutes = pad(date.getMinutes())
+
+  return `${day}/${month}/${year} ${hours}:${minutes}`
+}

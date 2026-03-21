@@ -16,6 +16,6 @@ Router.put('/', companyValidate.update.bind(companyValidate), companyController.
 
 // DELETE /api/company/
 // Note: add COMPANY_ID
-Router.delete('/', companyValidate.delete.bind(companyValidate), companyController.delete)
+Router.delete('/:id', companyValidate.delete.bind(companyValidate), companyController.delete)
 
 export const companyRoutes = Router
