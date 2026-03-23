@@ -1,0 +1,148 @@
+paths:
+  # ========================
+  # ORG UNITS APIs
+  # ========================
+  /api/org-units/lists:
+    get:
+      summary: Get org unit list
+      description: Retrieve list of all org units.
+      tags:
+        - Org Units
+      responses:
+        200:
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgUnitListResponse'
+
+  /api/org-units:
+    post:
+      summary: Create org unit
+      description: Create a new org unit using request body data.
+      tags:
+        - Org Units
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrgUnitInput'
+      responses:
+        200:
+          description: Org unit created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+
+    put:
+      summary: Update org unit
+      description: Update org unit information. ORG_UNIT_ID and UNIT_NAME are required in request body.
+      tags:
+        - Org Units
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrgUnitUpdateInput'
+      responses:
+        200:
+          description: Org unit updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+
+  /api/org-units/{id}:
+    delete:
+      summary: Delete org unit
+      description: Delete an org unit by ORG_UNIT_ID passed as a path parameter.
+      tags:
+        - Org Units
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ORG_UNIT_ID of the org unit to delete
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Org unit deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+
+components:
+  schemas:
+
+    # ========================
+    # Common Response
+    # ========================
+    BaseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Success"
+
+    # ========================
+    # ORG UNITS
+    # ========================
+    OrgUnit:
+      type: object
+      properties:
+        ORG_UNIT_ID:
+          type: integer
+        UNIT_NAME:
+          type: string
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLED]
+
+    OrgUnitListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrgUnit'
+
+    OrgUnitInput:
+      type: object
+      required:
+        - UNIT_NAME
+      properties:
+        UNIT_NAME:
+          type: string
+        COMPANY_ID:
+          type: integer
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLED]
+
+    OrgUnitUpdateInput:
+      type: object
+      required:
+        - ORG_UNIT_ID
+        - UNIT_NAME
+      properties:
+        ORG_UNIT_ID:
+          type: integer
+        UNIT_NAME:
+          type: string
+        COMPANY_ID:
+          type: integer
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLED]

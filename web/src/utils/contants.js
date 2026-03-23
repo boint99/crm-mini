@@ -1,4 +1,4 @@
-export const ROOT_DOMAIN = 'http://192.168.1.234:8017/api' || 'http://localhost:8017/api'
+export const ROOT_DOMAIN = 'http://localhost:8017/api'
 
 export const dispatchAsync = async (dispatch, action, options = {}) => {
     const { onSuccess, onError, successMessage, errorMessage } = options;
