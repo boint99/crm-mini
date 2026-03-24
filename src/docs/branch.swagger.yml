@@ -1,0 +1,249 @@
+paths:
+  # ========================
+  # BRANCH APIs
+  # ========================
+  /api/branches/lists:
+    get:
+      summary: Get branch list
+      description: Retrieve list of all branches.
+      tags:
+        - Branches
+      responses:
+        200:
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BranchListResponse'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/branches:
+    post:
+      summary: Create branch
+      description: Create a new branch using request body data.
+      tags:
+        - Branches
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BranchInput'
+      responses:
+        201:
+          description: Branch created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BranchCreateResponse'
+        400:
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        409:
+          description: Duplicate branch name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update branch
+      description: Update branch information. BRANCH_ID is required in request body.
+      tags:
+        - Branches
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BranchUpdateInput'
+      responses:
+        200:
+          description: Branch updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+        400:
+          description: Invalid input or status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Branch not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        409:
+          description: Duplicate branch name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/branches/{id}:
+    delete:
+      summary: Delete branch
+      description: Delete a branch by BRANCH_ID passed as path parameter.
+      tags:
+        - Branches
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: BRANCH_ID of the branch to delete
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Branch deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+        400:
+          description: Invalid branch id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Branch not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    # ========================
+    # Common Response
+    # ========================
+    BaseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Success
+        data:
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Invalid request
+
+    # ========================
+    # BRANCH
+    # ========================
+    Branch:
+      type: object
+      properties:
+        BRANCH_ID:
+          type: integer
+        BRANCH_NAME:
+          type: string
+        LOCATION:
+          type: string
+          nullable: true
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLED]
+        ORG_UNIT_ID:
+          type: integer
+          nullable: true
+        CREATED_AT:
+          type: string
+          format: date-time
+        UPDATED_AT:
+          type: string
+          format: date-time
+
+    BranchListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Branches fetched successfully.
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Branch'
+
+    BranchCreateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Branch created successfully.
+        data:
+          $ref: '#/components/schemas/Branch'
+
+    BranchInput:
+      type: object
+      required:
+        - BRANCH_NAME
+      properties:
+        BRANCH_NAME:
+          type: string
+          example: Ho Chi Minh Branch
+        LOCATION:
+          type: string
+          nullable: true
+          example: District 1
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLED]
+          example: ENABLE
+        ORG_UNIT_ID:
+          type: integer
+          nullable: true
+          example: 1
+
+    BranchUpdateInput:
+      type: object
+      required:
+        - BRANCH_ID
+      properties:
+        BRANCH_ID:
+          type: integer
+          example: 1
+        BRANCH_NAME:
+          type: string
+          example: Ho Chi Minh Branch
+        LOCATION:
+          type: string
+          nullable: true
+          example: District 3
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLED]
+          example: DISABLED
+        ORG_UNIT_ID:
+          type: integer
+          nullable: true
+          example: 2

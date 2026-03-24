@@ -14,7 +14,7 @@ class BaseValidates {
     }
   }
   //Check the minimum level of the chain.
-  static validateStringLength(value, min = 5, message) {
+  static validateStringLength(value, min = 3, message) {
     if (value !== undefined && value.trim().length < min) {
       throw new ApiError(StatusCodes.BAD_REQUEST, message)
     }

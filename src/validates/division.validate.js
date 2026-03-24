@@ -22,7 +22,7 @@ class DivisionValidate extends BaseValidates {
       this.validateId(data.DIVISION_NAME, 'DIVISION_ID is required!.')
 
       if (data.DIVISION_NAME !== undefined) {
-        this.validateStringLength(data.DIVISION_NAME, 5, 'DIVISION_NAME must be 5 characters or more!')
+        this.validateStringLength(data.DIVISION_NAME, 3, 'DIVISION_NAME must be 3 characters or more!')
       }
       if (data.STATUS !== undefined) {
         this.validateEnum(data.STATUS, ALLOWED_STATUS)
