@@ -3,6 +3,8 @@ import { companyRoutes } from './company.routes.js'
 import { divisionsRoutes } from './divisons.routes.js'
 import { orgUnitsRoutes } from './org.units.routes.js'
 import { branchesRoutes } from './branch.routes.js'
+import { positionsRoutes } from './positions.routes.js'
+import { employeesRoutes } from './empolyees.routes.js'
 
 const Router = express.Router()
 
@@ -19,5 +21,9 @@ Router.use('/org-units', orgUnitsRoutes)
 
 
 Router.use('/branches', branchesRoutes)
+
+Router.use('/positions', positionsRoutes)
+
+Router.use('/employees', employeesRoutes)
 
 export const APIs_Routes = Router

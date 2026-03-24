@@ -1,0 +1,247 @@
+paths:
+  # ========================
+  # POSITION APIs
+  # ========================
+  /api/positions/lists:
+    get:
+      summary: Get position list
+      description: Retrieve list of all positions.
+      tags:
+        - Positions
+      responses:
+        200:
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PositionListResponse'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/positions:
+    post:
+      summary: Create position
+      description: Create a new position using request body data.
+      tags:
+        - Positions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PositionInput'
+      responses:
+        201:
+          description: Position created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PositionCreateResponse'
+        400:
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        409:
+          description: Duplicate position name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update position
+      description: Update position information. POSITION_ID is required in request body.
+      tags:
+        - Positions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PositionUpdateInput'
+      responses:
+        200:
+          description: Position updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+        400:
+          description: Invalid input or status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Position not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        409:
+          description: Duplicate position name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/positions/{id}:
+    delete:
+      summary: Delete position
+      description: Delete a position by POSITION_ID passed as path parameter.
+      tags:
+        - Positions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: POSITION_ID of the position to delete
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Position deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+        400:
+          description: Invalid position id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Position not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    # ========================
+    # Common Response
+    # ========================
+    BaseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Success
+        data:
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Invalid request
+
+    # ========================
+    # POSITION
+    # ========================
+    Position:
+      type: object
+      properties:
+        POSITION_ID:
+          type: integer
+        POSITION_NAME:
+          type: string
+        LEVEL:
+          type: string
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLED]
+        EMPLOYEE_ID:
+          type: integer
+          nullable: true
+        CREATED_AT:
+          type: string
+          format: date-time
+        UPDATED_AT:
+          type: string
+          format: date-time
+
+    PositionListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Positions fetched successfully.
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Position'
+
+    PositionCreateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Position created successfully.
+        data:
+          $ref: '#/components/schemas/Position'
+
+    PositionInput:
+      type: object
+      required:
+        - POSITION_NAME
+        - LEVEL
+      properties:
+        POSITION_NAME:
+          type: string
+          example: Software Engineer
+        LEVEL:
+          type: string
+          example: Senior
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLED]
+          example: ENABLE
+        EMPLOYEE_ID:
+          type: integer
+          nullable: true
+          example: 1
+
+    PositionUpdateInput:
+      type: object
+      required:
+        - POSITION_ID
+      properties:
+        POSITION_ID:
+          type: integer
+          example: 1
+        POSITION_NAME:
+          type: string
+          example: Tech Lead
+        LEVEL:
+          type: string
+          example: Lead
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLED]
+          example: DISABLED
+        EMPLOYEE_ID:
+          type: integer
+          nullable: true
+          example: 2
