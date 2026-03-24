@@ -1,6 +1,6 @@
-import BaseModel from './BaseModel.js'
+import ModelCore from '../core/model.core.js'
 
-class CompanyModel extends BaseModel {
+class CompanyModel extends ModelCore {
   constructor() {
     super('cOMPANY', 'COMPANY_ID')
   }

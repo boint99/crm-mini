@@ -1,6 +1,6 @@
-import BaseModel from './BaseModel.js'
+import ModelCore from '../core/model.core.js'
 
-class OrgUnitsModel extends BaseModel {
+class OrgUnitsModel extends ModelCore {
   constructor() {
     super('oRG_UNITS', 'UNIT_NAME', 'UNIT_TYPE', 'DIVISION_ID', 'PARENT_UNIT_ID')
   }

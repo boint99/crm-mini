@@ -1,7 +1,7 @@
-import BaseModel from './BaseModel.js'
+import ModelCore from '../core/model.core.js'
 
 
-class DivisionModel extends BaseModel {
+class DivisionModel extends ModelCore {
   constructor() {
     super('dIVISIONS', 'DIVISION_ID', 'DIVISION_NAME', 'COMPANY_ID', 'STATUS')
   }

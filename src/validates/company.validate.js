@@ -1,8 +1,8 @@
 
+import ValidateCores from '../core/validate.core.js'
 import { ALLOWED_STATUS } from '../utils/constants.js'
-import BaseValidates from './BaseValidates.js'
 
-class companyValidate extends BaseValidates {
+class companyValidate extends ValidateCores {
   // Validate create company
   static create(req, res, next) {
     try {

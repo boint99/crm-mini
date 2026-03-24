@@ -1,6 +1,6 @@
 import { PRISMA } from '../configs/db.config.js'
 
-class BaseModel {
+class ModelCore {
   constructor(modelName, defaultOrderBy = 'id') {
     this.model = PRISMA[modelName]
     this.defaultOrderBy = defaultOrderBy
@@ -24,7 +24,7 @@ class BaseModel {
         where: { [idField]: id }
       }
     )
-  }
+  }s
 
   async findByField(value, fieldName) {
     return await this.model.findFirst({
@@ -48,4 +48,4 @@ class BaseModel {
   }
 }
 
-export default BaseModel
+export default ModelCore

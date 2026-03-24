@@ -1,4 +1,4 @@
-import BaseModel from './BaseModel.js'
+import BaseModel from '../core/model.core.js'
 
 class BranchesModel extends BaseModel {
   constructor() {

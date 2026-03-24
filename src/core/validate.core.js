@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '../utils/ApiError.js'
 
-class BaseValidates {
+class ValidateCores {
   // Check Id
   static validateId(id, message) {
     if (!id || Number.isNaN(Number(id))) {
@@ -28,4 +28,4 @@ class BaseValidates {
   }
 }
 
-export default BaseValidates
+export default ValidateCores

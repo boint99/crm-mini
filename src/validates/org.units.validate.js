@@ -1,8 +1,8 @@
 
 import { ALLOWED_STATUS } from '../utils/constants.js'
-import BaseValidates from './BaseValidates.js'
+import ValidateCore from '../core/validate.core.js'
 
-class OrgUnitsValidate extends BaseValidates {
+class OrgUnitsValidate extends ValidateCore {
   // Validate create branch
   static create(req, res, next) {
     try {
