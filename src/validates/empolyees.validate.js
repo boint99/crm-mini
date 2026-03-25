@@ -7,8 +7,12 @@ class EmployeesValidate extends ValidateCore {
   static create(req, res, next) {
     try {
       const data = req.body
+      console.log('🚀 ~ EmployeesValidate ~ create ~ data:', data)
       EmployeesValidate.validateStringLength(data.EMPLOYEE_CODE, 3, 'EMPLOYEE_CODE is required!')
       EmployeesValidate.validateEnum(data.STATUS, ALLOWED_STATUS)
+      if (data.POSITION_ID !== undefined && data.POSITION_ID !== null) {
+        EmployeesValidate.validateId(data.POSITION_ID, 'POSITION_ID is invalid!.')
+      }
       next()
     } catch (error) {
       next(error)
@@ -26,6 +30,9 @@ class EmployeesValidate extends ValidateCore {
       }
       if (data.STATUS !== undefined) {
         EmployeesValidate.validateEnum(data.STATUS, ALLOWED_STATUS)
+      }
+      if (data.POSITION_ID !== undefined && data.POSITION_ID !== null) {
+        EmployeesValidate.validateId(data.POSITION_ID, 'POSITION_ID is invalid!.')
       }
 
       next()

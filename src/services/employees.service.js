@@ -2,6 +2,7 @@ import { ALLOWED_STATUS, CHECK_ENUM } from '../utils/constants.js'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '../utils/ApiError.js'
 import { employeesModel } from '../models/employees.model.js'
+import { positionsModel } from '../models/postisions.model.js'
 
 class EmployeesServices {
   /**
@@ -22,6 +23,13 @@ class EmployeesServices {
 
     // 3. Check status enum
     CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
+
+    if (data.POSITION_ID !== undefined && data.POSITION_ID !== null) {
+      const position = await positionsModel.findById(Number(data.POSITION_ID))
+      if (!position) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Position is not found!')
+      }
+    }
 
     return await employeesModel.create(data)
   }
@@ -55,6 +63,13 @@ class EmployeesServices {
 
     // 3. Check status enum
     CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, `Invalid status. Allowed values: ${ALLOWED_STATUS.join(', ')}`)
+
+    if (payload.POSITION_ID !== undefined && payload.POSITION_ID !== null) {
+      const position = await positionsModel.findById(Number(payload.POSITION_ID))
+      if (!position) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Position is not found!')
+      }
+    }
 
     return await employeesModel.updateById(EMPLOYEE_ID, payload)
   }

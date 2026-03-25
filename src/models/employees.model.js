@@ -17,7 +17,8 @@ class EmployeesModel extends BaseModel {
         LAST_NAME: data.LAST_NAME,
         EMAIL: data.EMAIL,
         PHONE: data.PHONE,
-        BIRTH_DATE: data.BIRTH_DATE
+        BIRTH_DATE: data.BIRTH_DATE,
+        POSITION_ID: data.POSITION_ID
       }
     })
   }

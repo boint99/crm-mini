@@ -66,9 +66,7 @@ model POSITIONS {
   STATUS        ENUMSTATUS @default(ENABLE) @map("STATUS")
   CREATED_AT    DateTime   @default(now()) @map("CREATED_AT")
   UPDATED_AT    DateTime   @updatedAt @map("UPDATED_AT")
-  NEW_COLUMN    BigInt?    @map("NEW_COLUMN")
-  EMPLOYEE_ID   Int?       @map("EMPLOYEE_ID")
-  EMPLOYEE      EMPLOYEES? @relation(fields: [EMPLOYEE_ID], references: [EMPLOYEE_ID])
+  EMPLOYEES     EMPLOYEES[]
 
   @@map("POSITIONS")
 }
@@ -80,17 +78,19 @@ model EMPLOYEES {
   LAST_NAME     String        @map("LAST_NAME")
   PHONE         String?       @map("PHONE")
   EMAIL         String?       @map("EMAIL")
-  BIRTH_DATE    DateTime      @map("BIRTH_DATE") @db.Date
+  BIRTH_DATE    DateTime?     @map("BIRTH_DATE") @db.Date
   UNIT_ID       Int?          @map("UNIT_ID")
   VT_CODE       Int?          @map("VT_CODE")
   STATUS        ENUMSTATUS    @default(ENABLE) @map("STATUS")
   CREATED_AT    DateTime      @default(now()) @map("CREATED_AT")
   UPDATED_AT    DateTime      @updatedAt @map("UPDATED_AT")
+  POSITION_ID   Int?          @map("POSITION_ID")
+
   ACCOUNTS      ACCOUNTS[]
   ORG_UNIT      ORG_UNITS?    @relation(fields: [UNIT_ID], references: [ORG_UNIT_ID])
   EMPLOYEE_VTS  EMPLOYEE_VT[]
   IPS           IPS[]
-  POSITIONS     POSITIONS[]
+  POSITION      POSITIONS?    @relation(fields: [POSITION_ID], references: [POSITION_ID])
 
   @@map("EMPLOYEES")
 }

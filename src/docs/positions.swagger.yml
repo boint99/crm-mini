@@ -166,9 +166,6 @@ components:
         STATUS:
           type: string
           enum: [ENABLE, DISABLED]
-        EMPLOYEE_ID:
-          type: integer
-          nullable: true
         CREATED_AT:
           type: string
           format: date-time
@@ -218,10 +215,6 @@ components:
           type: string
           enum: [ENABLE, DISABLED]
           example: ENABLE
-        EMPLOYEE_ID:
-          type: integer
-          nullable: true
-          example: 1
 
     PositionUpdateInput:
       type: object
@@ -241,7 +234,3 @@ components:
           type: string
           enum: [ENABLE, DISABLED]
           example: DISABLED
-        EMPLOYEE_ID:
-          type: integer
-          nullable: true
-          example: 2
