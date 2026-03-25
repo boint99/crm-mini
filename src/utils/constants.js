@@ -2,6 +2,11 @@ import ApiError from './ApiError.js'
 
 export const ALLOWED_STATUS = ['ENABLE', 'DISABLED']
 
+export const ALLOWED_EMAIL_DOMAINS = [
+  // 'company.com',
+  // 'gmail.com'
+]
+
 export const WHITELIST_DOMAINS = [
   // 'http://192.168.1.234:3000',
   // 'http://192.168.1.234:3001'

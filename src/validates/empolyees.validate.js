@@ -1,5 +1,5 @@
 
-import { ALLOWED_STATUS } from '../utils/constants.js'
+import { ALLOWED_EMAIL_DOMAINS, ALLOWED_STATUS } from '../utils/constants.js'
 import ValidateCore from '../core/validate.core.js'
 
 class EmployeesValidate extends ValidateCore {
@@ -7,12 +7,25 @@ class EmployeesValidate extends ValidateCore {
   static create(req, res, next) {
     try {
       const data = req.body
-      console.log('🚀 ~ EmployeesValidate ~ create ~ data:', data)
-      EmployeesValidate.validateStringLength(data.EMPLOYEE_CODE, 3, 'EMPLOYEE_CODE is required!')
+      EmployeesValidate.validateStringLength(
+        data.EMPLOYEE_CODE, 6,
+        'Employee code must be 6 characters or more!'
+      )
+
       EmployeesValidate.validateEnum(data.STATUS, ALLOWED_STATUS)
+
       if (data.POSITION_ID !== undefined && data.POSITION_ID !== null) {
-        EmployeesValidate.validateId(data.POSITION_ID, 'POSITION_ID is invalid!.')
+        EmployeesValidate.validateId(data.POSITION_ID, 'Position ID is invalid!.')
       }
+
+      if (data.EMAIL) {
+        EmployeesValidate.validateEmail(data.EMAIL, 'Email is invalid!.')
+        EmployeesValidate.validateEmailDomain(
+          data.EMAIL, ALLOWED_EMAIL_DOMAINS,
+          'Email domain is not allowed!.'
+        )
+      }
+
       next()
     } catch (error) {
       next(error)
@@ -23,16 +36,20 @@ class EmployeesValidate extends ValidateCore {
   static update(req, res, next) {
     try {
       const data = req.body
-      EmployeesValidate.validateId(data.EMPLOYEE_ID, 'EMPLOYEE_ID is required!.')
+      EmployeesValidate.validateId(data.EMPLOYEE_ID, 'Employee ID is required!.')
 
       if (data.EMPLOYEE_CODE !== undefined) {
-        EmployeesValidate.validateStringLength(data.EMPLOYEE_CODE, 3, 'EMPLOYEE_CODE must be 3 characters or more!')
+        EmployeesValidate.validateStringLength(data.EMPLOYEE_CODE, 6, 'Employee code must be 6 characters or more!')
       }
       if (data.STATUS !== undefined) {
         EmployeesValidate.validateEnum(data.STATUS, ALLOWED_STATUS)
       }
       if (data.POSITION_ID !== undefined && data.POSITION_ID !== null) {
-        EmployeesValidate.validateId(data.POSITION_ID, 'POSITION_ID is invalid!.')
+        EmployeesValidate.validateId(data.POSITION_ID, 'Position ID is invalid!.')
+      }
+      if (data.EMAIL) {
+        EmployeesValidate.validateEmail(data.EMAIL, 'Email is invalid!.')
+        EmployeesValidate.validateEmailDomain(data.EMAIL, ALLOWED_EMAIL_DOMAINS, 'Email domain is not allowed!.')
       }
 
       next()
@@ -45,7 +62,7 @@ class EmployeesValidate extends ValidateCore {
   static delete(req, res, next) {
     try {
       const { id } = req.params
-      EmployeesValidate.validateId(id, 'EMPLOYEE_ID is required!.')
+      EmployeesValidate.validateId(id, 'Employee ID is required!.')
 
       next()
     } catch (error) {

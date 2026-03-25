@@ -26,7 +26,7 @@ class ModelCore {
     )
   }s
 
-  async findByField(value, fieldName) {
+  async FindByField(value, fieldName) {
     return await this.model.findFirst({
       where: {
         [fieldName]: value
@@ -38,11 +38,11 @@ class ModelCore {
     return await this.model.create({ data })
   }
 
-  async Update(id, idField, data) {
+  async Update(id, idField, updateData) {
     return await this.model.update(
       {
         where: { [idField]: id },
-        data: data
+        data: updateData
       }
     )
   }

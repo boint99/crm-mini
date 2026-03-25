@@ -1,8 +1,10 @@
-import { ALLOWED_STATUS, CHECK_ENUM } from '../utils/constants.js'
+import { ALLOWED_EMAIL_DOMAINS, ALLOWED_STATUS, CHECK_ENUM } from '../utils/constants.js'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '../utils/ApiError.js'
 import { employeesModel } from '../models/employees.model.js'
 import { positionsModel } from '../models/postisions.model.js'
+import FkValidator from '../core/fk.validator.core.js'
+import ValidateCores from '../core/validate.core.js'
 
 class EmployeesServices {
   /**
@@ -11,25 +13,34 @@ class EmployeesServices {
   async create(data) {
     // 1. Check required fields
     if (!data.EMPLOYEE_CODE || !data.EMPLOYEE_CODE.trim()) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'The name cannot be left blank!')
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'The employee code cannot be left blank!')
+    }
+    // check employee code length must be 6 characters
+    if (data.EMPLOYEE_CODE.trim().length !== 6) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Employee code must be 6 characters!')
     }
 
-    // // 2. Check existence
-    const isExisted = await employeesModel.findByName(data.EMPLOYEE_CODE.trim())
+    // chekc email syntax
+    if (data.EMAIL) {
+      ValidateCores.validateEmail(data.EMAIL)
+      ValidateCores.validateEmailDomain(data.EMAIL, ALLOWED_EMAIL_DOMAINS)
+    }
 
+    // 2. Check existence
+    const isExisted = await employeesModel.findByName(data.EMPLOYEE_CODE.trim())
     if (isExisted) {
-      throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken!')
+      throw new ApiError(StatusCodes.CONFLICT, 'This employee code is already taken!')
     }
 
     // 3. Check status enum
     CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
 
-    if (data.POSITION_ID !== undefined && data.POSITION_ID !== null) {
-      const position = await positionsModel.findById(Number(data.POSITION_ID))
-      if (!position) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'Position is not found!')
-      }
-    }
+    // 4. FK checks
+    await FkValidator.validate(data.POSITION_ID, positionsModel, 'POSITION_ID', 'Position ID is invalid!')
+
+    await FkValidator.validate(data.VT_CODE, positionsModel, 'VT_CODE', 'VT Code is invalid!')
+
+    await FkValidator.validate(data.UNIT_ID, positionsModel, 'UNIT_ID', 'Unit ID is invalid!')
 
     return await employeesModel.create(data)
   }
@@ -50,13 +61,13 @@ class EmployeesServices {
     if (payload.EMPLOYEE_CODE) {
       const trimmedCode = payload.EMPLOYEE_CODE.trim()
       if (!trimmedCode) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'The Employee code cannot be left blank!')
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'The employee code cannot be left blank!')
       }
 
       const isExisted = await employeesModel.findByName(trimmedCode)
 
       if (isExisted && isExisted.EMPLOYEE_ID !== EMPLOYEE_ID) {
-        throw new ApiError(StatusCodes.CONFLICT, 'This code is already taken by another Employee!')
+        throw new ApiError(StatusCodes.CONFLICT, 'This employee code is already taken by another employee!')
       }
       payload.EMPLOYEE_CODE = trimmedCode
     }
@@ -64,12 +75,8 @@ class EmployeesServices {
     // 3. Check status enum
     CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, `Invalid status. Allowed values: ${ALLOWED_STATUS.join(', ')}`)
 
-    if (payload.POSITION_ID !== undefined && payload.POSITION_ID !== null) {
-      const position = await positionsModel.findById(Number(payload.POSITION_ID))
-      if (!position) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'Position is not found!')
-      }
-    }
+    // FK checks
+    await FkValidator.validate(payload.POSITION_ID, positionsModel, 'Position ID')
 
     return await employeesModel.updateById(EMPLOYEE_ID, payload)
   }

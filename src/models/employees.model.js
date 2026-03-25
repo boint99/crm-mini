@@ -2,7 +2,7 @@ import BaseModel from '../core/model.core.js'
 
 class EmployeesModel extends BaseModel {
   constructor() {
-    super('eMPLOYEES', 'EMPLOYEE_CODE', 'FIRST_NAME', 'LAST_NAME', 'EMAIL', 'PHONE')
+    super('eMPLOYEES', 'EMPLOYEE_CODE', 'FIRST_NAME', 'LAST_NAME', 'EMAIL', 'PHONE', 'BIRTH_DATE', 'POSITION_ID')
   }
 
   async lists() {
@@ -11,26 +11,27 @@ class EmployeesModel extends BaseModel {
 
   async create(data) {
     return await super.Create({
-      data: {
-        EMPLOYEE_CODE: data.EMPLOYEE_CODE,
-        FIRST_NAME: data.FIRST_NAME,
-        LAST_NAME: data.LAST_NAME,
-        EMAIL: data.EMAIL,
-        PHONE: data.PHONE,
-        BIRTH_DATE: data.BIRTH_DATE,
-        POSITION_ID: data.POSITION_ID
-      }
+      EMPLOYEE_CODE: data.EMPLOYEE_CODE,
+      FIRST_NAME: data.FIRST_NAME,
+      LAST_NAME: data.LAST_NAME,
+      EMAIL: data.EMAIL ? data.EMAIL.toLowerCase() : null,
+      PHONE: data.PHONE,
+      BIRTH_DATE: data.BIRTH_DATE
+        ? new Date(data.BIRTH_DATE)
+        : null,
+      POSITION_ID: data.POSITION_ID
     })
   }
 
   async findByName(name) {
-    return await super.findFirst({
-      where: { EMPLOYEE_CODE: name }
-    })
+    return await super.FindByField(name, 'EMPLOYEE_CODE')
   }
 
   async updateById(id, updateData) {
-    return await super.UpdateById(id, updateData, 'EMPLOYEE_ID')
+    if (updateData.EMAIL) {
+      updateData.EMAIL = updateData.EMAIL.toLowerCase()
+    }
+    return await super.Update(id, 'EMPLOYEE_ID', updateData)
   }
 
   async findById(id) {
