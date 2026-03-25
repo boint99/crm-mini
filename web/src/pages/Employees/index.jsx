@@ -1,72 +1,279 @@
-import { employeesAPI } from '@/api/employeesAPI'
-import { useMemo, useState } from 'react'
-import AddEmployeeModal from '@/pages/Employees/AddEmployeeModal'
+import LoadingItem from "@/components/ui/LoadingItem";
+import { dispatchWithToast } from "@/components/ui/dispatchWithToast";
+import { useAppDispatch } from "@/hook/useAppDispatch";
+import AddEmployeeModal from "@/pages/Employees/Action/EmployeeModel";
+import {
+  createEmployee,
+  deleteEmployee,
+  getEmployees,
+  selectEmployees,
+  selectLoading,
+  updateEmployee,
+} from "@/redux/slice/employeesSlice";
+import { formatDateTime } from "@/utils/contants";
+import { employeeMessages } from "@/utils/employeeMessages";
+import { Pencil, Plus, Search, Trash2, Users } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 function Employees() {
-  const [openAdd, setOpenAdd] = useState(false)
-  const [query, setQuery] = useState('')
-  const [rows, setRows] = useState(employeesAPI)
+  const [openAdd, setOpenAdd] = useState(false);
+  const [query, setQuery] = useState("");
+  const [mode, setMode] = useState("create");
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+
+  const dispatchAsync = useAppDispatch();
+  const dispatch = useDispatch();
+  const employees = useSelector(selectEmployees);
+  const loading = useSelector(selectLoading);
+
+  useEffect(() => {
+    dispatchAsync(getEmployees());
+  }, []);
 
   const filteredRows = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return rows
-    return rows.filter((e) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return employees;
+    return employees.filter((employee) => {
       const hay = [
-        e.EMPLOYEE_CODE,
-        e.FIRST_NAME,
-        e.LAST_NAME,
-        e.EMAIL,
-        e.PHONE,
+        employee.EMPLOYEE_ID,
+        employee.EMPLOYEE_CODE,
+        employee.FIRST_NAME,
+        employee.LAST_NAME,
+        employee.EMAIL,
+        employee.PHONE,
+        employee.STATUS,
       ]
         .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
-      return hay.includes(q)
-    })
-  }, [query, rows])
+        .join(" ")
+        .toLowerCase();
+      return hay.includes(q);
+    });
+  }, [employees, query]);
 
-  const handleCreate = (payload) => {
-    const maxId = rows.reduce((m, r) => Math.max(m, Number(r.EMPLOYEE_ID) || 0), 0)
-    const next = {
-      EMPLOYEE_ID: maxId + 1,
-      ...payload,
+  const totalEmployees = employees.length;
+  const activeEmployees = employees.filter(
+    (employee) => employee.STATUS === "ENABLE",
+  ).length;
+
+  const openCreateModal = () => {
+    setMode("create");
+    setSelectedEmployee(null);
+    setOpenAdd(true);
+  };
+
+  const openEditModal = (employee) => {
+    setMode("edit");
+    setSelectedEmployee(employee);
+    setOpenAdd(true);
+  };
+
+  const openDeleteModal = (employee) => {
+    setMode("delete");
+    setSelectedEmployee(employee);
+    setOpenAdd(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenAdd(false);
+    setSelectedEmployee(null);
+    setMode("create");
+  };
+
+  const handleSubmit = async (payload) => {
+    if (mode === "delete") {
+      await dispatchWithToast({
+        dispatch,
+        action: deleteEmployee,
+        payload,
+        messages: employeeMessages.delete,
+      });
+      handleCloseModal();
+      return;
     }
-    setRows((prev) => [next, ...prev])
-    setOpenAdd(false)
-  }
+
+    if (mode === "edit") {
+      await dispatchWithToast({
+        dispatch,
+        action: updateEmployee,
+        payload,
+        messages: employeeMessages.update,
+      });
+      handleCloseModal();
+      return;
+    }
+
+    await dispatchWithToast({
+      dispatch,
+      action: createEmployee,
+      payload,
+      messages: employeeMessages.create,
+    });
+    handleCloseModal();
+  };
+
+  const renderTableBody = () => {
+    if (loading) {
+      return (
+        <tbody>
+          <tr>
+            <td colSpan={12}>
+              <LoadingItem />
+            </td>
+          </tr>
+        </tbody>
+      );
+    }
+
+    if (!filteredRows.length) {
+      return (
+        <tbody>
+          <tr>
+            <td colSpan={12}>
+              <div className="flex h-40 flex-col items-center justify-center gap-2 text-gray-400">
+                <Users className="h-10 w-10" />
+                <p className="text-sm font-medium">
+                  Không có dữ liệu nhân viên
+                </p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      );
+    }
+
+    return (
+      <tbody className="divide-y divide-gray-200 bg-white">
+        {filteredRows.map((employee) => (
+          <tr key={employee.EMPLOYEE_ID} className="hover:bg-gray-50">
+            <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
+              {employee.EMPLOYEE_ID}
+            </td>
+            <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
+              {employee.EMPLOYEE_CODE}
+            </td>
+            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+              {employee.VT_CODE ?? "-"}
+            </td>
+            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+              {employee.FIRST_NAME || "-"}
+            </td>
+            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+              {employee.LAST_NAME || "-"}
+            </td>
+            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+              {employee.PHONE || "-"}
+            </td>
+            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+              {employee.EMAIL || "-"}
+            </td>
+            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+              {employee.BIRTH_DATE
+                ? formatDateTime(employee.BIRTH_DATE).split(" ")[0]
+                : "-"}
+            </td>
+            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+              {employee.UNIT_ID ?? "-"}
+            </td>
+            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+              {employee.POSITION_ID ?? "-"}
+            </td>
+            <td className="px-4 py-3 whitespace-nowrap">
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                  employee.STATUS === "ENABLE"
+                    ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
+                    : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
+                }`}
+              >
+                {employee.STATUS === "ENABLE" ? "Hoạt động" : "Ngưng hoạt động"}
+              </span>
+            </td>
+            <td className="px-4 py-3 text-right whitespace-nowrap">
+              <div className="flex items-center justify-end gap-1">
+                <button
+                  type="button"
+                  onClick={() => openEditModal(employee)}
+                  className="rounded-md p-2 text-indigo-600 transition hover:bg-indigo-50 cursor-pointer"
+                  title="Chỉnh sửa"
+                  aria-label={`Chỉnh sửa ${employee.EMPLOYEE_CODE}`}
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openDeleteModal(employee)}
+                  className="rounded-md p-2 text-rose-600 transition hover:bg-rose-50 cursor-pointer"
+                  title="Xóa"
+                  aria-label={`Xóa ${employee.EMPLOYEE_CODE}`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    );
+  };
 
   return (
-    <div >
+    <div>
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-gray-900">
             Quản lý nhân viên
           </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Dữ liệu hiển thị trực tiếp từ API nhân viên.
+          </p>
         </div>
         <button
           type="button"
-          onClick={() => setOpenAdd(true)}
+          onClick={openCreateModal}
           className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 cursor-pointer"
         >
-          + Thêm nhân viên
+          <Plus className="mr-2 h-4 w-4" />
+          Thêm
         </button>
+      </div>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-sm font-medium text-slate-500">Tổng nhân viên</p>
+          <p className="mt-3 text-3xl font-semibold text-slate-900">
+            {totalEmployees}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
+          <p className="text-sm font-medium text-emerald-700">Đang hoạt động</p>
+          <p className="mt-3 text-3xl font-semibold text-emerald-900">
+            {activeEmployees}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm sm:col-span-2 xl:col-span-1">
+          <p className="text-sm font-medium text-amber-700">Kết quả lọc</p>
+          <p className="mt-3 text-3xl font-semibold text-amber-900">
+            {filteredRows.length}
+          </p>
+        </div>
       </div>
 
       <div className="mt-6 rounded-lg border border-gray-200 bg-white shadow-sm">
         <div className="border-b border-gray-200 px-4 py-3 sm:px-6 flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-gray-900">Danh sách nhân viên</p>
+            <p className="text-lg font-medium text-gray-900">
+              Danh sách nhân viên
+            </p>
           </div>
-          <div className="flex items-center gap-2">
-            <label className='text-sm font-medium text-gray-900'>Tìm kiếm</label>
+          <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2">
+            <Search className="h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Tìm theo mã, tên, email..."
+              placeholder="Tìm theo mã, tên, email, điện thoại..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-64 border border-gray-300 rounded-lg px-3 py-2 text-sm
-           placeholder:text-gray-400
-           focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
+              className="w-72 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
             />
           </div>
         </div>
@@ -102,6 +309,9 @@ function Employees() {
                   Unit ID
                 </th>
                 <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
+                  Position ID
+                </th>
+                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
                   Trạng thái
                 </th>
                 <th className="px-4 py-2 text-right font-semibold text-gray-700 whitespace-nowrap">
@@ -109,75 +319,20 @@ function Employees() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
-              {filteredRows.map((emp) => (
-                <tr key={emp.EMPLOYEE_ID} className="hover:bg-gray-50">
-                  <td className="px-4 py-2 text-gray-700 whitespace-nowrap">
-                    {emp.EMPLOYEE_ID}
-                  </td>
-                  <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap">
-                    {emp.EMPLOYEE_CODE}
-                  </td>
-                  <td className="px-4 py-2 text-gray-700 whitespace-nowrap">
-                    {emp.VT_CODE ?? '-'}
-                  </td>
-                  <td className="px-4 py-2 text-gray-700 whitespace-nowrap">
-                    {emp.FIRST_NAME}
-                  </td>
-                  <td className="px-4 py-2 text-gray-700 whitespace-nowrap">
-                    {emp.LAST_NAME}
-                  </td>
-                  <td className="px-4 py-2 text-gray-700 whitespace-nowrap">
-                    {emp.PHONE || '-'}
-                  </td>
-                  <td className="px-4 py-2 text-gray-700 whitespace-nowrap">
-                    {emp.EMAIL || '-'}
-                  </td>
-                  <td className="px-4 py-2 text-gray-700 whitespace-nowrap">
-                    {emp.BIRTH_DATE}
-                  </td>
-                  <td className="px-4 py-2 text-gray-700 whitespace-nowrap">
-                    {emp.UNIT_ID ?? '-'}
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${emp.STATUS === 'ENABLE'
-                        ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20'
-                        : 'bg-gray-50 text-gray-700 ring-1 ring-gray-500/20'
-                        }`}
-                    >
-                      {emp.STATUS === 'ENABLE' ? 'Hoạt động' : emp.STATUS}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-right whitespace-nowrap space-x-2">
-                    <button
-                      type="button"
-                      className="px-2.5 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-md hover:bg-indigo-100 transition cursor-pointer"
-                    >
-                      Sửa
-                    </button>
-
-                    <button
-                      type="button"
-                      className="px-2.5 py-1 text-xs font-medium text-rose-600 bg-rose-50 rounded-md hover:bg-rose-100 transition cursor-pointer"
-                    >
-                      Xóa
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+            {renderTableBody()}
           </table>
         </div>
       </div>
 
       <AddEmployeeModal
         open={openAdd}
-        onClose={() => setOpenAdd(false)}
-        onSubmit={handleCreate}
+        onClose={handleCloseModal}
+        onSubmit={handleSubmit}
+        mode={mode}
+        initialValues={selectedEmployee}
       />
     </div>
-  )
+  );
 }
 
-export default Employees
+export default Employees;

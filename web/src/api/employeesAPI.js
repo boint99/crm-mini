@@ -1,62 +1,28 @@
-export const employeesAPI = [
-    {
-      EMPLOYEE_ID: 1,
-      EMPLOYEE_CODE: 'EMP001',
-      FIRST_NAME: 'Nguyễn',
-      LAST_NAME: 'Văn A',
-      PHONE: '0901234567',
-      EMAIL: 'a.nguyen@example.com',
-      BIRTH_DATE: '1990/01/01',
-      UNIT_ID: 1,
-      VT_CODE: 101,
-      STATUS: 'ENABLE',
+import { ROOT_DOMAIN } from "@/utils/contants";
+import axios from "axios";
+
+  export const employeesAPI = {
+    // GET list
+    getLists: async () => {
+      const res = await axios.get(`${ROOT_DOMAIN}/employees/lists`);
+      return res.data;
     },
-    {
-      EMPLOYEE_ID: 2,
-      EMPLOYEE_CODE: 'EMP002',
-      FIRST_NAME: 'Trần',
-      LAST_NAME: 'Thị B',
-      PHONE: '0902345678',
-      EMAIL: 'b.tran@example.com',
-      BIRTH_DATE: '1992/05/15',
-      UNIT_ID: 2,
-      VT_CODE: 102,
-      STATUS: 'ENABLE',
+
+    // CREATE
+    create: async (payload) => {
+      const res = await axios.post(`${ROOT_DOMAIN}/employees`, payload);
+      return res.data;
     },
-    {
-      EMPLOYEE_ID: 3,
-      EMPLOYEE_CODE: 'EMP002',
-      FIRST_NAME: 'Trần',
-      LAST_NAME: 'Thị B',
-      PHONE: '0902345678',
-      EMAIL: 'b.tran@example.com',
-      BIRTH_DATE: '1992/05/15',
-      UNIT_ID: 2,
-      VT_CODE: 102,
-      STATUS: 'ENABLE',
+
+    // UPDATE
+    update: async ( payload) => {
+      const res = await axios.put(`${ROOT_DOMAIN}/employees`, payload);
+      return res.data;
     },
-    {
-      EMPLOYEE_ID: 4,
-      EMPLOYEE_CODE: 'EMP002',
-      FIRST_NAME: 'Trần',
-      LAST_NAME: 'Thị B',
-      PHONE: '0902345678',
-      EMAIL: 'b.tran@example.com',
-      BIRTH_DATE: '1992/05/15',
-      UNIT_ID: 2,
-      VT_CODE: 102,
-      STATUS: 'ENABLE',
+
+    // DELETE
+    delete: async (payload) => {
+      const res = await axios.delete(`${ROOT_DOMAIN}/employees/${payload}`);
+      return res.data;
     },
-    {
-      EMPLOYEE_ID: 5,
-      EMPLOYEE_CODE: 'EMP002',
-      FIRST_NAME: 'Trần',
-      LAST_NAME: 'Thị B',
-      PHONE: '0902345678',
-      EMAIL: 'b.tran@example.com',
-      BIRTH_DATE: '1992/05/15',
-      UNIT_ID: 2,
-      VT_CODE: 102,
-      STATUS: 'ENABLE',
-    },
-  ]
+  };

@@ -1,5 +1,11 @@
 import { toast } from 'react-toastify'
 
+const resolveToastError = (data, fallback) => {
+  if (typeof data === 'string') return data
+  if (data?.message) return data.message
+  return fallback
+}
+
 export const dispatchWithToast = async ({
   dispatch,
   action,
@@ -20,7 +26,7 @@ export const dispatchWithToast = async ({
         success,
         error: {
           render({ data }) {
-            return data || error
+            return resolveToastError(data, error)
           }
         }
       }
