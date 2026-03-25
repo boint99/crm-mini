@@ -1,0 +1,326 @@
+paths:
+  # ========================
+  # EMPLOYEE APIs
+  # ========================
+  /api/employees/lists:
+    get:
+      summary: Get employee list
+      description: Retrieve list of all employees.
+      tags:
+        - Employees
+      responses:
+        200:
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeListResponse'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/employees:
+    post:
+      summary: Create employee
+      description: Create a new employee using request body data.
+      tags:
+        - Employees
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeCreateInput'
+      responses:
+        201:
+          description: Employee created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeCreateResponse'
+        400:
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        409:
+          description: Duplicate employee code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update employee
+      description: Update employee information. EMPLOYEE_ID is required in request body.
+      tags:
+        - Employees
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeUpdateInput'
+      responses:
+        200:
+          description: Employee updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+        400:
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Employee not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        409:
+          description: Duplicate employee code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/employees/{id}:
+    delete:
+      summary: Delete employee
+      description: Delete an employee by EMPLOYEE_ID passed as path parameter.
+      tags:
+        - Employees
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: EMPLOYEE_ID of the employee to delete
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Employee deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+        400:
+          description: Invalid employee id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Employee not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    # ========================
+    # Common Response
+    # ========================
+    BaseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Success
+        data:
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Invalid request
+
+    # ========================
+    # EMPLOYEE
+    # ========================
+    Employee:
+      type: object
+      properties:
+        EMPLOYEE_ID:
+          type: integer
+          example: 1
+        EMPLOYEE_CODE:
+          type: string
+          example: EMP001
+        FIRST_NAME:
+          type: string
+          example: John
+        LAST_NAME:
+          type: string
+          example: Doe
+        PHONE:
+          type: string
+          nullable: true
+          example: '0987654321'
+        EMAIL:
+          type: string
+          format: email
+          nullable: true
+          example: john.doe@company.com
+        BIRTH_DATE:
+          type: string
+          format: date
+          nullable: true
+          example: 1998-01-15
+        UNIT_ID:
+          type: integer
+          nullable: true
+          example: 2
+        VT_CODE:
+          type: integer
+          nullable: true
+          example: 1001
+        POSITION_ID:
+          type: integer
+          nullable: true
+          example: 3
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLED]
+          example: ENABLE
+        CREATED_AT:
+          type: string
+          format: date-time
+        UPDATED_AT:
+          type: string
+          format: date-time
+
+    EmployeeListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Employees fetched successfully.
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Employee'
+
+    EmployeeCreateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Employee created successfully.
+        data:
+          $ref: '#/components/schemas/Employee'
+
+    EmployeeCreateInput:
+      type: object
+      required:
+        - EMPLOYEE_CODE
+        - FIRST_NAME
+        - LAST_NAME
+      properties:
+        EMPLOYEE_CODE:
+          type: string
+          minLength: 6
+          maxLength: 6
+          example: EMP001
+        FIRST_NAME:
+          type: string
+          example: John
+        LAST_NAME:
+          type: string
+          example: Doe
+        PHONE:
+          type: string
+          example: '0987654321'
+        EMAIL:
+          type: string
+          format: email
+          example: john.doe@company.com
+        BIRTH_DATE:
+          type: string
+          format: date
+          example: 1998-01-15
+        UNIT_ID:
+          type: integer
+          nullable: true
+          example: 2
+        VT_CODE:
+          type: integer
+          nullable: true
+          example: 1001
+        POSITION_ID:
+          type: integer
+          nullable: true
+          example: 3
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLED]
+          example: ENABLE
+
+    EmployeeUpdateInput:
+      type: object
+      required:
+        - EMPLOYEE_ID
+      properties:
+        EMPLOYEE_ID:
+          type: integer
+          example: 1
+        EMPLOYEE_CODE:
+          type: string
+          minLength: 6
+          maxLength: 6
+          example: EMP002
+        FIRST_NAME:
+          type: string
+          example: Jane
+        LAST_NAME:
+          type: string
+          example: Smith
+        PHONE:
+          type: string
+          example: '0912345678'
+        EMAIL:
+          type: string
+          format: email
+          example: jane.smith@company.com
+        BIRTH_DATE:
+          type: string
+          format: date
+          example: 1997-06-20
+        UNIT_ID:
+          type: integer
+          nullable: true
+          example: 4
+        VT_CODE:
+          type: integer
+          nullable: true
+          example: 1002
+        POSITION_ID:
+          type: integer
+          nullable: true
+          example: 5
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLED]
+          example: DISABLED
