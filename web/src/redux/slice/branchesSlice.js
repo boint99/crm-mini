@@ -1,4 +1,5 @@
-import { employeesAPI } from "@/api/employeesAPI";
+
+import { branchesAPI } from "@/api/branchesAPI";
 import { CUSTOM_MESSAGES } from "@/utils/contants";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
@@ -7,11 +8,11 @@ const getErrorMessage = (error, fallback = "Có lỗi xảy ra") => {
 };
 
 // GET LIST
-export const getEmployees = createAsyncThunk(
-  "employees/getEmployees",
+export const getBranches = createAsyncThunk(
+  "branches/getBranches",
   async (_, { rejectWithValue }) => {
     try {
-      const data = await employeesAPI.getLists();
+      const data = await branchesAPI.getLists();
       return data.data || [];
     } catch (error) {
       return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.get.error));
@@ -20,11 +21,11 @@ export const getEmployees = createAsyncThunk(
 );
 
 // CREATE
-export const createEmployee = createAsyncThunk(
-  "employees/createEmployee",
+export const createBranch = createAsyncThunk(
+  "branches/createBranch",
   async (payload, { rejectWithValue }) => {
     try {
-      const data = await employeesAPI.create(payload);
+      const data = await branchesAPI.create(payload);
       return data.data;
     } catch (error) {
       return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.create.error));
@@ -33,11 +34,11 @@ export const createEmployee = createAsyncThunk(
 );
 
 // UPDATE
-export const updateEmployee = createAsyncThunk(
-  "employees/updateEmployee",
+export const updateBranch = createAsyncThunk(
+  "branches/updateBranch",
   async (payload , { rejectWithValue }) => {
     try {
-      await employeesAPI.update(payload);
+      await branchesAPI.update(payload);
       return payload;
     } catch (error) {
       return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.update.error));
@@ -46,11 +47,11 @@ export const updateEmployee = createAsyncThunk(
 );
 
 // DELETE
-export const deleteEmployee = createAsyncThunk(
-  "employees/deleteEmployee",
+export const deleteBranch = createAsyncThunk(
+  "branches/deleteBranch",
   async (id, { rejectWithValue }) => {
     try {
-      await employeesAPI.delete(id);
+      await branchesAPI.delete(id);
       return id;
     } catch (error) {
       return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.delete.error));
@@ -65,46 +66,46 @@ const initialState = {
   message: null,
 };
 
-const employeesSlice = createSlice({
-  name: "employees",
+const branchesSlice = createSlice({
+  name: "branches",
   initialState,
   reducers: {},
 
   extraReducers: (builder) => {
     builder
       // GET
-      .addCase(getEmployees.pending, (state) => {
+      .addCase(getBranches.pending, (state) => {
         state.loading = true;
         state.error = null;
         state.message = CUSTOM_MESSAGES.get.pending;
       })
-      .addCase(getEmployees.fulfilled, (state, action) => {
+      .addCase(getBranches.fulfilled, (state, action) => {
         state.loading = false;
         state.items = action.payload;
         state.message = CUSTOM_MESSAGES.get.success;
       })
-      .addCase(getEmployees.rejected, (state, action) => {
+      .addCase(getBranches.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.message = action.payload || CUSTOM_MESSAGES.get.error;
       })
 
       // CREATE
-      .addCase(createEmployee.fulfilled, (state, action) => {
+      .addCase(createBranch.fulfilled, (state, action) => {
         if (action.payload) {
           state.items.unshift(action.payload);
         }
         state.message = CUSTOM_MESSAGES.create.success;
       })
-      .addCase(createEmployee.rejected, (state, action) => {
+      .addCase(createBranch.rejected, (state, action) => {
         state.error = action.payload;
         state.message = action.payload || CUSTOM_MESSAGES.create.error;
       })
 
       // UPDATE
-      .addCase(updateEmployee.fulfilled, (state, action) => {
+      .addCase(updateBranch.fulfilled, (state, action) => {
         const index = state.items.findIndex(
-          (item) => item.EMPLOYEE_ID === action.payload.EMPLOYEE_ID
+          (item) => item.BRANCH_ID === action.payload.BRANCH_ID
         );
         if (index !== -1) {
           state.items[index] = {
@@ -114,27 +115,27 @@ const employeesSlice = createSlice({
         }
         state.message = CUSTOM_MESSAGES.update.success;
       })
-      .addCase(updateEmployee.rejected, (state, action) => {
+      .addCase(updateBranch.rejected, (state, action) => {
         state.error = action.payload;
         state.message = action.payload || CUSTOM_MESSAGES.update.error;
       })
 
       // DELETE
-      .addCase(deleteEmployee.fulfilled, (state, action) => {
+      .addCase(deleteBranch.fulfilled, (state, action) => {
           state.items = state.items.filter(
-          (item) => Number(item.EMPLOYEE_ID) !== Number(action.payload)
+          (item) => Number(item.BRANCH_ID) !== Number(action.payload)
         );
         state.message = CUSTOM_MESSAGES.delete.success;
       })
-      .addCase(deleteEmployee.rejected, (state, action) => {
+      .addCase(deleteBranch.rejected, (state, action) => {
         state.error = action.payload;
         state.message = action.payload || CUSTOM_MESSAGES.delete.error;
       });
   },
 });
 
-export const selectEmployees = (state) => state.employees.items || [];
-export const selectLoading = (state) => state.employees.loading || false;
-export const selectEmployeeMessage = (state) => state.employees.message || "";
+export const selectBranches = (state) => state.branches.items || [];
+export const selectLoading = (state) => state.branches.loading || false;
+export const selectBranchMessage = (state) => state.branches.message || "";
 
-export default employeesSlice.reducer;
+export default branchesSlice.reducer;

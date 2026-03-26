@@ -5,11 +5,12 @@ import NotFound from "@/pages/NotFound";
 import Loading from "@/components/ui/Loading";
 
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
-const Employees = lazy(() => import("@/pages/Employees"));
-const Organization = lazy(() => import('@/pages/Organization'))
+const Employees = lazy(() => import("@/pages/Organization/Employees"));
+const Organization = lazy(() => import("@/pages/Organization"));
 const Companies = lazy(() => import("@/pages/Organization/Companies"));
 const Divisions = lazy(() => import("@/pages/Organization/Divisions"));
 const Positions = lazy(() => import("@/pages/Organization/Positions"));
+const Branches = lazy(() => import("@/pages/Organization/Branches"));
 
 const Login = lazy(() => import("@/pages/Auth/Login"));
 const Register = lazy(() => import("@/pages/Auth/Register"));
@@ -69,6 +70,14 @@ const routes = [
             element: (
               <WithSpinner>
                 <Employees />
+              </WithSpinner>
+            ),
+          },
+          {
+            path: "branches",
+            element: (
+              <WithSpinner>
+                <Branches />
               </WithSpinner>
             ),
           },

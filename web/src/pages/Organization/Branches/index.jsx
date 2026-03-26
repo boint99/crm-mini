@@ -1,82 +1,79 @@
 import LoadingItem from "@/components/ui/LoadingItem";
 import { dispatchWithToast } from "@/components/ui/dispatchWithToast";
 import { useAppDispatch } from "@/hook/useAppDispatch";
-import AddEmployeeModal from "@/pages/Employees/Action/EmployeeModel";
+import BranchModel from "@/pages/Organization/Branches/action/BranchModel";
 import {
-  createEmployee,
-  deleteEmployee,
-  getEmployees,
-  selectEmployees,
+  createBranch,
+  deleteBranch,
+  getBranches,
+  selectBranches,
   selectLoading,
-  updateEmployee,
-} from "@/redux/slice/employeesSlice";
-import { formatDateTime } from "@/utils/contants";
-import { employeeMessages } from "@/utils/employeeMessages";
-import { Pencil, Plus, Search, Trash2, Users } from "lucide-react";
+  updateBranch,
+} from "@/redux/slice/branchesSlice";
+import { formatDateTime, CUSTOM_MESSAGES } from "@/utils/contants";
+import { Building2, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-function Employees() {
-  const [openAdd, setOpenAdd] = useState(false);
+function Branches() {
+  const [openModal, setOpenModal] = useState(false);
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState("create");
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [selectedBranch, setSelectedBranch] = useState(null);
 
   const dispatchAsync = useAppDispatch();
   const dispatch = useDispatch();
-  const employees = useSelector(selectEmployees);
+  const branches = useSelector(selectBranches);
   const loading = useSelector(selectLoading);
 
   useEffect(() => {
-    dispatchAsync(getEmployees());
+    dispatchAsync(getBranches());
   }, []);
 
   const filteredRows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return employees;
-    return employees.filter((employee) => {
+    if (!q) return branches;
+    return branches.filter((branch) => {
       const hay = [
-        employee.EMPLOYEE_ID,
-        employee.EMPLOYEE_CODE,
-        employee.FIRST_NAME,
-        employee.LAST_NAME,
-        employee.EMAIL,
-        employee.PHONE,
-        employee.STATUS,
+        branch.BRANCH_ID,
+        branch.BRANCH_NAME,
+        branch.BRANCH_CODE,
+        branch.LOCATION,
+        branch.STATUS,
       ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
       return hay.includes(q);
     });
-  }, [employees, query]);
+  }, [branches, query]);
 
-  const totalEmployees = employees.length;
-  const activeEmployees = employees.filter(
-    (employee) => employee.STATUS === "ENABLE",
+  const totalBranches = branches.length;
+  const activeBranches = branches.filter(
+    (branch) => branch.STATUS === "ENABLE",
   ).length;
 
   const openCreateModal = () => {
     setMode("create");
-    setSelectedEmployee(null);
-    setOpenAdd(true);
+    setSelectedBranch(null);
+    setOpenModal(true);
   };
 
-  const openEditModal = (employee) => {
+  const openEditModal = (branch) => {
     setMode("edit");
-    setSelectedEmployee(employee);
-    setOpenAdd(true);
+    setSelectedBranch(branch);
+    setOpenModal(true);
   };
 
-  const openDeleteModal = (employee) => {
+  const openDeleteModal = (branch) => {
     setMode("delete");
-    setSelectedEmployee(employee);
-    setOpenAdd(true);
+    setSelectedBranch(branch);
+    setOpenModal(true);
   };
 
   const handleCloseModal = () => {
-    setOpenAdd(false);
-    setSelectedEmployee(null);
+    setOpenModal(false);
+    setSelectedBranch(null);
     setMode("create");
   };
 
@@ -84,9 +81,9 @@ function Employees() {
     if (mode === "delete") {
       await dispatchWithToast({
         dispatch,
-        action: deleteEmployee,
+        action: deleteBranch,
         payload,
-        messages: employeeMessages.delete,
+        messages: CUSTOM_MESSAGES.delete,
       });
       handleCloseModal();
       return;
@@ -95,9 +92,9 @@ function Employees() {
     if (mode === "edit") {
       await dispatchWithToast({
         dispatch,
-        action: updateEmployee,
+        action: updateBranch,
         payload,
-        messages: employeeMessages.update,
+        messages: CUSTOM_MESSAGES.update,
       });
       handleCloseModal();
       return;
@@ -105,9 +102,9 @@ function Employees() {
 
     await dispatchWithToast({
       dispatch,
-      action: createEmployee,
+      action: createBranch,
       payload,
-      messages: employeeMessages.create,
+      messages: CUSTOM_MESSAGES.create,
     });
     handleCloseModal();
   };
@@ -117,7 +114,7 @@ function Employees() {
       return (
         <tbody>
           <tr>
-            <td colSpan={12}>
+            <td colSpan={8}>
               <LoadingItem />
             </td>
           </tr>
@@ -129,11 +126,11 @@ function Employees() {
       return (
         <tbody>
           <tr>
-            <td colSpan={12}>
+            <td colSpan={8}>
               <div className="flex h-40 flex-col items-center justify-center gap-2 text-gray-400">
-                <Users className="h-10 w-10" />
+                <Building2 className="h-10 w-10" />
                 <p className="text-sm font-medium">
-                  Không có dữ liệu nhân viên
+                  Không có dữ liệu chi nhánh
                 </p>
               </div>
             </td>
@@ -144,68 +141,54 @@ function Employees() {
 
     return (
       <tbody className="divide-y divide-gray-200 bg-white">
-        {filteredRows.map((employee) => (
-          <tr key={employee.EMPLOYEE_ID} className="hover:bg-gray-50">
+        {filteredRows.map((branch) => (
+          <tr key={branch.BRANCH_ID} className="hover:bg-gray-50">
             <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
-              {employee.EMPLOYEE_ID}
+              {branch.BRANCH_ID}
             </td>
-            <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
-              {employee.EMPLOYEE_CODE}
-            </td>
-            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {employee.VT_CODE ?? "-"}
+            <td className="px-4 py-3 text-gray-900 font-medium whitespace-nowrap">
+              {branch.BRANCH_NAME || "-"}
             </td>
             <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {employee.FIRST_NAME || "-"}
+              {branch.BRANCH_CODE || "-"}
             </td>
             <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {employee.LAST_NAME || "-"}
+              {branch.LOCATION || "-"}
             </td>
             <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {employee.PHONE || "-"}
-            </td>
-            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {employee.EMAIL || "-"}
-            </td>
-            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {employee.BIRTH_DATE
-                ? formatDateTime(employee.BIRTH_DATE).split(" ")[0]
-                : "-"}
-            </td>
-            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {employee.UNIT_ID ?? "-"}
-            </td>
-            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {employee.POSITION_ID ?? "-"}
+              {branch.ORG_UNIT_ID ?? "-"}
             </td>
             <td className="px-4 py-3 whitespace-nowrap">
               <span
                 className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                  employee.STATUS === "ENABLE"
+                  branch.STATUS === "ENABLE"
                     ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
                     : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
                 }`}
               >
-                {employee.STATUS === "ENABLE" ? "Hoạt động" : "Ngưng hoạt động"}
+                {branch.STATUS === "ENABLE" ? "Hoạt động" : "Ngưng hoạt động"}
               </span>
+            </td>
+            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+              {branch.CREATED_AT ? formatDateTime(branch.CREATED_AT) : "-"}
             </td>
             <td className="px-4 py-3 text-right whitespace-nowrap">
               <div className="flex items-center justify-end gap-1">
                 <button
                   type="button"
-                  onClick={() => openEditModal(employee)}
+                  onClick={() => openEditModal(branch)}
                   className="rounded-md p-2 text-indigo-600 transition hover:bg-indigo-50 cursor-pointer"
                   title="Chỉnh sửa"
-                  aria-label={`Chỉnh sửa ${employee.EMPLOYEE_CODE}`}
+                  aria-label={`Chỉnh sửa ${branch.BRANCH_NAME}`}
                 >
                   <Pencil className="h-4 w-4" />
                 </button>
                 <button
                   type="button"
-                  onClick={() => openDeleteModal(employee)}
+                  onClick={() => openDeleteModal(branch)}
                   className="rounded-md p-2 text-rose-600 transition hover:bg-rose-50 cursor-pointer"
                   title="Xóa"
-                  aria-label={`Xóa ${employee.EMPLOYEE_CODE}`}
+                  aria-label={`Xóa ${branch.BRANCH_NAME}`}
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -222,10 +205,10 @@ function Employees() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-gray-900">
-            Quản lý nhân viên
+            Quản lý chi nhánh
           </h2>
           <p className="mt-1 text-sm text-gray-500">
-            Dữ liệu hiển thị trực tiếp từ API nhân viên.
+            Dữ liệu hiển thị tất cả chi nhánh.
           </p>
         </div>
         <button
@@ -240,15 +223,15 @@ function Employees() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Tổng nhân viên</p>
+          <p className="text-sm font-medium text-slate-500">Tổng chi nhánh</p>
           <p className="mt-3 text-3xl font-semibold text-slate-900">
-            {totalEmployees}
+            {totalBranches}
           </p>
         </div>
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
           <p className="text-sm font-medium text-emerald-700">Đang hoạt động</p>
           <p className="mt-3 text-3xl font-semibold text-emerald-900">
-            {activeEmployees}
+            {activeBranches}
           </p>
         </div>
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm sm:col-span-2 xl:col-span-1">
@@ -263,17 +246,17 @@ function Employees() {
         <div className="border-b border-gray-200 px-4 py-3 sm:px-6 flex items-center justify-between gap-4">
           <div>
             <p className="text-lg font-medium text-gray-900">
-              Danh sách nhân viên
+              Danh sách chi nhánh
             </p>
           </div>
           <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2">
             <Search className="h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Tìm theo mã, tên, email, điện thoại..."
+              placeholder="Tìm theo tên, địa điểm..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-72 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
+              className="w-64 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
             />
           </div>
         </div>
@@ -285,34 +268,22 @@ function Employees() {
                   STT
                 </th>
                 <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  MaNV
+                  Tên chi nhánh
                 </th>
                 <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  MaVT
+                  Tên viết tắt
                 </th>
                 <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Họ
+                  Địa điểm
                 </th>
                 <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Tên
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Số điện thoại
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Email
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Ngày sinh
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Unit ID
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Position ID
+                  Mã đơn vị
                 </th>
                 <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
                   Trạng thái
+                </th>
+                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
+                  Ngày tạo
                 </th>
                 <th className="px-4 py-2 text-right font-semibold text-gray-700 whitespace-nowrap">
                   Thao tác
@@ -324,15 +295,15 @@ function Employees() {
         </div>
       </div>
 
-      <AddEmployeeModal
-        open={openAdd}
+      <BranchModel
+        open={openModal}
         onClose={handleCloseModal}
         onSubmit={handleSubmit}
         mode={mode}
-        initialValues={selectedEmployee}
+        initialValues={selectedBranch}
       />
     </div>
   );
 }
 
-export default Employees;
+export default Branches;

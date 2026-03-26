@@ -76,8 +76,9 @@ class EmployeesServices {
     CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, `Invalid status. Allowed values: ${ALLOWED_STATUS.join(', ')}`)
 
     // FK checks
-    await FkValidator.validate(payload.POSITION_ID, positionsModel, 'Position ID')
-
+    if (payload.POSITION_ID) {
+      await FkValidator.validate(payload.POSITION_ID, positionsModel, 'Position ID')
+    }
     return await employeesModel.updateById(EMPLOYEE_ID, payload)
   }
 

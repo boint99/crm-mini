@@ -158,8 +158,8 @@ function EmployeeModel({
                   "Bạn có chắc muốn xóa nhân viên này không?"
                 ) : (
                   <>
-                    Nhập thông tin theo dữ liệu API bảng{" "}
-                    <span className="font-mono text-[12px]">EMPLOYEES</span>.
+                    Nhập thông tin theo dữ liệu được cung cấp. Các trường có dấu
+                    * là bắt buộc.
                   </>
                 )}
               </p>
@@ -167,7 +167,7 @@ function EmployeeModel({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md p-2 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+              className="rounded-md p-2 text-gray-500 hover:bg-gray-50 hover:text-gray-700 cursor-pointer"
               aria-label="Đóng"
               title="Đóng"
             >
@@ -181,22 +181,28 @@ function EmployeeModel({
                 <p className="font-semibold">Thông tin sẽ bị xóa:</p>
                 <div className="mt-3 space-y-2">
                   <p>
-                    <span className="font-medium">Mã nhân viên:</span> {values.EMPLOYEE_CODE || "-"}
+                    <span className="font-medium">Mã nhân viên:</span>{" "}
+                    {values.EMPLOYEE_CODE || "-"}
                   </p>
                   <p>
-                    <span className="font-medium">Họ tên:</span> {[values.FIRST_NAME, values.LAST_NAME].filter(Boolean).join(" ") || "-"}
+                    <span className="font-medium">Họ tên:</span>{" "}
+                    {[values.FIRST_NAME, values.LAST_NAME]
+                      .filter(Boolean)
+                      .join(" ") || "-"}
                   </p>
                   <p>
-                    <span className="font-medium">Email:</span> {values.EMAIL || "-"}
+                    <span className="font-medium">Email:</span>{" "}
+                    {values.EMAIL || "-"}
                   </p>
                   <p>
-                    <span className="font-medium">Trạng thái:</span> {values.STATUS || "-"}
+                    <span className="font-medium">Trạng thái:</span>{" "}
+                    {values.STATUS || "-"}
                   </p>
                 </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Mã nhân viên (EMPLOYEE_CODE) *">
+                <Field label="Mã nhân viên (MaNV) *">
                   <input
                     value={values.EMPLOYEE_CODE}
                     onChange={setField("EMPLOYEE_CODE")}
@@ -228,11 +234,13 @@ function EmployeeModel({
                     <option value="DISABLED">DISABLED</option>
                   </select>
                   {touched.STATUS && errors.STATUS ? (
-                    <p className="mt-1 text-xs text-rose-600">{errors.STATUS}</p>
+                    <p className="mt-1 text-xs text-rose-600">
+                      {errors.STATUS}
+                    </p>
                   ) : null}
                 </Field>
 
-                <Field label="Họ (FIRST_NAME) *">
+                <Field label="Họ (First Name) *">
                   <input
                     value={values.FIRST_NAME}
                     onChange={setField("FIRST_NAME")}
@@ -247,7 +255,7 @@ function EmployeeModel({
                   ) : null}
                 </Field>
 
-                <Field label="Tên (LAST_NAME) *">
+                <Field label="Tên (Last Name) *">
                   <input
                     value={values.LAST_NAME}
                     onChange={setField("LAST_NAME")}
@@ -262,7 +270,7 @@ function EmployeeModel({
                   ) : null}
                 </Field>
 
-                <Field label="Ngày sinh (BIRTH_DATE)">
+                <Field label="Ngày sinh (Birth Date)">
                   <input
                     type="date"
                     value={values.BIRTH_DATE}
@@ -271,7 +279,7 @@ function EmployeeModel({
                   />
                 </Field>
 
-                <Field label="Số điện thoại (PHONE)">
+                <Field label="Số điện thoại (Phone)">
                   <input
                     value={values.PHONE}
                     onChange={setField("PHONE")}
@@ -280,7 +288,7 @@ function EmployeeModel({
                   />
                 </Field>
 
-                <Field label="Email (EMAIL)">
+                <Field label="Email (Email)">
                   <input
                     value={values.EMAIL}
                     onChange={setField("EMAIL")}
@@ -293,7 +301,7 @@ function EmployeeModel({
                   ) : null}
                 </Field>
 
-                <Field label="Unit ID (UNIT_ID)">
+                <Field label="Đơn vị (Unit)">
                   <input
                     inputMode="numeric"
                     value={values.UNIT_ID}
@@ -303,7 +311,7 @@ function EmployeeModel({
                   />
                 </Field>
 
-                <Field label="Mã vị trí (VT_CODE)">
+                <Field label="Chức vụ (Position)">
                   <input
                     inputMode="numeric"
                     value={values.VT_CODE}
@@ -313,7 +321,7 @@ function EmployeeModel({
                   />
                 </Field>
 
-                <Field label="Position ID (POSITION_ID)">
+                <Field label="Phòng ban (Department)">
                   <input
                     inputMode="numeric"
                     value={values.POSITION_ID}
@@ -329,7 +337,7 @@ function EmployeeModel({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
+                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50 cursor-pointer"
               >
                 Hủy
               </button>
@@ -341,7 +349,7 @@ function EmployeeModel({
                   isDelete
                     ? "bg-rose-600 hover:bg-rose-700"
                     : canSubmit
-                      ? "bg-primary hover:opacity-95"
+                      ? "bg-primary hover:opacity-95 cursor-pointer"
                       : "bg-gray-300 cursor-not-allowed",
                 ].join(" ")}
               >

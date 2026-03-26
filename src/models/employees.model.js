@@ -28,10 +28,17 @@ class EmployeesModel extends BaseModel {
   }
 
   async updateById(id, updateData) {
-    if (updateData.EMAIL) {
-      updateData.EMAIL = updateData.EMAIL.toLowerCase()
-    }
-    return await super.Update(id, 'EMPLOYEE_ID', updateData)
+    return await super.Update(id, 'EMPLOYEE_ID', {
+      EMPLOYEE_CODE: updateData.EMPLOYEE_CODE,
+      FIRST_NAME: updateData.FIRST_NAME,
+      LAST_NAME: updateData.LAST_NAME,
+      EMAIL: updateData.EMAIL ? updateData.EMAIL.toLowerCase() : null,
+      PHONE: updateData.PHONE,
+      BIRTH_DATE: updateData.BIRTH_DATE
+        ? new Date(updateData.BIRTH_DATE)
+        : null,
+      POSITION_ID: updateData.POSITION_ID
+    })
   }
 
   async findById(id) {

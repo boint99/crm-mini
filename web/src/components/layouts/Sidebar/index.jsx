@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef, useCallback } from 'react'
-import { createPortal } from 'react-dom'
-import { NavLink, useLocation } from 'react-router-dom'
+import { useEffect, useState, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -15,64 +15,65 @@ import {
   ChevronRight,
   Settings,
   LayoutGrid,
-} from 'lucide-react'
+} from "lucide-react";
 
 /* ─── Menu config ─────────────────────────────────────────── */
 const NAV_ITEMS = [
   {
-    id: 'dashboard',
-    label: 'Dashboard',
+    id: "dashboard",
+    label: "Dashboard",
     icon: LayoutDashboard,
-    path: '/',
+    path: "/",
   },
   {
-    id: 'organization',
-    label: 'Tổ chức',
+    id: "organization",
+    label: "Tổ chức",
     icon: Building,
     children: [
-      { label: 'Công ty', path: '/organization/companies' },
-      { label: 'Phòng ban', path: '/organization/divisions' },
-      { label: 'Chức vụ', path: '/organization/positions' },
-      { label: 'Nhân viên', icon: Users, path: '/organization/employees' },
+      { label: "Nhân viên", icon: Users, path: "/organization/employees" },
+      { label: "Chức vụ", path: "/organization/positions" },
+      { label: "Phòng ban", path: "/organization/divisions" },
+      { label: "Chi nhánh", path: "/organization/branches" },
+      { label: "Công ty", path: "/organization/companies" },
     ],
   },
   {
-    id: 'email',
-    label: 'Quản lý email',
+    id: "email",
+    label: "Quản lý email",
     icon: Mail,
-    path: '/email',
+    path: "/email",
   },
   {
-    id: 'ips',
-    label: 'IPs',
+    id: "ips",
+    label: "IPs",
     icon: Shield,
-    path: '/ips',
+    path: "/ips",
   },
   {
-    id: 'vlan',
-    label: 'VLAN',
+    id: "vlan",
+    label: "VLAN",
     icon: Network,
-    path: '/vlan',
+    path: "/vlan",
   },
   {
-    id: 'os',
-    label: 'Nhân viên OS',
+    id: "os",
+    label: "Nhân viên OS",
     icon: BriefcaseBusiness,
-    path: '/os',
+    path: "/os",
   },
   {
-    id: 'accounts',
-    label: 'Tài khoản',
+    id: "accounts",
+    label: "Tài khoản",
     icon: KeyRound,
-    path: '/accounts',
+    path: "/accounts",
   },
   {
-    id: 'devices',
-    label: 'Tài khoản & thiết bị',
+    id: "devices",
+    label: "Tài khoản & thiết bị",
     icon: MonitorSmartphone,
-    path: '/devices',
+    path: "/devices",
   },
-]
+];
 
 /* ─── Sub‑components ──────────────────────────────────────── */
 
@@ -80,15 +81,15 @@ function NavIcon({ Icon, active, collapsed }) {
   return (
     <span
       className={[
-        'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-all duration-150',
+        "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-all duration-150",
         active
-          ? 'bg-primary text-white shadow-md shadow-indigo-200'
-          : 'text-slate-500 group-hover:bg-slate-100 group-hover:text-slate-700',
-      ].join(' ')}
+          ? "bg-primary text-white shadow-md shadow-indigo-200"
+          : "text-slate-500 group-hover:bg-slate-100 group-hover:text-slate-700",
+      ].join(" ")}
     >
       <Icon size={16} strokeWidth={2} />
     </span>
-  )
+  );
 }
 
 /* Tooltip đơn giản — dùng cho item không có submenu */
@@ -101,37 +102,37 @@ function Tooltip({ label, children }) {
         <span className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800" />
       </div>
     </div>
-  )
+  );
 }
 
 /* Portal Flyout — render ra document.body để thoát overflow:hidden của aside */
 function FlyoutPortal({ anchorRef, item, onClose }) {
-  const [pos, setPos] = useState({ top: 0, left: 0 })
+  const [pos, setPos] = useState({ top: 0, left: 0 });
 
   useEffect(() => {
     function updatePos() {
-      if (!anchorRef.current) return
-      const rect = anchorRef.current.getBoundingClientRect()
-      setPos({ top: rect.top, left: rect.right + 8 })
+      if (!anchorRef.current) return;
+      const rect = anchorRef.current.getBoundingClientRect();
+      setPos({ top: rect.top, left: rect.right + 8 });
     }
-    updatePos()
-  }, [anchorRef])
+    updatePos();
+  }, [anchorRef]);
 
   useEffect(() => {
     function handler(e) {
-      const flyout = document.getElementById('sidebar-flyout')
-      if (anchorRef.current?.contains(e.target)) return
-      if (flyout?.contains(e.target)) return
-      onClose()
+      const flyout = document.getElementById("sidebar-flyout");
+      if (anchorRef.current?.contains(e.target)) return;
+      if (flyout?.contains(e.target)) return;
+      onClose();
     }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [anchorRef, onClose])
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [anchorRef, onClose]);
 
   return createPortal(
     <div
       id="sidebar-flyout"
-      style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 9999 }}
+      style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999 }}
       className="w-48 rounded-xl border border-slate-200 bg-white py-1.5 shadow-2xl shadow-slate-300/60"
     >
       <p className="px-3 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
@@ -144,9 +145,11 @@ function FlyoutPortal({ anchorRef, item, onClose }) {
           onClick={onClose}
           className={({ isActive }) =>
             [
-              'flex items-center gap-2 rounded-lg mx-1.5 px-2.5 py-1.5 text-sm transition-colors',
-              isActive ? 'bg-primary text-white font-medium' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
-            ].join(' ')
+              "flex items-center gap-2 rounded-lg mx-1.5 px-2.5 py-1.5 text-sm transition-colors",
+              isActive
+                ? "bg-primary text-white font-medium"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+            ].join(" ")
           }
         >
           <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
@@ -154,56 +157,59 @@ function FlyoutPortal({ anchorRef, item, onClose }) {
         </NavLink>
       ))}
     </div>,
-    document.body
-  )
+    document.body,
+  );
 }
 
 /* ─── Sidebar ─────────────────────────────────────────────── */
 export default function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false)
-  const [openId, setOpenId] = useState(null)
-  const location = useLocation()
+  const [collapsed, setCollapsed] = useState(false);
+  const [openId, setOpenId] = useState(null);
+  const location = useLocation();
 
   // Map item.id -> ref của button
-  const anchorRefs = useRef({})
+  const anchorRefs = useRef({});
   const getAnchorRef = (id) => {
-    if (!anchorRefs.current[id]) anchorRefs.current[id] = { current: null }
-    return anchorRefs.current[id]
-  }
+    if (!anchorRefs.current[id]) anchorRefs.current[id] = { current: null };
+    return anchorRefs.current[id];
+  };
 
   /* Tự mở submenu khi route khớp */
   useEffect(() => {
-    const parent = NAV_ITEMS.find(
-      (it) => it.children?.some((c) => location.pathname.startsWith(c.path))
-    )?.id ?? null
-    if (parent) setOpenId(parent)
-  }, [location.pathname])
+    const parent =
+      NAV_ITEMS.find((it) =>
+        it.children?.some((c) => location.pathname.startsWith(c.path)),
+      )?.id ?? null;
+    if (parent) setOpenId(parent);
+  }, [location.pathname]);
 
   /* Đóng flyout khi sidebar mở rộng lại */
   useEffect(() => {
-    if (!collapsed) setOpenId(null)
-  }, [collapsed])
+    if (!collapsed) setOpenId(null);
+  }, [collapsed]);
 
   const toggleMenu = useCallback((id) => {
-    setOpenId((prev) => (prev === id ? null : id))
-  }, [])
+    setOpenId((prev) => (prev === id ? null : id));
+  }, []);
 
-  const closeMenu = useCallback(() => setOpenId(null), [])
+  const closeMenu = useCallback(() => setOpenId(null), []);
 
   const isChildActive = (item) =>
-    item.children?.some((c) => location.pathname.startsWith(c.path)) ?? false
+    item.children?.some((c) => location.pathname.startsWith(c.path)) ?? false;
 
   /* Item mở flyout hiện tại */
-  const flyoutItem = collapsed ? NAV_ITEMS.find((it) => it.id === openId && it.children) : null
+  const flyoutItem = collapsed
+    ? NAV_ITEMS.find((it) => it.id === openId && it.children)
+    : null;
 
   return (
     <aside
       style={{ fontFamily: "'DM Sans', 'Segoe UI', sans-serif" }}
       className={[
-        'relative flex h-screen flex-col border-r border-slate-200 bg-white',
-        'transition-[width] duration-200 ease-in-out',
-        collapsed ? 'w-[68px]' : 'w-60',
-      ].join(' ')}
+        "relative flex h-screen flex-col border-r border-slate-200 bg-white",
+        "transition-[width] duration-200 ease-in-out",
+        collapsed ? "w-[68px]" : "w-60",
+      ].join(" ")}
     >
       {/* Portal flyout cho collapsed mode */}
       {flyoutItem && (
@@ -235,10 +241,10 @@ export default function Sidebar() {
 
         <ul className="space-y-0.5">
           {NAV_ITEMS.map((item) => {
-            const Icon = item.icon
-            const hasChildren = !!item.children
-            const childActive = isChildActive(item)
-            const isOpen = openId === item.id
+            const Icon = item.icon;
+            const hasChildren = !!item.children;
+            const childActive = isChildActive(item);
+            const isOpen = openId === item.id;
 
             /* ── Item có submenu ── */
             if (hasChildren) {
@@ -247,15 +253,23 @@ export default function Sidebar() {
                   {collapsed ? (
                     /* --- Collapsed: button gắn ref, flyout qua Portal --- */
                     <button
-                      ref={(el) => { getAnchorRef(item.id).current = el }}
+                      ref={(el) => {
+                        getAnchorRef(item.id).current = el;
+                      }}
                       type="button"
                       onClick={() => toggleMenu(item.id)}
                       className={[
-                        'group flex w-full items-center justify-center rounded-xl p-1.5 transition-colors',
-                        childActive || isOpen ? 'bg-indigo-50' : 'hover:bg-slate-100',
-                      ].join(' ')}
+                        "group flex w-full items-center justify-center rounded-xl p-1.5 transition-colors",
+                        childActive || isOpen
+                          ? "bg-indigo-50"
+                          : "hover:bg-slate-100",
+                      ].join(" ")}
                     >
-                      <NavIcon Icon={Icon} active={childActive || isOpen} collapsed />
+                      <NavIcon
+                        Icon={Icon}
+                        active={childActive || isOpen}
+                        collapsed
+                      />
                     </button>
                   ) : (
                     /* --- Expanded: accordion --- */
@@ -264,18 +278,22 @@ export default function Sidebar() {
                         type="button"
                         onClick={() => toggleMenu(item.id)}
                         className={[
-                          'group flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-sm transition-colors',
+                          "group flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-sm transition-colors",
                           childActive || isOpen
-                            ? 'bg-indigo-50 text-slate-800'
-                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800',
-                        ].join(' ')}
+                            ? "bg-indigo-50 text-slate-800"
+                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-800",
+                        ].join(" ")}
                       >
                         <NavIcon Icon={Icon} active={childActive || isOpen} />
-                        <span className="flex-1 truncate font-medium text-left">{item.label}</span>
-                        <span className={[
-                          'transition-transform duration-200 text-slate-400',
-                          isOpen ? 'rotate-180' : '',
-                        ].join(' ')}>
+                        <span className="flex-1 truncate font-medium text-left">
+                          {item.label}
+                        </span>
+                        <span
+                          className={[
+                            "transition-transform duration-200 text-slate-400",
+                            isOpen ? "rotate-180" : "",
+                          ].join(" ")}
+                        >
                           <ChevronDown size={14} />
                         </span>
                       </button>
@@ -283,9 +301,9 @@ export default function Sidebar() {
                       {/* Accordion children */}
                       <div
                         className={[
-                          'overflow-hidden transition-all duration-200 ease-in-out',
-                          isOpen ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0',
-                        ].join(' ')}
+                          "overflow-hidden transition-all duration-200 ease-in-out",
+                          isOpen ? "max-h-48 opacity-100" : "max-h-0 opacity-0",
+                        ].join(" ")}
                       >
                         <ul className="ml-10 mt-0.5 space-y-0.5 pb-1">
                           {item.children.map((child) => (
@@ -294,19 +312,21 @@ export default function Sidebar() {
                                 to={child.path}
                                 className={({ isActive }) =>
                                   [
-                                    'flex items-center gap-2 rounded-lg px-2.5 py-1.5 transition-colors',
+                                    "flex items-center gap-2 rounded-lg px-2.5 py-1.5 transition-colors",
                                     isActive
-                                      ? 'bg-primary text-white font-medium shadow-sm shadow-indigo-200'
-                                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800',
-                                  ].join(' ')
+                                      ? "bg-primary text-white font-medium shadow-sm shadow-indigo-200"
+                                      : "text-slate-500 hover:bg-slate-100 hover:text-slate-800",
+                                  ].join(" ")
                                 }
                               >
                                 {({ isActive }) => (
                                   <>
-                                    <span className={[
-                                      'h-1.5 w-1.5 rounded-full flex-shrink-0',
-                                      isActive ? 'bg-white' : 'bg-slate-300',
-                                    ].join(' ')} />
+                                    <span
+                                      className={[
+                                        "h-1.5 w-1.5 rounded-full flex-shrink-0",
+                                        isActive ? "bg-white" : "bg-slate-300",
+                                      ].join(" ")}
+                                    />
                                     {child.label}
                                   </>
                                 )}
@@ -318,7 +338,7 @@ export default function Sidebar() {
                     </>
                   )}
                 </li>
-              )
+              );
             }
 
             /* ── Item thường ── */
@@ -330,12 +350,14 @@ export default function Sidebar() {
                       to={item.path}
                       className={({ isActive }) =>
                         [
-                          'group flex w-full items-center justify-center rounded-xl p-1.5 transition-colors',
-                          isActive ? 'bg-indigo-50' : 'hover:bg-slate-100',
-                        ].join(' ')
+                          "group flex w-full items-center justify-center rounded-xl p-1.5 transition-colors",
+                          isActive ? "bg-indigo-50" : "hover:bg-slate-100",
+                        ].join(" ")
                       }
                     >
-                      {({ isActive }) => <NavIcon Icon={Icon} active={isActive} collapsed />}
+                      {({ isActive }) => (
+                        <NavIcon Icon={Icon} active={isActive} collapsed />
+                      )}
                     </NavLink>
                   </Tooltip>
                 ) : (
@@ -343,11 +365,11 @@ export default function Sidebar() {
                     to={item.path}
                     className={({ isActive }) =>
                       [
-                        'group flex items-center gap-2.5 rounded-xl px-2 py-1.5 font-medium transition-colors',
+                        "group flex items-center gap-2.5 rounded-xl px-2 py-1.5 font-medium transition-colors",
                         isActive
-                          ? 'bg-indigo-50 text-slate-800'
-                          : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800',
-                      ].join(' ')
+                          ? "bg-indigo-50 text-slate-800"
+                          : "text-slate-500 hover:bg-slate-100 hover:text-slate-800",
+                      ].join(" ")
                     }
                   >
                     {({ isActive }) => (
@@ -359,7 +381,7 @@ export default function Sidebar() {
                   </NavLink>
                 )}
               </li>
-            )
+            );
           })}
         </ul>
       </nav>
@@ -383,10 +405,17 @@ export default function Sidebar() {
               AD
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-semibold text-slate-700">Admin User</p>
-              <p className="truncate text-[11px] text-slate-400">admin@crm.vn</p>
+              <p className="truncate text-xs font-semibold text-slate-700">
+                Admin User
+              </p>
+              <p className="truncate text-[11px] text-slate-400">
+                admin@crm.vn
+              </p>
             </div>
-            <Settings size={14} className="flex-shrink-0 text-slate-400 hover:text-slate-600 cursor-pointer" />
+            <Settings
+              size={14}
+              className="flex-shrink-0 text-slate-400 hover:text-slate-600 cursor-pointer"
+            />
           </div>
         )}
       </div>
@@ -395,7 +424,7 @@ export default function Sidebar() {
       <button
         type="button"
         onClick={() => setCollapsed((v) => !v)}
-        aria-label={collapsed ? 'Mở sidebar' : 'Đóng sidebar'}
+        aria-label={collapsed ? "Mở sidebar" : "Đóng sidebar"}
         className="
           absolute -right-3 top-[52px]
           flex h-6 w-6 items-center justify-center
@@ -407,9 +436,12 @@ export default function Sidebar() {
       >
         <ChevronRight
           size={13}
-          className={['transition-transform duration-200', collapsed ? '' : 'rotate-180'].join(' ')}
+          className={[
+            "transition-transform duration-200",
+            collapsed ? "" : "rotate-180",
+          ].join(" ")}
         />
       </button>
     </aside>
-  )
+  );
 }
