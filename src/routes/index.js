@@ -5,6 +5,7 @@ import { orgUnitsRoutes } from './org.units.routes.js'
 import { branchesRoutes } from './branch.routes.js'
 import { positionsRoutes } from './positions.routes.js'
 import { employeesRoutes } from './empolyees.routes.js'
+import { employeesViettelRoutes } from './employees.viettel.routes.js'
 
 const Router = express.Router()
 
@@ -25,5 +26,7 @@ Router.use('/branches', branchesRoutes)
 Router.use('/positions', positionsRoutes)
 
 Router.use('/employees', employeesRoutes)
+
+Router.use('/viettel-employees', employeesViettelRoutes)
 
 export const APIs_Routes = Router

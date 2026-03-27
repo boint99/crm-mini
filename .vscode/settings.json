@@ -11,5 +11,21 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
-  "eslint.validate": ["javascript", "javascriptreact"]
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact"
+  ],
+  "sqltools.connections": [
+    {
+      "ssh": "Disabled",
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "CRM",
+      "database": "crm_db",
+      "username": "postgres",
+      "password": ""
+    }
+  ]
 }
