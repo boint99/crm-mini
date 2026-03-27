@@ -32,7 +32,6 @@ class DivisionController {
   async update(req, res, next) {
     try {
       const data = req.body
-      console.log('🚀 ~ DivisionController ~ update ~ data:', data)
       await divisionService.update(data)
       new SuccessResponse({
         res: res,
@@ -45,9 +44,9 @@ class DivisionController {
   // delete by id
   async delete(req, res, next) {
     try {
-      const { DIVISION_ID } = req.body
+      const { id } = req.params
 
-      await divisionService.delete(DIVISION_ID)
+      await divisionService.delete(id)
       new SuccessResponse({
         res: res,
         message: 'Complete the deletion of a division.'

@@ -187,10 +187,10 @@ components:
           type: integer
           nullable: true
           example: 2
-        VT_CODE:
+        VIETTEL_ID:
           type: integer
           nullable: true
-          example: 1001
+          example: 1
         POSITION_ID:
           type: integer
           nullable: true
@@ -265,10 +265,10 @@ components:
           type: integer
           nullable: true
           example: 2
-        VT_CODE:
+        VIETTEL_ID:
           type: integer
           nullable: true
-          example: 1001
+          example: 1
         POSITION_ID:
           type: integer
           nullable: true
@@ -312,10 +312,10 @@ components:
           type: integer
           nullable: true
           example: 4
-        VT_CODE:
+        VIETTEL_ID:
           type: integer
           nullable: true
-          example: 1002
+          example: 1
         POSITION_ID:
           type: integer
           nullable: true

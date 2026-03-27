@@ -18,7 +18,6 @@ class OrgUnitsController {
   // create
   async create(req, res, next) {
     try {
-      console.log('RUN')
       const result = await orgUnitsServices.create(req.body)
       new CreatedResponse({
         res: res,

@@ -159,6 +159,8 @@ components:
       properties:
         BRANCH_ID:
           type: integer
+        BRANCH_CODE:
+          type: string
         BRANCH_NAME:
           type: string
         LOCATION:
@@ -206,8 +208,12 @@ components:
     BranchInput:
       type: object
       required:
+        - BRANCH_CODE
         - BRANCH_NAME
       properties:
+        BRANCH_CODE:
+          type: string
+          example: BR-HCM
         BRANCH_NAME:
           type: string
           example: Ho Chi Minh Branch
@@ -232,6 +238,9 @@ components:
         BRANCH_ID:
           type: integer
           example: 1
+        BRANCH_CODE:
+          type: string
+          example: BR-HCM
         BRANCH_NAME:
           type: string
           example: Ho Chi Minh Branch

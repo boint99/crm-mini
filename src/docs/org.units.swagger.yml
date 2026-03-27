@@ -15,6 +15,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OrgUnitListResponse'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/org-units:
     post:
@@ -29,16 +35,28 @@ paths:
             schema:
               $ref: '#/components/schemas/OrgUnitInput'
       responses:
-        200:
+        201:
           description: Org unit created successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseResponse'
+        400:
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        409:
+          description: Duplicate org unit name or code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     put:
       summary: Update org unit
-      description: Update org unit information. ORG_UNIT_ID and UNIT_NAME are required in request body.
+      description: Update org unit information. ORG_UNIT_ID is required in request body.
       tags:
         - Org Units
       requestBody:
@@ -54,6 +72,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseResponse'
+        400:
+          description: Invalid input or status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Org unit not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        409:
+          description: Duplicate org unit name or code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/org-units/{id}:
     delete:
@@ -75,6 +111,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseResponse'
+        400:
+          description: Invalid org unit id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Org unit not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   schemas:
@@ -92,6 +140,16 @@ components:
           type: string
           example: "Success"
 
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Invalid request
+
     # ========================
     # ORG UNITS
     # ========================
@@ -100,11 +158,28 @@ components:
       properties:
         ORG_UNIT_ID:
           type: integer
+        UNIT_CODE:
+          type: string
         UNIT_NAME:
           type: string
+        UNIT_TYPE:
+          type: string
+          nullable: true
+        DIVISION_ID:
+          type: integer
+          nullable: true
+        PARENT_UNIT_ID:
+          type: integer
+          nullable: true
         STATUS:
           type: string
           enum: [ENABLE, DISABLED]
+        CREATED_AT:
+          type: string
+          format: date-time
+        UPDATED_AT:
+          type: string
+          format: date-time
 
     OrgUnitListResponse:
       type: object
@@ -121,28 +196,59 @@ components:
     OrgUnitInput:
       type: object
       required:
+        - UNIT_CODE
         - UNIT_NAME
       properties:
+        UNIT_CODE:
+          type: string
+          example: OU-HCM
         UNIT_NAME:
           type: string
-        COMPANY_ID:
+          example: Ho Chi Minh Unit
+        UNIT_TYPE:
+          type: string
+          nullable: true
+          example: OFFICE
+        DIVISION_ID:
           type: integer
+          nullable: true
+          example: 1
+        PARENT_UNIT_ID:
+          type: integer
+          nullable: true
+          example: 2
         STATUS:
           type: string
           enum: [ENABLE, DISABLED]
+          example: ENABLE
 
     OrgUnitUpdateInput:
       type: object
       required:
         - ORG_UNIT_ID
-        - UNIT_NAME
       properties:
         ORG_UNIT_ID:
           type: integer
+          example: 1
+        UNIT_CODE:
+          type: string
+          example: OU-HCM
         UNIT_NAME:
           type: string
-        COMPANY_ID:
+          example: Ho Chi Minh Unit
+        UNIT_TYPE:
+          type: string
+          nullable: true
+          example: OFFICE
+        DIVISION_ID:
           type: integer
+          nullable: true
+          example: 1
+        PARENT_UNIT_ID:
+          type: integer
+          nullable: true
+          example: 2
         STATUS:
           type: string
           enum: [ENABLE, DISABLED]
+          example: DISABLED

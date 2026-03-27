@@ -2,51 +2,37 @@ import BaseModel from '../core/model.core.js'
 
 class EmployeesModel extends BaseModel {
   constructor() {
-    super('eMPLOYEES', 'EMPLOYEE_CODE', 'FIRST_NAME', 'LAST_NAME', 'EMAIL', 'PHONE', 'BIRTH_DATE', 'POSITION_ID')
+    super('EMPLOYEES', 'EMPLOYEE_CODE')
   }
 
   async lists() {
-    return await super.ListAll()
+    return await super.LISTALL()
   }
 
   async create(data) {
-    return await super.Create({
-      EMPLOYEE_CODE: data.EMPLOYEE_CODE,
-      FIRST_NAME: data.FIRST_NAME,
-      LAST_NAME: data.LAST_NAME,
-      EMAIL: data.EMAIL ? data.EMAIL.toLowerCase() : null,
-      PHONE: data.PHONE,
-      BIRTH_DATE: data.BIRTH_DATE
-        ? new Date(data.BIRTH_DATE)
-        : null,
-      POSITION_ID: data.POSITION_ID
-    })
+    const createData = { ...data }
+    if (createData.EMAIL) createData.EMAIL = createData.EMAIL.toLowerCase()
+    if (createData.BIRTH_DATE) createData.BIRTH_DATE = new Date(createData.BIRTH_DATE)
+    return await super.CREATE(createData)
   }
 
-  async findByName(name) {
-    return await super.FindByField(name, 'EMPLOYEE_CODE')
+  async findByCode(code) {
+    return await super.FINDBYFIELD(code, 'EMPLOYEE_CODE')
   }
 
   async updateById(id, updateData) {
-    return await super.Update(id, 'EMPLOYEE_ID', {
-      EMPLOYEE_CODE: updateData.EMPLOYEE_CODE,
-      FIRST_NAME: updateData.FIRST_NAME,
-      LAST_NAME: updateData.LAST_NAME,
-      EMAIL: updateData.EMAIL ? updateData.EMAIL.toLowerCase() : null,
-      PHONE: updateData.PHONE,
-      BIRTH_DATE: updateData.BIRTH_DATE
-        ? new Date(updateData.BIRTH_DATE)
-        : null,
-      POSITION_ID: updateData.POSITION_ID
-    })
+    const payload = { ...updateData }
+    if (payload.EMAIL) payload.EMAIL = payload.EMAIL.toLowerCase()
+    if (payload.BIRTH_DATE) payload.BIRTH_DATE = new Date(payload.BIRTH_DATE)
+    return await super.UPDATE(id, 'EMPLOYEE_ID', payload)
   }
 
   async findById(id) {
-    return await super.FindById(id, 'EMPLOYEE_ID')
+    return await super.FINDBYUNIQUE(id, 'EMPLOYEE_ID')
   }
 
   async deleteById(id) {
-    return await super.DeleteById(id, 'EMPLOYEE_ID')
+    return await super.DELETEBYID(id, 'EMPLOYEE_ID')
   }
 }
 

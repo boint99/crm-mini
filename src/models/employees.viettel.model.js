@@ -6,11 +6,11 @@ class EmployeesViettelModel extends BaseModel {
   }
 
   async lists() {
-    return await super.ListAll()
+    return await super.LISTALL()
   }
 
   async create(data) {
-    return await super.Create({
+    return await super.CREATE({
       VIETTEL_CODE: data.VIETTEL_CODE,
       VIETTEL_EMAIL: data.VIETTEL_EMAIL ? data.VIETTEL_EMAIL.toLowerCase() : null,
       STATUS: data.STATUS
@@ -18,11 +18,11 @@ class EmployeesViettelModel extends BaseModel {
   }
 
   async findByName(name) {
-    return await super.FindByField(name, 'VIETTEL_CODE')
+    return await super.FINDBYFIELD(name, 'VIETTEL_CODE')
   }
 
   async updateById(id, updateData) {
-    return await super.Update(id, 'VIETTEL_ID', {
+    return await super.UPDATE(id, 'VIETTEL_ID', {
       VIETTEL_CODE: updateData.VIETTEL_CODE,
       VIETTEL_EMAIL: updateData.VIETTEL_EMAIL ? updateData.VIETTEL_EMAIL.toLowerCase() : null,
       STATUS: updateData.STATUS
@@ -30,11 +30,11 @@ class EmployeesViettelModel extends BaseModel {
   }
 
   async findById(id) {
-    return await super.FindById(id, 'VIETTEL_ID')
+    return await super.FINDBYID(id, 'VIETTEL_ID')
   }
 
   async deleteById(id) {
-    return await super.DeleteById(id, 'VIETTEL_ID')
+    return await super.DELETEBYID(id, 'VIETTEL_ID')
   }
 }
 
