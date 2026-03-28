@@ -2,7 +2,7 @@ paths:
   # ========================
   # DIVISION APIs
   # ========================
-  /api/division/lists:
+  /api/divisions/lists:
     get:
       summary: Get division list
       description: Retrieve list of all divisions.
@@ -22,7 +22,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/division:
+  /api/divisions:
     post:
       summary: Create division
       description: Create a new division using request body data.
@@ -91,7 +91,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/division/{id}:
+  /api/divisions/{id}:
     delete:
       summary: Delete division
       description: Delete a division by DIVISION_ID passed as path parameter.

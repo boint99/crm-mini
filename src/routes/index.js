@@ -16,7 +16,7 @@ Router.get('/status', (req, res) => {
 
 Router.use('/company', companyRoutes)
 
-Router.use('/division', divisionsRoutes)
+Router.use('/divisions', divisionsRoutes)
 
 Router.use('/org-units', orgUnitsRoutes)
 

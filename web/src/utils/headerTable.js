@@ -9,8 +9,8 @@ export const headerTableCompany = {
 
 export const headerTableDivision = {
     INDEX: 'STT',
-    DIVISION_CODE: 'Mã phòng ban',
-    DIVISION_NAME: 'Tên phòng ban',
+    DIVISION_CODE: 'Mã khối',
+    DIVISION_NAME: 'Tên khối',
     STATUS: 'Trạng thái',
     CREATED_AT: 'Ngày tạo',
     UPDATED_AT: 'Ngày cập nhật'

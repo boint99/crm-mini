@@ -38,8 +38,8 @@ class DivisionValidate extends ValidateCore {
   // Validate delete division
   static delete(req, res, next) {
     try {
-      const { DIVISION_ID } = req.body
-      this.validateId(DIVISION_ID, 'DIVISION_ID is required!.')
+      const { id } = req.params
+      this.validateId(id, 'Division ID is required!.')
 
       next()
     } catch (error) {
