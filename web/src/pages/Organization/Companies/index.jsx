@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import AcctionModal from "@/pages/Organization/AcctionModal";
 import { useAppDispatch } from "@/hook/useAppDispatch";
-import { getCompanies, selectCompanies, selectLoading } from "@/redux/slice";
+import {
+  getCompanies,
+  selectCompanies,
+  selectLoading,
+} from "@/redux/slice/companiesSilce";
 import { useSelector } from "react-redux";
 import LoadingItem from "@/components/ui/LoadingItem";
 import NotDataTable from "@/components/ui/NotDataTable";

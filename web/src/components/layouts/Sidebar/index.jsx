@@ -1,79 +1,8 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { NavLink, useLocation } from "react-router-dom";
-import {
-  LayoutDashboard,
-  Users,
-  Mail,
-  Shield,
-  Network,
-  BriefcaseBusiness,
-  KeyRound,
-  MonitorSmartphone,
-  Building,
-  ChevronDown,
-  ChevronRight,
-  Settings,
-  LayoutGrid,
-} from "lucide-react";
-
-/* ─── Menu config ─────────────────────────────────────────── */
-const NAV_ITEMS = [
-  {
-    id: "dashboard",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    path: "/",
-  },
-  {
-    id: "organization",
-    label: "Tổ chức",
-    icon: Building,
-    children: [
-      { label: "Nhân viên", icon: Users, path: "/organization/employees" },
-      { label: "Chức vụ", path: "/organization/positions" },
-      { label: "Phòng ban", path: "/organization/divisions" },
-      { label: "Chi nhánh", path: "/organization/branches" },
-      { label: "Công ty", path: "/organization/companies" },
-    ],
-  },
-  {
-    id: "email",
-    label: "Quản lý email",
-    icon: Mail,
-    path: "/email",
-  },
-  {
-    id: "ips",
-    label: "IPs",
-    icon: Shield,
-    path: "/ips",
-  },
-  {
-    id: "vlan",
-    label: "VLAN",
-    icon: Network,
-    path: "/vlan",
-  },
-  {
-    id: "os",
-    label: "Nhân viên OS",
-    icon: BriefcaseBusiness,
-    path: "/os",
-  },
-  {
-    id: "accounts",
-    label: "Tài khoản",
-    icon: KeyRound,
-    path: "/accounts",
-  },
-  {
-    id: "devices",
-    label: "Tài khoản & thiết bị",
-    icon: MonitorSmartphone,
-    path: "/devices",
-  },
-];
+import { ChevronDown, ChevronRight, Settings, LayoutGrid } from "lucide-react";
+import { NAV_ITEMS } from "@/utils/menuConfig";
 
 /* ─── Sub‑components ──────────────────────────────────────── */
 

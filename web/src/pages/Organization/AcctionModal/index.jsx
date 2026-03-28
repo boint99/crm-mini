@@ -1,7 +1,11 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
-import { createCompany, updateCompany, deleteCompany } from "@/redux/slice";
+import {
+  createCompany,
+  updateCompany,
+  deleteCompany,
+} from "@/redux/slice/companiesSilce";
 import { toast } from "react-toastify";
 import { dispatchWithToast } from "@/components/ui/dispatchWithToast";
 

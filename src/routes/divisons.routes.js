@@ -10,12 +10,12 @@ Router.get('/lists', divisionController.lists)
 // POST /api/division
 Router.post('/', DivisionValidate.create.bind(DivisionValidate), divisionController.create)
 
-// update PUT /api/division/
+// update PUT /api/divisions/
 // Note: add DIVISION_ID
 Router.put('/', DivisionValidate.update.bind(DivisionValidate), divisionController.update)
 
-// DELETE /api/division/
+// DELETE /api/divisions/:id
 // Note: add DIVISION_ID
-Router.delete('/', DivisionValidate.delete.bind(DivisionValidate), divisionController.delete)
+Router.delete('/:id', DivisionValidate.delete.bind(DivisionValidate), divisionController.delete)
 
 export const divisionsRoutes = Router
