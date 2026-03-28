@@ -9,18 +9,27 @@ class OrgUnitsServices {
    */
   async create(data) {
     // 1. Check required fields
-    if (!data.UNIT_NAME) {
+    if (!data.UNIT_NAME || !data.UNIT_NAME.trim()) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'The name cannot be left blank!')
     }
+    if (!data.UNIT_CODE || !data.UNIT_CODE.trim()) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'The unit code cannot be left blank!')
+    }
 
-    // 2. Check existence
-    const isExisted = await orgUnitsModel.findByName(data.UNIT_NAME)
+    // 2. Check unique UNIT_CODE
+    const codeExists = await orgUnitsModel.findByCode(data.UNIT_CODE.trim())
+    if (codeExists) {
+      throw new ApiError(StatusCodes.CONFLICT, 'This unit code is already taken!')
+    }
+
+    // 3. Check existence
+    const isExisted = await orgUnitsModel.findByName(data.UNIT_NAME.trim())
 
     if (isExisted) {
       throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken!')
     }
 
-    // 3. Check status enum
+    // 4. Check status enum
     CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
 
     return await orgUnitsModel.create(data)
@@ -51,6 +60,19 @@ class OrgUnitsServices {
         throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken by another Org unit!')
       }
       payload.UNIT_NAME = trimmedName
+    }
+
+    if (payload.UNIT_CODE !== undefined) {
+      const trimmedCode = payload.UNIT_CODE.trim()
+      if (!trimmedCode) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'The unit code cannot be left blank!')
+      }
+
+      const codeExists = await orgUnitsModel.findByCode(trimmedCode)
+      if (codeExists && codeExists.ORG_UNIT_ID !== ORG_UNIT_ID) {
+        throw new ApiError(StatusCodes.CONFLICT, 'This unit code is already taken by another Org unit!')
+      }
+      payload.UNIT_CODE = trimmedCode
     }
 
     // 3. Check status enum

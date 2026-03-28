@@ -159,6 +159,8 @@ components:
       properties:
         POSITION_ID:
           type: integer
+        POSITION_CODE:
+          type: string
         POSITION_NAME:
           type: string
         LEVEL:
@@ -202,9 +204,13 @@ components:
     PositionInput:
       type: object
       required:
+        - POSITION_CODE
         - POSITION_NAME
         - LEVEL
       properties:
+        POSITION_CODE:
+          type: string
+          example: POS-SE
         POSITION_NAME:
           type: string
           example: Software Engineer
@@ -224,6 +230,9 @@ components:
         POSITION_ID:
           type: integer
           example: 1
+        POSITION_CODE:
+          type: string
+          example: POS-TL
         POSITION_NAME:
           type: string
           example: Tech Lead

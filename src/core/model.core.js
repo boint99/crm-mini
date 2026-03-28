@@ -6,27 +6,27 @@ class ModelCore {
     this.defaultOrderBy = defaultOrderBy
   }
 
-  async ListAll() {
+  async LISTALL() {
     return await this.model.findMany({
       orderBy: { [this.defaultOrderBy]: 'asc' }
     })
   }
 
-  async FindById(id, idField) {
+  async FINDBYUNIQUE(id, idField) {
     return await this.model.findUnique({
       where: { [idField]: id }
     })
   }
 
-  async DeleteById(id, idField) {
+  async DELETEBYID(id, idField) {
     return await this.model.delete(
       {
         where: { [idField]: id }
       }
     )
-  }s
+  }
 
-  async FindByField(value, fieldName) {
+  async FINDBYFIELD(value, fieldName) {
     return await this.model.findFirst({
       where: {
         [fieldName]: value
@@ -34,11 +34,11 @@ class ModelCore {
     })
   }
 
-  async Create(data) {
+  async CREATE(data) {
     return await this.model.create({ data })
   }
 
-  async Update(id, idField, updateData) {
+  async UPDATE(id, idField, updateData) {
     return await this.model.update(
       {
         where: { [idField]: id },

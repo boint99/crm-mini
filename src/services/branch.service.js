@@ -12,15 +12,20 @@ class BranchesServices {
     if (!data.BRANCH_NAME || !data.BRANCH_NAME.trim()) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'The name cannot be left blank!')
     }
-
-    // // 2. Check existence
-    const isExisted = await branchesModel.findByName(data.BRANCH_NAME)
-
-    if (isExisted) {
+    if (!data.BRANCH_CODE || !data.BRANCH_CODE.trim()) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'The branch code cannot be left blank!')
+    }
+    // 2. Check unique BRANCH_CODE
+    const codeExists = await branchesModel.findByCode(data.BRANCH_CODE.trim())
+    if (codeExists) {
+      throw new ApiError(StatusCodes.CONFLICT, 'This branch code is already taken!')
+    }
+    // 3. Check unique BRANCH_NAME
+    const isNameExisted = await branchesModel.findByName(data.BRANCH_NAME.trim())
+    if (isNameExisted) {
       throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken!')
     }
-
-    // 3. Check status enum
+    // 4. Check status enum
     CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
 
     return await branchesModel.create(data)

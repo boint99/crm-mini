@@ -7,7 +7,8 @@ class BranchesValidate extends ValidateCore {
   static create(req, res, next) {
     try {
       const data = req.body
-      BranchesValidate.validateStringLength(data.BRANCH_NAME, 3, 'BRANCH_NAME is required!')
+      BranchesValidate.validateStringLength(data.BRANCH_NAME, 3, 'Branch name is required!')
+      BranchesValidate.validateStringLength(data.BRANCH_CODE, 2, 'Branch code is required!')
       BranchesValidate.validateEnum(data.STATUS, ALLOWED_STATUS)
       next()
     } catch (error) {
@@ -19,10 +20,10 @@ class BranchesValidate extends ValidateCore {
   static update(req, res, next) {
     try {
       const data = req.body
-      BranchesValidate.validateId(data.BRANCH_ID, 'BRANCH_ID is required!.')
+      BranchesValidate.validateId(data.BRANCH_ID, 'Branch ID is required!.')
 
       if (data.BRANCH_NAME !== undefined) {
-        BranchesValidate.validateStringLength(data.BRANCH_NAME, 3, 'BRANCH_NAME must be 3 characters or more!')
+        BranchesValidate.validateStringLength(data.BRANCH_NAME, 3, 'Branch name must be 3 characters or more!')
       }
       if (data.STATUS !== undefined) {
         BranchesValidate.validateEnum(data.STATUS, ALLOWED_STATUS)
@@ -38,7 +39,7 @@ class BranchesValidate extends ValidateCore {
   static delete(req, res, next) {
     try {
       const { id } = req.params
-      BranchesValidate.validateId(id, 'BRANCH_ID is required!.')
+      BranchesValidate.validateId(id, 'Branch ID is required!.')
 
       next()
     } catch (error) {

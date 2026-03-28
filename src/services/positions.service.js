@@ -12,15 +12,24 @@ class PositionsServices {
     if (!data.POSITION_NAME || !data.POSITION_NAME.trim()) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'The name cannot be left blank!')
     }
+    if (!data.POSITION_CODE || !data.POSITION_CODE.trim()) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'The position code cannot be left blank!')
+    }
 
-    // // 2. Check existence
-    const isExisted = await positionsModel.findByName(data.POSITION_NAME)
+    // 2. Check unique POSITION_CODE
+    const codeExists = await positionsModel.findByCode(data.POSITION_CODE.trim())
+    if (codeExists) {
+      throw new ApiError(StatusCodes.CONFLICT, 'This position code is already taken!')
+    }
+
+    // 3. Check existence
+    const isExisted = await positionsModel.findByName(data.POSITION_NAME.trim())
 
     if (isExisted) {
       throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken!')
     }
 
-    // 3. Check status enum
+    // 4. Check status enum
     CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
 
     return await positionsModel.create(data)
@@ -35,7 +44,7 @@ class PositionsServices {
     // 1. Verify existence
     const checkId = await positionsModel.findById(POSITION_ID)
     if (!checkId) {
-      throw new ApiError(StatusCodes.NOT_FOUND, 'Position is not found!')
+      throw new ApiError(StatusCodes.NOT_FOUND, `Position with ID ${POSITION_ID} is not found!`)
     }
 
     // 2. Logic check for Position Name
@@ -48,9 +57,22 @@ class PositionsServices {
       const isExisted = await positionsModel.findByName(trimmedName)
 
       if (isExisted && isExisted.POSITION_ID !== POSITION_ID) {
-        throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken by another Position!')
+        throw new ApiError(StatusCodes.CONFLICT, `This name is already taken by another Position with ID ${isExisted.POSITION_ID}!`)
       }
       payload.POSITION_NAME = trimmedName
+    }
+
+    if (payload.POSITION_CODE !== undefined) {
+      const trimmedCode = payload.POSITION_CODE.trim()
+      if (!trimmedCode) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'The position code cannot be left blank!')
+      }
+
+      const codeExists = await positionsModel.findByCode(trimmedCode)
+      if (codeExists && codeExists.POSITION_ID !== POSITION_ID) {
+        throw new ApiError(StatusCodes.CONFLICT, `This position code is already taken by another Position with ID ${codeExists.POSITION_ID}!`)
+      }
+      payload.POSITION_CODE = trimmedCode
     }
 
     // 3. Check status enum

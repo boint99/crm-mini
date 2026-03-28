@@ -7,7 +7,8 @@ class OrgUnitsValidate extends ValidateCore {
   static create(req, res, next) {
     try {
       const data = req.body
-      OrgUnitsValidate.validateStringLength(data.BRANCH_NAME, 3, 'BRANCH_NAME is required!')
+      OrgUnitsValidate.validateStringLength(data.UNIT_NAME, 3, 'UNIT_NAME is required!')
+      OrgUnitsValidate.validateStringLength(data.UNIT_CODE, 2, 'UNIT_CODE is required!')
       OrgUnitsValidate.validateEnum(data.STATUS, ALLOWED_STATUS)
       next()
     } catch (error) {
@@ -19,10 +20,13 @@ class OrgUnitsValidate extends ValidateCore {
   static update(req, res, next) {
     try {
       const data = req.body
-      OrgUnitsValidate.validateId(data.BRANCH_ID, 'BRANCH_ID is required!.')
+      OrgUnitsValidate.validateId(data.ORG_UNIT_ID, 'ORG_UNIT_ID is required!.')
 
-      if (data.BRANCH_NAME !== undefined) {
-        OrgUnitsValidate.validateStringLength(data.BRANCH_NAME, 3, 'BRANCH_NAME must be 3 characters or more!')
+      if (data.UNIT_NAME !== undefined) {
+        OrgUnitsValidate.validateStringLength(data.UNIT_NAME, 3, 'UNIT_NAME must be 3 characters or more!')
+      }
+      if (data.UNIT_CODE !== undefined) {
+        OrgUnitsValidate.validateStringLength(data.UNIT_CODE, 2, 'UNIT_CODE must be 2 characters or more!')
       }
       if (data.STATUS !== undefined) {
         OrgUnitsValidate.validateEnum(data.STATUS, ALLOWED_STATUS)
@@ -38,7 +42,7 @@ class OrgUnitsValidate extends ValidateCore {
   static delete(req, res, next) {
     try {
       const { id } = req.params
-      OrgUnitsValidate.validateId(id, 'BRANCH_ID is required!.')
+      OrgUnitsValidate.validateId(id, 'ORG_UNIT_ID is required!.')
 
       next()
     } catch (error) {

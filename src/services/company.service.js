@@ -10,17 +10,26 @@ class CompanyService {
    */
   async create(data) {
     // 1. Check required fields
-    if (!data.COMPANY_NAME) {
+    if (!data.COMPANY_NAME || !data.COMPANY_NAME.trim()) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'The company name cannot be left blank!')
     }
+    if (!data.COMPANY_CODE || !data.COMPANY_CODE.trim()) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'The company code cannot be left blank!')
+    }
 
-    // 2. Check existence
-    const isExisted = await companyModel.findByName(data.COMPANY_NAME)
+    // 2. Check unique COMPANY_CODE
+    const codeExists = await companyModel.findByCode(data.COMPANY_CODE.trim())
+    if (codeExists) {
+      throw new ApiError(StatusCodes.CONFLICT, 'This company code is already taken!')
+    }
+
+    // 3. Check unique COMPANY_NAME
+    const isExisted = await companyModel.findByName(data.COMPANY_NAME.trim())
     if (isExisted) {
       throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken!')
     }
 
-    // 3. Check status enum (Using the shared helper)
+    // 4. Check status enum (Using the shared helper)
     CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
 
     return await companyModel.create(data)

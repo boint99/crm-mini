@@ -5,6 +5,7 @@ import { employeesModel } from '../models/employees.model.js'
 import { positionsModel } from '../models/postisions.model.js'
 import FkValidator from '../core/fk.validator.core.js'
 import ValidateCores from '../core/validate.core.js'
+import { employeesViettelModel } from '../models/employees.viettel.model.js'
 
 class EmployeesServices {
   /**
@@ -15,32 +16,34 @@ class EmployeesServices {
     if (!data.EMPLOYEE_CODE || !data.EMPLOYEE_CODE.trim()) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'The employee code cannot be left blank!')
     }
-    // check employee code length must be 6 characters
+    // 2. Check employee code length must be 6 characters
     if (data.EMPLOYEE_CODE.trim().length !== 6) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Employee code must be 6 characters!')
     }
 
-    // chekc email syntax
+    // 3. Check email syntax
     if (data.EMAIL) {
       ValidateCores.validateEmail(data.EMAIL)
       ValidateCores.validateEmailDomain(data.EMAIL, ALLOWED_EMAIL_DOMAINS)
     }
 
-    // 2. Check existence
-    const isExisted = await employeesModel.findByName(data.EMPLOYEE_CODE.trim())
+    // 4. FK checks
+    if (data.POSITION_ID) {
+      await FkValidator.validate(data.POSITION_ID, positionsModel, 'Position ID')
+    }
+
+    if (data.VIETTEL_ID) {
+      await FkValidator.validate(data.VIETTEL_ID, employeesViettelModel, 'Viettel ID')
+    }
+
+    // 5. Check existence
+    const isExisted = await employeesModel.findByCode(data.EMPLOYEE_CODE.trim())
     if (isExisted) {
       throw new ApiError(StatusCodes.CONFLICT, 'This employee code is already taken!')
     }
 
-    // 3. Check status enum
+    // 6. Check status enum
     CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
-
-    // 4. FK checks
-    await FkValidator.validate(data.POSITION_ID, positionsModel, 'POSITION_ID', 'Position ID is invalid!')
-
-    await FkValidator.validate(data.VT_CODE, positionsModel, 'VT_CODE', 'VT Code is invalid!')
-
-    await FkValidator.validate(data.UNIT_ID, positionsModel, 'UNIT_ID', 'Unit ID is invalid!')
 
     return await employeesModel.create(data)
   }
@@ -64,7 +67,7 @@ class EmployeesServices {
         throw new ApiError(StatusCodes.BAD_REQUEST, 'The employee code cannot be left blank!')
       }
 
-      const isExisted = await employeesModel.findByName(trimmedCode)
+      const isExisted = await employeesModel.findByCode(trimmedCode)
 
       if (isExisted && isExisted.EMPLOYEE_ID !== EMPLOYEE_ID) {
         throw new ApiError(StatusCodes.CONFLICT, 'This employee code is already taken by another employee!')

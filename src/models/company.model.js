@@ -2,41 +2,35 @@ import ModelCore from '../core/model.core.js'
 
 class CompanyModel extends ModelCore {
   constructor() {
-    super('cOMPANY', 'COMPANY_ID')
+    super('COMPANY', 'COMPANY_ID')
   }
 
   async listAll() {
-    return await super.ListAll()
+    return await super.LISTALL()
   }
 
   async create(data) {
-    return await this.model.create({
-      data: {
-        COMPANY_NAME: data.COMPANY_NAME,
-        STATUS: data.STATUS
-      }
-    })
+    return await super.CREATE(data)
   }
 
   async findByName(name) {
-    return await this.model.findFirst({
-      where: { COMPANY_NAME: name }
-    })
+    return await super.FINDBYFIELD(name, 'COMPANY_NAME')
+  }
+
+  async findByCode(code) {
+    return await super.FINDBYFIELD(code, 'COMPANY_CODE')
   }
 
   async updateById(id, updateData) {
-    return await this.model.update({
-      where: { COMPANY_ID: id },
-      data: updateData
-    })
+    return await super.UPDATE(id, 'COMPANY_ID', updateData)
   }
 
   async findById(id) {
-    return await this.FindById(id, 'COMPANY_ID')
+    return await super.FINDBYUNIQUE(id, 'COMPANY_ID')
   }
 
   async deleteById(id) {
-    return await super.DeleteById(id, 'COMPANY_ID')
+    return await super.DELETEBYID(id, 'COMPANY_ID')
   }
 }
 

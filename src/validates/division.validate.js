@@ -8,6 +8,7 @@ class DivisionValidate extends ValidateCore {
     try {
       const data = req.body
       this.validateStringLength(data.DIVISION_NAME, 5, 'DIVISION_NAME is required!')
+      this.validateStringLength(data.DIVISION_CODE, 2, 'DIVISION_CODE is required!')
       this.validateEnum(data.STATUS, ALLOWED_STATUS)
       next()
     } catch (error) {
@@ -19,7 +20,7 @@ class DivisionValidate extends ValidateCore {
   static update(req, res, next) {
     try {
       const data = req.body
-      this.validateId(data.DIVISION_NAME, 'DIVISION_ID is required!.')
+      this.validateId(data.DIVISION_ID, 'DIVISION_ID is required!.')
 
       if (data.DIVISION_NAME !== undefined) {
         this.validateStringLength(data.DIVISION_NAME, 3, 'DIVISION_NAME must be 3 characters or more!')

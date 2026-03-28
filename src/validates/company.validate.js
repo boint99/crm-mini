@@ -8,6 +8,7 @@ class companyValidate extends ValidateCores {
     try {
       const data = req.body
       this.validateStringLength(data.COMPANY_NAME, 5, 'COMPANY_NAME is required!')
+      this.validateStringLength(data.COMPANY_CODE, 2, 'COMPANY_CODE is required!')
       this.validateEnum(data.STATUS, ALLOWED_STATUS)
       next()
     } catch (error) {

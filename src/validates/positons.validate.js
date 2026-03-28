@@ -8,6 +8,7 @@ class PositionsValidate extends ValidateCore {
     try {
       const data = req.body
       PositionsValidate.validateStringLength(data.POSITION_NAME, 3, 'POSITION_NAME is required!')
+      PositionsValidate.validateStringLength(data.POSITION_CODE, 2, 'POSITION_CODE is required!')
       PositionsValidate.validateEnum(data.STATUS, ALLOWED_STATUS)
       next()
     } catch (error) {
@@ -23,6 +24,9 @@ class PositionsValidate extends ValidateCore {
 
       if (data.POSITION_NAME !== undefined) {
         PositionsValidate.validateStringLength(data.POSITION_NAME, 3, 'POSITION_NAME must be 3 characters or more!')
+      }
+      if (data.POSITION_CODE !== undefined) {
+        PositionsValidate.validateStringLength(data.POSITION_CODE, 2, 'POSITION_CODE must be 2 characters or more!')
       }
       if (data.STATUS !== undefined) {
         PositionsValidate.validateEnum(data.STATUS, ALLOWED_STATUS)

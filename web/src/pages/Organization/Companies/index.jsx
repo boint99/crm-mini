@@ -6,11 +6,13 @@ import { useSelector } from "react-redux";
 import LoadingItem from "@/components/ui/LoadingItem";
 import NotDataTable from "@/components/ui/NotDataTable";
 import { formatDateTime } from "@/utils/contants";
-import { Pencil, SquarePen, Trash } from "lucide-react";
+import { Pencil, Trash } from "lucide-react";
+import { headerTableCompany } from "@/utils/headerTable";
+
+const companyColumns = Object.entries(headerTableCompany);
 
 function Companies() {
-  const [openAdd, setOpenAdd] = useState(false);
-  const [query, setQuery] = useState("");
+  const [openModal, setOpenModal] = useState(false);
   const [action, setAction] = useState(null);
   const [selectItem, setSelectItem] = useState(null);
 
@@ -29,7 +31,7 @@ function Companies() {
         break;
       case "create":
         setAction("create");
-        setOpenAdd(true);
+        setOpenModal(true);
         break;
       case "delete":
         setAction("delete");
@@ -71,8 +73,6 @@ function Companies() {
             <input
               type="text"
               placeholder="Tìm theo ID, tên, trạng thái..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
               className="w-64 border border-gray-300 rounded-lg px-3 py-2 text-sm
            placeholder:text-gray-400
            focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
@@ -84,21 +84,14 @@ function Companies() {
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  STT
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Tên công ty
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Trạng thái
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Thời gian tạo
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Cập nhật
-                </th>
+                {companyColumns.map(([key, label]) => (
+                  <th
+                    key={key}
+                    className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap"
+                  >
+                    {label}
+                  </th>
+                ))}
                 <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
                   Thao tác
                 </th>
@@ -107,76 +100,101 @@ function Companies() {
             {loading === true ? (
               <tbody>
                 <tr>
-                  <td colSpan={6}>
+                  <td colSpan={companyColumns.length + 1}>
                     <LoadingItem />
                   </td>
                 </tr>
               </tbody>
             ) : !companiesItems?.length ? (
-              <NotDataTable />
+              <NotDataTable colSpan={companyColumns.length + 1} />
             ) : (
               <tbody className="divide-y divide-gray-200 bg-white">
-                {companiesItems?.map((company) => (
-                  <tr key={company.COMPANY_ID} className="hover:bg-gray-50">
-                    <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap">
-                      {company.COMPANY_ID}
-                    </td>
-                    <td className="px-4 py-2 text-gray-700 whitespace-nowrap">
-                      {company.COMPANY_NAME}
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                          company.STATUS === "ENABLE"
-                            ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
-                            : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
-                        }`}
-                      >
-                        {company.STATUS === "ENABLE"
-                          ? "Hoạt động"
-                          : company.STATUS}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 text-gray-700 whitespace-nowrap">
-                      {formatDateTime(company.CREATED_AT)}
-                    </td>
-                    <td className="px-4 py-2 text-gray-700 whitespace-nowrap">
-                      {formatDateTime(company.UPDATED_AT)}
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap space-x-2">
-                      <button
-                        onClick={() => {
-                          handleAction("edit");
-                          setOpenAdd(true);
-                          setSelectItem(company);
-                        }}
-                        type="button"
-                        className="px-2.5 py-1 text-xs font-medium text-indigo-600 rounded-md hover:bg-indigo-100 transition cursor-pointer"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleAction("delete");
-                          setOpenAdd(true);
-                          setSelectItem(company);
-                        }}
-                        className="px-2.5 py-1 text-xs font-medium text-rose-600 rounded-md hover:bg-rose-100 transition cursor-pointer"
-                      >
-                        <Trash className="w-4 h-4 bg-none" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {companiesItems?.map((company, rowIndex) => {
+                  return (
+                    <tr key={company.COMPANY_ID} className="hover:bg-gray-50">
+                      {companyColumns.map(([key]) => {
+                        const cellClass =
+                          "px-4 py-2 text-gray-700 whitespace-nowrap";
+
+                        if (key === "INDEX") {
+                          return (
+                            <td
+                              key={key}
+                              className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap"
+                            >
+                              {rowIndex + 1}
+                            </td>
+                          );
+                        }
+
+                        if (key === "STATUS") {
+                          return (
+                            <td
+                              key={key}
+                              className="px-4 py-2 whitespace-nowrap"
+                            >
+                              <span
+                                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                                  company.STATUS === "ENABLE"
+                                    ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
+                                    : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
+                                }`}
+                              >
+                                {company.STATUS === "ENABLE"
+                                  ? "Hoạt động"
+                                  : "Ngừng hoạt động"}
+                              </span>
+                            </td>
+                          );
+                        }
+                        if (key === "CREATED_AT" || key === "UPDATED_AT") {
+                          return (
+                            <td key={key} className={cellClass}>
+                              {formatDateTime(company[key])}
+                            </td>
+                          );
+                        }
+                        return (
+                          <td key={key} className={cellClass}>
+                            {company[key]}
+                          </td>
+                        );
+                      })}
+                      <td className="px-4 py-2 whitespace-nowrap space-x-2">
+                        <button
+                          onClick={() => {
+                            handleAction("edit");
+                            setOpenModal(true);
+                            setSelectItem(company);
+                          }}
+                          type="button"
+                          className="px-2.5 py-1 text-xs font-medium text-indigo-600 rounded-md hover:bg-indigo-100 transition cursor-pointer"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleAction("delete");
+                            setOpenModal(true);
+                            setSelectItem(company);
+                          }}
+                          className="px-2.5 py-1 text-xs font-medium text-rose-600 rounded-md hover:bg-rose-100 transition cursor-pointer"
+                        >
+                          <Trash className="w-4 h-4 bg-none" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             )}
           </table>
         </div>
       </div>
       <AcctionModal
-        open={openAdd}
-        onClose={() => setOpenAdd(false)}
+        open={openModal}
+        onClose={() => setOpenModal(false)}
         action={action}
         item={selectItem}
       />

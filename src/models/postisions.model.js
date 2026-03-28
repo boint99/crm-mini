@@ -2,41 +2,35 @@ import BaseModel from '../core/model.core.js'
 
 class PositionsModel extends BaseModel {
   constructor() {
-    super('pOSITIONS', 'POSITION_NAME', 'DESCRIPTION')
+    super('POSITIONS', 'POSITION_NAME')
   }
 
   async lists() {
-    return await super.ListAll()
+    return await super.LISTALL()
   }
 
   async create(data) {
-    return await this.model.create({
-      data: {
-        POSITION_NAME: data.POSITION_NAME, // required
-        LEVEL: data.LEVEL // required
-      }
-    })
+    return await super.CREATE(data)
   }
 
   async findByName(name) {
-    return await this.model.findFirst({
-      where: { POSITION_NAME: name }
-    })
+    return await super.FINDBYFIELD(name, 'POSITION_NAME')
+  }
+
+  async findByCode(code) {
+    return await super.FINDBYFIELD(code, 'POSITION_CODE')
   }
 
   async updateById(id, updateData) {
-    return await this.model.update({
-      where: { POSITION_ID: id },
-      data: updateData
-    })
+    return await super.UPDATE(id, 'POSITION_ID', updateData)
   }
 
   async findById(id) {
-    return await this.FindById(id, 'POSITION_ID')
+    return await super.FINDBYUNIQUE(id, 'POSITION_ID')
   }
 
   async deleteById(id) {
-    return await super.DeleteById(id, 'POSITION_ID')
+    return await super.DELETEBYID(id, 'POSITION_ID')
   }
 }
 

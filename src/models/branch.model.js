@@ -2,40 +2,40 @@ import BaseModel from '../core/model.core.js'
 
 class BranchesModel extends BaseModel {
   constructor() {
-    super('bRANCHES', 'BRANCH_NAME', 'LOCATION')
+    super('BRANCHES', 'BRANCH_NAME')
   }
 
   async lists() {
-    return await super.ListAll()
+    return await super.LISTALL()
   }
 
   async create(data) {
-    return await this.model.create({
-      data: {
-        BRANCH_NAME: data.BRANCH_NAME // required
-      }
-    })
+    return await super.CREATE(data)
   }
 
   async findByName(name) {
-    return await this.model.findFirst({
-      where: { BRANCH_NAME: name }
-    })
+    return await super.FINDBYFIELD(name, 'BRANCH_NAME')
+  }
+
+  async findByCode(code) {
+    return await super.FINDBYFIELD(code, 'BRANCH_CODE')
   }
 
   async updateById(id, updateData) {
-    return await this.model.update({
-      where: { BRANCH_ID: id },
-      data: updateData
-    })
+    return await super.UPDATE(id, 'BRANCH_ID', updateData)
   }
 
   async findById(id) {
-    return await this.FindById(id, 'BRANCH_ID')
+    return await super.FINDBYUNIQUE(id, 'BRANCH_ID')
   }
 
   async deleteById(id) {
-    return await super.DeleteById(id, 'BRANCH_ID')
+    return await super.DELETEBYID(id, 'BRANCH_ID')
+  }
+
+  async UNIQUE_CHECK(fieldValue, fieldName) {
+    const existing = await super.FINDBYFIELD(fieldValue, fieldName)
+    return !!existing
   }
 }
 

@@ -2,44 +2,35 @@ import ModelCore from '../core/model.core.js'
 
 class OrgUnitsModel extends ModelCore {
   constructor() {
-    super('oRG_UNITS', 'UNIT_NAME', 'UNIT_TYPE', 'DIVISION_ID', 'PARENT_UNIT_ID')
+    super('ORG_UNITS', 'UNIT_NAME')
   }
 
   async lists() {
-    return await super.ListAll()
+    return await super.LISTALL()
   }
 
   async create(data) {
-    return await this.model.create({
-      data: {
-        UNIT_NAME: data.UNIT_NAME,
-        UNIT_TYPE: data.UNIT_TYPE,
-        DIVISION_ID: parseInt(data.DIVISION_ID),
-        PARENT_UNIT_ID: data.PARENT_UNIT_ID,
-        STATUS: data.STATUS
-      }
-    })
+    return await super.CREATE(data)
   }
 
   async findByName(name) {
-    return await this.model.findFirst({
-      where: { UNIT_NAME: name }
-    })
+    return await super.FINDBYFIELD(name, 'UNIT_NAME')
+  }
+
+  async findByCode(code) {
+    return await super.FINDBYFIELD(code, 'UNIT_CODE')
   }
 
   async updateById(id, updateData) {
-    return await this.model.update({
-      where: { ORG_UNIT_ID: id },
-      data: updateData
-    })
+    return await super.UPDATE(id, 'ORG_UNIT_ID', updateData)
   }
 
   async findById(id) {
-    return await this.FindById(id, 'ORG_UNIT_ID')
+    return await super.FINDBYUNIQUE(id, 'ORG_UNIT_ID')
   }
 
   async deleteById(id) {
-    return await super.DeleteById(id, 'ORG_UNIT_ID')
+    return await super.DELETEBYID(id, 'ORG_UNIT_ID')
   }
 }
 

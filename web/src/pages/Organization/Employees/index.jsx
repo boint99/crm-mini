@@ -15,6 +15,9 @@ import { CUSTOM_MESSAGES } from "@/utils/contants";
 import { Pencil, Plus, Search, Trash2, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { headerTableEmployees } from "@/utils/headerTable";
+
+const employeeColumns = Object.entries(headerTableEmployees);
 
 function Employees() {
   const [openAdd, setOpenAdd] = useState(false);
@@ -117,7 +120,7 @@ function Employees() {
       return (
         <tbody>
           <tr>
-            <td colSpan={12}>
+            <td colSpan={employeeColumns.length + 1}>
               <LoadingItem />
             </td>
           </tr>
@@ -129,7 +132,7 @@ function Employees() {
       return (
         <tbody>
           <tr>
-            <td colSpan={12}>
+            <td colSpan={employeeColumns.length + 1}>
               <div className="flex h-40 flex-col items-center justify-center gap-2 text-gray-400">
                 <Users className="h-10 w-10" />
                 <p className="text-sm font-medium">
@@ -144,48 +147,107 @@ function Employees() {
 
     return (
       <tbody className="divide-y divide-gray-200 bg-white">
-        {filteredRows.map((employee) => (
+        {filteredRows.map((employee, rowIndex) => (
           <tr key={employee.EMPLOYEE_ID} className="hover:bg-gray-50">
-            <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
-              {employee.EMPLOYEE_ID}
-            </td>
-            <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
-              {employee.EMPLOYEE_CODE}
-            </td>
-            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {employee.VT_CODE ?? "-"}
-            </td>
-            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {employee.FIRST_NAME || "-"} {employee.LAST_NAME || "-"}
-            </td>
-            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {employee.PHONE || "-"}
-            </td>
-            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {employee.EMAIL || "-"}
-            </td>
-            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {employee.BIRTH_DATE
-                ? formatDateTime(employee.BIRTH_DATE).split(" ")[0]
-                : "-"}
-            </td>
-            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {employee.UNIT_ID ?? "-"}
-            </td>
-            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {employee.POSITION_ID ?? "-"}
-            </td>
-            <td className="px-4 py-3 whitespace-nowrap">
-              <span
-                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                  employee.STATUS === "ENABLE"
-                    ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
-                    : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
-                }`}
-              >
-                {employee.STATUS === "ENABLE" ? "Hoạt động" : "Ngưng hoạt động"}
-              </span>
-            </td>
+            {employeeColumns.map(([key]) => {
+              const cellClass = "px-4 py-3 text-gray-700 whitespace-nowrap";
+
+              if (key === "INDEX") {
+                return (
+                  <td key={key} className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
+                    {rowIndex + 1}
+                  </td>
+                );
+              }
+
+              if (key === "EMPLOYEE_CODE") {
+                return (
+                  <td key={key} className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
+                    {employee.EMPLOYEE_CODE}
+                  </td>
+                );
+              }
+
+              if (key === "NAME") {
+                return (
+                  <td key={key} className={cellClass}>
+                    {employee.FIRST_NAME || "-"} {employee.LAST_NAME || ""}
+                  </td>
+                );
+              }
+
+              if (key === "EMAIL") {
+                return (
+                  <td key={key} className={cellClass}>
+                    {employee.EMAIL || "-"}
+                  </td>
+                );
+              }
+
+              if (key === "BIRTHDAY") {
+                return (
+                  <td key={key} className={cellClass}>
+                    {employee.BIRTH_DATE
+                      ? formatDateTime(employee.BIRTH_DATE).split(" ")[0]
+                      : "-"}
+                  </td>
+                );
+              }
+
+              if (key === "UNIT") {
+                return (
+                  <td key={key} className={cellClass}>
+                    {employee.UNIT_ID ?? "-"}
+                  </td>
+                );
+              }
+
+              if (key === "POSITION") {
+                return (
+                  <td key={key} className={cellClass}>
+                    {employee.POSITION_ID ?? "-"}
+                  </td>
+                );
+              }
+
+              if (key === "VIETTEL") {
+                return (
+                  <td key={key} className={cellClass}>
+                    {employee.VT_CODE ?? "-"}
+                  </td>
+                );
+              }
+
+              if (key === "STATUS") {
+                return (
+                  <td key={key} className="px-4 py-3 whitespace-nowrap">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                        employee.STATUS === "ENABLE"
+                          ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
+                          : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
+                      }`}
+                    >
+                      {employee.STATUS === "ENABLE" ? "Hoạt động" : "Ngưng hoạt động"}
+                    </span>
+                  </td>
+                );
+              }
+
+              if (key === "CREATED_AT" || key === "UPDATED_AT") {
+                return (
+                  <td key={key} className={cellClass}>
+                    {employee[key] ? formatDateTime(employee[key]) : "-"}
+                  </td>
+                );
+              }
+
+              return (
+                <td key={key} className={cellClass}>
+                  {employee[key] || "-"}
+                </td>
+              );
+            })}
             <td className="px-4 py-3 text-right whitespace-nowrap">
               <div className="flex items-center justify-end gap-1">
                 <button
@@ -278,36 +340,14 @@ function Employees() {
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  STT
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  MaNV
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  MaVT
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Họ và tên
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Số điện thoại
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Email
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Ngày sinh
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Mã đơn vị
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Phòng ban
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Trạng thái
-                </th>
+                {employeeColumns.map(([key, label]) => (
+                  <th
+                    key={key}
+                    className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap"
+                  >
+                    {label}
+                  </th>
+                ))}
                 <th className="px-4 py-2 text-right font-semibold text-gray-700 whitespace-nowrap">
                   Thao tác
                 </th>

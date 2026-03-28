@@ -21,8 +21,16 @@ class EmployeesViettelServices {
 
     // check email syntax
     if (data.VIETTEL_EMAIL) {
-      ValidateCores.validateEmail(data.VIETTEL_EMAIL)
-      ValidateCores.validateEmailDomain(data.VIETTEL_EMAIL, ALLOWED_EMAIL_DOMAINS)
+      ValidateCores.validateEmail(data.VIETTEL_EMAIL, 'Viettel email is invalid!.')
+      ValidateCores.validateEmailDomain(
+        data.VIETTEL_EMAIL, ALLOWED_EMAIL_DOMAINS,
+        'Viettel email domain is not allowed!.'
+      )
+      const isExistedEmail = await employeesViettelModel.findByName(data.VIETTEL_EMAIL.trim())
+      if (isExistedEmail) {
+        throw new ApiError(StatusCodes.CONFLICT, 'This Viettel email is already taken!')
+      }
+
     }
 
     // 2. Check existence
@@ -31,11 +39,6 @@ class EmployeesViettelServices {
       throw new ApiError(StatusCodes.CONFLICT, 'This Viettel code is already taken!')
     }
 
-    // 2. Check existence email
-    const isExistedEmail = await employeesViettelModel.findByName(data.VIETTEL_EMAIL.trim())
-    if (isExistedEmail) {
-      throw new ApiError(StatusCodes.CONFLICT, 'This Viettel email is already taken!')
-    }
     // 3. Check status enum
     CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
 
