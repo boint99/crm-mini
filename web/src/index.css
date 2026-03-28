@@ -34,3 +34,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+.disabled-input {
+  @apply bg-gray-50 text-gray-500 cursor-not-allowed;
+}

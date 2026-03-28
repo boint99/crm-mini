@@ -14,6 +14,9 @@ import { formatDateTime, CUSTOM_MESSAGES } from "@/utils/contants";
 import { Building2, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { headerTableBranch } from "@/utils/headerTable";
+
+const branchColumns = Object.entries(headerTableBranch);
 
 function Branches() {
   const [openModal, setOpenModal] = useState(false);
@@ -114,7 +117,7 @@ function Branches() {
       return (
         <tbody>
           <tr>
-            <td colSpan={8}>
+            <td colSpan={branchColumns.length + 1}>
               <LoadingItem />
             </td>
           </tr>
@@ -126,7 +129,7 @@ function Branches() {
       return (
         <tbody>
           <tr>
-            <td colSpan={8}>
+            <td colSpan={branchColumns.length + 1}>
               <div className="flex h-40 flex-col items-center justify-center gap-2 text-gray-400">
                 <Building2 className="h-10 w-10" />
                 <p className="text-sm font-medium">
@@ -141,37 +144,57 @@ function Branches() {
 
     return (
       <tbody className="divide-y divide-gray-200 bg-white">
-        {filteredRows.map((branch) => (
+        {filteredRows.map((branch, rowIndex) => (
           <tr key={branch.BRANCH_ID} className="hover:bg-gray-50">
-            <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
-              {branch.BRANCH_ID}
-            </td>
-            <td className="px-4 py-3 text-gray-900 font-medium whitespace-nowrap">
-              {branch.BRANCH_NAME || "-"}
-            </td>
-            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {branch.BRANCH_CODE || "-"}
-            </td>
-            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {branch.LOCATION || "-"}
-            </td>
-            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {branch.ORG_UNIT_ID ?? "-"}
-            </td>
-            <td className="px-4 py-3 whitespace-nowrap">
-              <span
-                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                  branch.STATUS === "ENABLE"
-                    ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
-                    : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
-                }`}
-              >
-                {branch.STATUS === "ENABLE" ? "Hoạt động" : "Ngưng hoạt động"}
-              </span>
-            </td>
-            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-              {branch.CREATED_AT ? formatDateTime(branch.CREATED_AT) : "-"}
-            </td>
+            {branchColumns.map(([key]) => {
+              const cellClass = "px-4 py-3 text-gray-700 whitespace-nowrap";
+
+              if (key === "INDEX") {
+                return (
+                  <td key={key} className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
+                    {rowIndex + 1}
+                  </td>
+                );
+              }
+
+              if (key === "STATUS") {
+                return (
+                  <td key={key} className="px-4 py-3 whitespace-nowrap">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                        branch.STATUS === "ENABLE"
+                          ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
+                          : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
+                      }`}
+                    >
+                      {branch.STATUS === "ENABLE" ? "Hoạt động" : "Ngưng hoạt động"}
+                    </span>
+                  </td>
+                );
+              }
+
+              if (key === "CREATED_AT" || key === "UPDATED_AT") {
+                return (
+                  <td key={key} className={cellClass}>
+                    {branch[key] ? formatDateTime(branch[key]) : "-"}
+                  </td>
+                );
+              }
+
+              if (key === "ORG_UNIT") {
+                return (
+                  <td key={key} className={cellClass}>
+                    {branch.ORG_UNIT_ID ?? "-"}
+                  </td>
+                );
+              }
+
+              return (
+                <td key={key} className={cellClass}>
+                  {branch[key] || "-"}
+                </td>
+              );
+            })}
             <td className="px-4 py-3 text-right whitespace-nowrap">
               <div className="flex items-center justify-end gap-1">
                 <button
@@ -264,27 +287,14 @@ function Branches() {
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  STT
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Tên chi nhánh
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Tên viết tắt
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Địa điểm
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Mã đơn vị
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Trạng thái
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                  Ngày tạo
-                </th>
+                {branchColumns.map(([key, label]) => (
+                  <th
+                    key={key}
+                    className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap"
+                  >
+                    {label}
+                  </th>
+                ))}
                 <th className="px-4 py-2 text-right font-semibold text-gray-700 whitespace-nowrap">
                   Thao tác
                 </th>
