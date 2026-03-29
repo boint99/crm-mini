@@ -64,38 +64,37 @@ model BRANCHES {
 }
 
 model POSITIONS {
-  POSITION_ID   Int        @id @default(autoincrement()) @map("POSITION_ID")
-  POSITION_CODE String     @unique @map("POSITION_CODE")
-  POSITION_NAME String     @map("POSITION_NAME")
-  LEVEL         String     @map("LEVEL")
-  STATUS        ENUMSTATUS @default(ENABLE) @map("STATUS")
-  CREATED_AT    DateTime   @default(now()) @map("CREATED_AT")
-  UPDATED_AT    DateTime   @updatedAt @map("UPDATED_AT")
+  POSITION_ID   Int         @id @default(autoincrement()) @map("POSITION_ID")
+  POSITION_CODE String      @unique @map("POSITION_CODE")
+  POSITION_NAME String      @map("POSITION_NAME")
+  LEVEL         String      @map("LEVEL")
+  STATUS        ENUMSTATUS  @default(ENABLE) @map("STATUS")
+  CREATED_AT    DateTime    @default(now()) @map("CREATED_AT")
+  UPDATED_AT    DateTime    @updatedAt @map("UPDATED_AT")
   EMPLOYEES     EMPLOYEES[]
 
   @@map("POSITIONS")
 }
 
 model EMPLOYEES {
-  EMPLOYEE_ID   Int           @id @default(autoincrement()) @map("EMPLOYEE_ID")
-  EMPLOYEE_CODE String        @unique @map("POSITION_CODE")
-  FIRST_NAME    String        @map("FIRST_NAME")
-  LAST_NAME     String        @map("LAST_NAME")
-  PHONE         String?       @map("PHONE")
-  EMAIL         String?       @map("EMAIL")
-  BIRTH_DATE    DateTime?     @map("BIRTH_DATE") @db.Date
-  UNIT_ID       Int?          @map("UNIT_ID")
-  VIETTEL_ID  Int?            @map("VIETTEL_ID")
-  STATUS        ENUMSTATUS    @default(ENABLE) @map("STATUS")
-  CREATED_AT    DateTime      @default(now()) @map("CREATED_AT")
-  UPDATED_AT    DateTime      @updatedAt @map("UPDATED_AT")
-  POSITION_ID   Int?          @map("POSITION_ID")
-
-  ACCOUNTS      ACCOUNTS[]
-  ORG_UNIT      ORG_UNITS?    @relation(fields: [UNIT_ID], references: [ORG_UNIT_ID])
-  VIETTEL_EMPLOYEES           VIETTEL_EMPLOYEES[]
-  IPS           IPS[]
-  POSITION      POSITIONS?    @relation(fields: [POSITION_ID], references: [POSITION_ID])
+  EMPLOYEE_ID       Int                 @id @default(autoincrement()) @map("EMPLOYEE_ID")
+  EMPLOYEE_CODE     String              @unique @map("POSITION_CODE")
+  FIRST_NAME        String              @map("FIRST_NAME")
+  LAST_NAME         String              @map("LAST_NAME")
+  PHONE             String?             @map("PHONE")
+  EMAIL             String?             @map("EMAIL")
+  BIRTH_DATE        DateTime?           @map("BIRTH_DATE") @db.Date
+  UNIT_ID           Int?                @map("UNIT_ID")
+  VIETTEL_ID        Int?                @map("VIETTEL_ID")
+  STATUS            ENUMSTATUS          @default(ENABLE) @map("STATUS")
+  CREATED_AT        DateTime            @default(now()) @map("CREATED_AT")
+  UPDATED_AT        DateTime            @updatedAt @map("UPDATED_AT")
+  POSITION_ID       Int?                @map("POSITION_ID")
+  ACCOUNTS          ACCOUNTS[]
+  POSITION          POSITIONS?          @relation(fields: [POSITION_ID], references: [POSITION_ID])
+  ORG_UNIT          ORG_UNITS?          @relation(fields: [UNIT_ID], references: [ORG_UNIT_ID])
+  IPS               IPS[]
+  VIETTEL_EMPLOYEES VIETTEL_EMPLOYEES[]
 
   @@map("EMPLOYEES")
 }
@@ -118,7 +117,7 @@ model ACCOUNTS {
 
 model ACCOUNT_ROLES {
   AR_ID      Int       @id @default(autoincrement()) @map("AR_ID")
-  AR_CODE  String      @unique @map("AR_CODE")
+  AR_CODE    String    @unique @map("AR_CODE")
   ROLE_ID    Int?      @map("ROLE_ID")
   ACCOUNT_ID Int?      @map("ACCOUNT_ID")
   CREATED_AT DateTime  @default(now()) @map("CREATED_AT")
@@ -162,16 +161,16 @@ model PERMISSIONS {
 }
 
 model VLANS {
-  VLAN_ID         Int        @id @default(1) @map("VLAN_ID")
-  VLAN_CODE       Int        @unique @map("VLAN_CODE")
-  VLAN_NAME       String     @map("VLAN_NAME")
-  NETWORK         String?     @map("NETWORK")
-  DEFAULT_GATEWAY String?    @map("DEFAULT_GATEWAY")
-  SUBNET_MASK     String?    @map("SUBNET_MASK")
-  IP_RANGE        String     @map("IP_RANGE")
-  STATUS          ENUMSTATUS @default(ENABLE) @map("STATUS")
-  CREATED_AT      DateTime   @default(now()) @map("CREATED_AT")
-  UPDATED_AT      DateTime   @updatedAt @map("UPDATED_AT")
+  VLAN_ID         Int            @id @default(autoincrement()) @map("VLAN_ID")
+  VLAN_CODE       Int            @unique @map("VLAN_CODE")
+  VLAN_NAME       String         @map("VLAN_NAME")
+  NETWORK         String?        @map("NETWORK")
+  DEFAULT_GATEWAY String?        @map("DEFAULT_GATEWAY")
+  SUBNET_MASK     String?        @map("SUBNET_MASK")
+  IP_RANGE        String         @map("IP_RANGE")
+  STATUS          NETWORK_STATUS @default(ACTIVE) @map("STATUS")
+  CREATED_AT      DateTime       @default(now()) @map("CREATED_AT")
+  UPDATED_AT      DateTime       @updatedAt @map("UPDATED_AT")
   IPS             IPS[]
 
   @@map("VLANS")

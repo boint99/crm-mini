@@ -2,6 +2,8 @@ import ApiError from './ApiError.js'
 
 export const ALLOWED_STATUS = ['ENABLE', 'DISABLED']
 
+export const ALLOWED_STATUS_NETWORK = ['AVAILABLE', 'ASSIGNED', 'ACTIVE', 'INACTIVE', 'DISABLED', 'CONFLICT']
+
 export const ALLOWED_EMAIL_DOMAINS = [
   // 'company.com',
   // 'gmail.com'
