@@ -1,0 +1,267 @@
+paths:
+  # ========================
+  # VLAN APIs
+  # ========================
+  /api/networks/vlan/all:
+    get:
+      summary: Get all VLANs
+      description: Retrieve list of all VLANs.
+      tags:
+        - VLANs
+      responses:
+        200:
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VlanListResponse'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/networks/vlan/create:
+    post:
+      summary: Create VLAN
+      description: Create a new VLAN. SUBNET_MASK and IP_RANGE are auto-calculated from NETWORK (CIDR). DEFAULT_GATEWAY must be a valid IPv4 within the NETWORK range.
+      tags:
+        - VLANs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VlanCreateInput'
+      responses:
+        201:
+          description: VLAN created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VlanCreateResponse'
+        400:
+          description: Invalid input (bad CIDR, invalid gateway, gateway not in network range)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        409:
+          description: Duplicate VLAN_CODE, VLAN_NAME, NETWORK, or DEFAULT_GATEWAY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/networks/vlan/update:
+    put:
+      summary: Update VLAN
+      description: Update VLAN information. VLAN_ID is required. If NETWORK is changed, SUBNET_MASK and IP_RANGE are recalculated. DEFAULT_GATEWAY must remain within the NETWORK range.
+      tags:
+        - VLANs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VlanUpdateInput'
+      responses:
+        200:
+          description: VLAN updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+        400:
+          description: Invalid input or status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: VLAN not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        409:
+          description: Duplicate VLAN_NAME, NETWORK, or DEFAULT_GATEWAY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/networks/vlan/delete/{id}:
+    delete:
+      summary: Delete VLAN
+      description: Delete a VLAN by VLAN_ID passed as path parameter.
+      tags:
+        - VLANs
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: VLAN_ID of the VLAN to delete
+          schema:
+            type: integer
+      responses:
+        200:
+          description: VLAN deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+        400:
+          description: Invalid VLAN ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: VLAN not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    # ========================
+    # Common Response
+    # ========================
+    BaseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Success
+        data:
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Invalid request
+
+    # ========================
+    # VLAN
+    # ========================
+    Vlan:
+      type: object
+      properties:
+        VLAN_ID:
+          type: integer
+        VLAN_CODE:
+          type: integer
+        VLAN_NAME:
+          type: string
+        NETWORK:
+          type: string
+          description: CIDR notation (e.g. 192.168.1.0/24)
+        DEFAULT_GATEWAY:
+          type: string
+          description: IPv4 address within the NETWORK range
+        SUBNET_MASK:
+          type: string
+          description: Auto-calculated from NETWORK
+        IP_RANGE:
+          type: string
+          description: Auto-calculated from NETWORK (e.g. 192.168.1.1 - 192.168.1.254)
+        STATUS:
+          type: string
+          enum: [AVAILABLE, ASSIGNED, ACTIVE, INACTIVE, DISABLED, CONFLICT]
+        CREATED_AT:
+          type: string
+          format: date-time
+        UPDATED_AT:
+          type: string
+          format: date-time
+
+    VlanListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Vlans fetched successfully.
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vlan'
+
+    VlanCreateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: VLAN created successfully.
+        data:
+          $ref: '#/components/schemas/Vlan'
+
+    VlanCreateInput:
+      type: object
+      required:
+        - VLAN_CODE
+        - VLAN_NAME
+        - NETWORK
+        - DEFAULT_GATEWAY
+      properties:
+        VLAN_CODE:
+          type: integer
+          example: 100
+        VLAN_NAME:
+          type: string
+          example: VLAN-Office
+        NETWORK:
+          type: string
+          example: 192.168.1.0/24
+          description: CIDR notation
+        DEFAULT_GATEWAY:
+          type: string
+          example: 192.168.1.1
+          description: Must be a valid IPv4 within NETWORK range
+        STATUS:
+          type: string
+          enum: [AVAILABLE, ASSIGNED, ACTIVE, INACTIVE, DISABLED, CONFLICT]
+          example: ACTIVE
+
+    VlanUpdateInput:
+      type: object
+      required:
+        - VLAN_ID
+      properties:
+        VLAN_ID:
+          type: integer
+          example: 1
+        VLAN_CODE:
+          type: integer
+          example: 200
+        VLAN_NAME:
+          type: string
+          example: VLAN-Server
+        NETWORK:
+          type: string
+          example: 10.0.0.0/16
+          description: CIDR notation
+        DEFAULT_GATEWAY:
+          type: string
+          example: 10.0.0.1
+          description: Must be a valid IPv4 within NETWORK range
+        STATUS:
+          type: string
+          enum: [AVAILABLE, ASSIGNED, ACTIVE, INACTIVE, DISABLED, CONFLICT]
+          example: DISABLED

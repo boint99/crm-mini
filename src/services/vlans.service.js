@@ -77,9 +77,11 @@ class VlansService {
 
   async update(data) {
     const { VLAN_ID, ...payload } = data
+    console.log('🚀 ~ VlansService ~ update ~ VLAN_ID:', VLAN_ID)
 
     // 1. Check exists
     const existing = await vlansModel.findById(VLAN_ID)
+    console.log('🚀 ~ VlansService ~ update ~ existing:', existing)
     if (!existing) throw new ApiError(StatusCodes.NOT_FOUND, 'Vlan not found!')
 
     // 2. If VLAN_NAME changed, check unique
@@ -136,7 +138,7 @@ class VlansService {
     }
 
     // 5. Check status enum
-    CHECK_ENUM(payload.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
+    CHECK_ENUM(payload.STATUS, ALLOWED_STATUS_NETWORK, StatusCodes.BAD_REQUEST, 'Invalid status!')
 
     return await vlansModel.updateById(VLAN_ID, payload)
   }

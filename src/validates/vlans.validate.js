@@ -52,10 +52,9 @@ class VlansValidate {
   // ================= UPDATE =================
   static update(req, res, next) {
     try {
-      const { id } = req.params
-      const { VLAN_CODE, VLAN_NAME, NETWORK, DEFAULT_GATEWAY, STATUS } = req.body
+      const { VLAN_ID, VLAN_CODE, VLAN_NAME, NETWORK, DEFAULT_GATEWAY, STATUS } = req.body
 
-      ValidateCores.validateId(id, 'Vlan ID is required!')
+      ValidateCores.validateId(VLAN_ID, 'Vlan ID is required!')
 
       // Validate optional fields
       if (VLAN_CODE !== undefined) {
@@ -63,7 +62,7 @@ class VlansValidate {
       }
 
       if (VLAN_NAME !== undefined) {
-        ValidateCores.validateString(VLAN_NAME, 'Vlan name must be a string!')
+        ValidateCores.validateStringLength(VLAN_NAME, 'Vlan name must be a string!')
       }
 
       let subnet = null
@@ -95,11 +94,7 @@ class VlansValidate {
         }
       }
 
-      if (STATUS !== undefined) {
-        const normalizedStatus = STATUS.trim().toUpperCase()
-        ValidateCores.validateEnum(normalizedStatus, ALLOWED_STATUS_NETWORK, 'Invalid status!')
-        req.body.STATUS = normalizedStatus
-      }
+      ValidateCores.validateEnum(STATUS, ALLOWED_STATUS_NETWORK)
 
       next()
     } catch (error) {
