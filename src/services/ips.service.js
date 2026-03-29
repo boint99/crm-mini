@@ -4,11 +4,12 @@ import { vlansModel } from '../models/vlans.model.js'
 import ApiError from '../utils/ApiError.js'
 import { ALLOWED_STATUS_NETWORK, CHECK_ENUM } from '../utils/constants.js'
 import { ipsModel } from '../models/ips.model.js'
+import { employeesModel } from '../models/employees.model.js'
 
 
 class IpsService {
   async create(data) {
-    const { HOST, VLAN_ID, DEVICE_TYPE, EMPLOYEE_ID } = data
+    const { HOST, VLAN_ID, DEVICE_TYPE, EMPLOYEE_ID, STATUS } = data
 
     // 1. Validate HOST
     if (!HOST || !HOST.trim() || !ip.isV4Format(HOST)) {
@@ -57,17 +58,27 @@ class IpsService {
     }
 
     // 7. Check duplicate IP
-    const existed = await ipsModel.findByHost(host)
+    const existed = await ipsModel.findByField(host, 'HOST')
     if (existed) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'IP already exists!')
     }
 
+    if (EMPLOYEE_ID) {
+      const existingEmp = await employeesModel.findById(EMPLOYEE_ID)
+      if (existingEmp) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Employee already has an assigned IP!')
+      }
+    }
+
+    // 8. Check status enum
+    CHECK_ENUM(STATUS, ALLOWED_STATUS_NETWORK, StatusCodes.BAD_REQUEST, 'Invalid status!')
     // 8. Insert DB
     return await ipsModel.create({
       HOST: host,
       VLAN_ID,
       DEVICE_TYPE,
-      EMPLOYEE_ID
+      EMPLOYEE_ID,
+      STATUS
     })
   }
 

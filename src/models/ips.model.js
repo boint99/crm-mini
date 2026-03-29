@@ -13,20 +13,8 @@ class IpsModel extends BaseModel {
     return await super.CREATE(data)
   }
 
-  async findByName(name) {
-    return await super.FINDBYFIELD(name, 'IP_NAME')
-  }
-
-  async findByCode(code) {
-    return await super.FINDBYFIELD(code, 'IP_CODE')
-  }
-
-  async findByNetwork(network) {
-    return await super.FINDBYFIELD(network, 'NETWORK')
-  }
-
-  async findByGateway(gateway) {
-    return await super.FINDBYFIELD(gateway, 'DEFAULT_GATEWAY')
+  async findByField(name, field) {
+    return await super.FINDBYFIELD(name, field)
   }
 
   async updateById(id, updateData) {
