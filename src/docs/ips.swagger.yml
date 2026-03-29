@@ -1,0 +1,250 @@
+paths:
+  # ========================
+  # IP ADDRESS APIs
+  # ========================
+  /api/networks/ipaddress/all:
+    get:
+      summary: Get all IP addresses
+      description: Retrieve list of all IP addresses.
+      tags:
+        - IP Addresses
+      responses:
+        200:
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IpListResponse'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/networks/ipaddress/create:
+    post:
+      summary: Create IP address
+      description: Create a new IP address inside a VLAN. HOST must be a valid IPv4 within the selected VLAN network, cannot match the VLAN gateway, and cannot be the network or broadcast address.
+      tags:
+        - IP Addresses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IpCreateInput'
+      responses:
+        201:
+          description: IP address created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IpCreateResponse'
+        400:
+          description: Invalid input, invalid VLAN, duplicate IP, or invalid employee assignment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/networks/ipaddress/update:
+    put:
+      summary: Update IP address
+      description: Update IP address information. IP_ID is required. The final HOST must remain valid for the selected VLAN network and employee assignment must remain valid.
+      tags:
+        - IP Addresses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IpUpdateInput'
+      responses:
+        200:
+          description: IP address updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+        400:
+          description: Invalid input, invalid VLAN, duplicate IP, or invalid employee assignment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: IP address not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/networks/ipaddress/delete/{id}:
+    delete:
+      summary: Delete IP address
+      description: Delete an IP address by IP_ID passed as path parameter.
+      tags:
+        - IP Addresses
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: IP_ID of the IP address to delete
+          schema:
+            type: integer
+      responses:
+        200:
+          description: IP address deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+        400:
+          description: Invalid IP ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: IP address not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    # ========================
+    # Common Response
+    # ========================
+    BaseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Success
+        data:
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Invalid request
+
+    # ========================
+    # IP ADDRESS
+    # ========================
+    IpAddress:
+      type: object
+      properties:
+        IP_ID:
+          type: integer
+        HOST:
+          type: string
+          description: IPv4 address assigned inside a VLAN network
+        VLAN_ID:
+          type: integer
+        DEVICE_TYPE:
+          type: string
+          nullable: true
+        EMPLOYEE_ID:
+          type: integer
+          nullable: true
+        STATUS:
+          type: string
+          enum: [AVAILABLE, ASSIGNED, ACTIVE, INACTIVE, DISABLED, CONFLICT]
+        CREATED_AT:
+          type: string
+          format: date-time
+        UPDATED_AT:
+          type: string
+          format: date-time
+
+    IpListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: IP addresses fetched successfully.
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/IpAddress'
+
+    IpCreateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: IP address created successfully.
+        data:
+          $ref: '#/components/schemas/IpAddress'
+
+    IpCreateInput:
+      type: object
+      required:
+        - HOST
+        - VLAN_ID
+      properties:
+        HOST:
+          type: string
+          example: 192.168.1.10
+          description: Must be a valid IPv4 inside the VLAN network and not equal to the VLAN gateway
+        VLAN_ID:
+          type: integer
+          example: 1
+        DEVICE_TYPE:
+          type: string
+          example: PC
+        EMPLOYEE_ID:
+          type: integer
+          example: 12
+          nullable: true
+        STATUS:
+          type: string
+          enum: [AVAILABLE, ASSIGNED, ACTIVE, INACTIVE, DISABLED, CONFLICT]
+          example: ACTIVE
+
+    IpUpdateInput:
+      type: object
+      required:
+        - IP_ID
+        - HOST
+        - VLAN_ID
+      properties:
+        IP_ID:
+          type: integer
+          example: 1
+        HOST:
+          type: string
+          example: 192.168.1.20
+          description: Must remain a valid IPv4 inside the VLAN network and not equal to the VLAN gateway
+        VLAN_ID:
+          type: integer
+          example: 1
+        DEVICE_TYPE:
+          type: string
+          example: Printer
+        EMPLOYEE_ID:
+          type: integer
+          example: 15
+          nullable: true
+        STATUS:
+          type: string
+          enum: [AVAILABLE, ASSIGNED, ACTIVE, INACTIVE, DISABLED, CONFLICT]
+          example: ASSIGNED
