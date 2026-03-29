@@ -1,45 +1,28 @@
 import ValidateCores from '../core/validate.core.js'
 import ip from 'ip'
+import { StatusCodes } from 'http-status-codes'
 import ApiError from '../utils/ApiError.js'
 import { ALLOWED_STATUS_NETWORK } from '../utils/constants.js'
+import { vlansModel } from '../models/vlans.model.js'
 
 class VlansValidate {
 
   // ================= CREATE =================
-  static create(req, res, next) {
+  static async create(req, res, next) {
     try {
       const { VLAN_CODE, VLAN_NAME, NETWORK, DEFAULT_GATEWAY, STATUS } = req.body
 
       ValidateCores.validateId(VLAN_CODE, 'Vlan code is required and must be a number!')
-      ValidateCores.validateString(VLAN_NAME, 'Vlan name is required and must be a string!')
+      ValidateCores.validateRequiredString(VLAN_NAME, 'Vlan name is required!')
+      ValidateCores.validateRequiredString(NETWORK, 'Network is required (e.g. 192.168.1.0/24)!')
+      ValidateCores.validateRequiredString(DEFAULT_GATEWAY, 'Default gateway is required!')
 
-      if (!NETWORK) {
-        throw new ApiError('Network is required (e.g. 192.168.1.0/24)')
+      const subnet = ValidateCores.parseSubnet(NETWORK)
+      if (!subnet) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Network must be a valid CIDR!')
       }
 
-      const subnet = ip.cidrSubnet(NETWORK.trim())
-      if (!subnet || !subnet.subnetMaskLength) {
-        throw new ApiError('Network must be a valid CIDR')
-      }
-
-      if (!DEFAULT_GATEWAY) {
-        throw new ApiError('Default gateway is required')
-      }
-
-      if (!ip.isV4Format(DEFAULT_GATEWAY.trim())) {
-        throw new ApiError('Default gateway must be a valid IP')
-      }
-
-      if (!subnet.contains(DEFAULT_GATEWAY.trim())) {
-        throw new ApiError('Default gateway must be within network range!')
-      }
-
-      if (
-        DEFAULT_GATEWAY.trim() === subnet.networkAddress ||
-        DEFAULT_GATEWAY.trim() === subnet.broadcastAddress
-      ) {
-        throw new ApiError('Default gateway cannot be network/broadcast address!')
-      }
+      ValidateCores.validateGatewayInSubnet(DEFAULT_GATEWAY, subnet)
 
       ValidateCores.validateEnum(STATUS, ALLOWED_STATUS_NETWORK)
 
@@ -50,7 +33,7 @@ class VlansValidate {
   }
 
   // ================= UPDATE =================
-  static update(req, res, next) {
+  static async update(req, res, next) {
     try {
       const { VLAN_ID, VLAN_CODE, VLAN_NAME, NETWORK, DEFAULT_GATEWAY, STATUS } = req.body
 
@@ -62,36 +45,35 @@ class VlansValidate {
       }
 
       if (VLAN_NAME !== undefined) {
-        ValidateCores.validateStringLength(VLAN_NAME, 'Vlan name must be a string!')
+        ValidateCores.validateRequiredString(VLAN_NAME, 'Vlan name must not be empty!')
       }
 
       let subnet = null
+      let finalNetwork = NETWORK
 
       if (NETWORK !== undefined) {
-        subnet = ip.cidrSubnet(NETWORK.trim())
-        if (!subnet || !subnet.subnetMaskLength) {
-          throw new ApiError('Network must be a valid CIDR')
+        ValidateCores.validateRequiredString(NETWORK, 'Network must not be empty!')
+
+        subnet = ValidateCores.parseSubnet(NETWORK)
+        if (!subnet) {
+          throw new ApiError(StatusCodes.BAD_REQUEST, 'Network must be a valid CIDR!')
         }
       }
 
       if (DEFAULT_GATEWAY !== undefined) {
-        if (!ip.isV4Format(DEFAULT_GATEWAY.trim())) {
-          throw new ApiError('Default gateway must be a valid IP')
+        ValidateCores.validateRequiredString(DEFAULT_GATEWAY, 'Default gateway must not be empty!')
+
+        if (!subnet) {
+          const existingVlan = await vlansModel.findById(VLAN_ID)
+          finalNetwork = existingVlan?.NETWORK
+          subnet = finalNetwork ? ValidateCores.parseSubnet(finalNetwork) : null
         }
 
-        // Nếu có NETWORK thì check cùng subnet
-        if (NETWORK !== undefined) {
-          if (!subnet.contains(DEFAULT_GATEWAY.trim())) {
-            throw new ApiError('Default gateway must be within network range!')
-          }
-
-          if (
-            DEFAULT_GATEWAY.trim() === subnet.networkAddress ||
-            DEFAULT_GATEWAY.trim() === subnet.broadcastAddress
-          ) {
-            throw new ApiError('Default gateway cannot be network/broadcast address!')
-          }
+        if (!subnet || !finalNetwork) {
+          throw new ApiError(StatusCodes.BAD_REQUEST, 'Cannot validate default gateway without a valid network!')
         }
+
+        ValidateCores.validateGatewayInSubnet(DEFAULT_GATEWAY, subnet)
       }
 
       ValidateCores.validateEnum(STATUS, ALLOWED_STATUS_NETWORK)
@@ -103,7 +85,7 @@ class VlansValidate {
   }
 
   // ================= DELETE =================
-  static delete(req, res, next) {
+  static async delete(req, res, next) {
     try {
       const { id } = req.params
 

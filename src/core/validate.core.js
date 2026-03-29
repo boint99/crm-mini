@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '../utils/ApiError.js'
+import ip from 'ip'
 
 class ValidateCores {
   // Check Id
@@ -48,6 +49,63 @@ class ValidateCores {
 
     if (!domain || !normalizedAllowedDomains.includes(domain)) {
       throw new ApiError(StatusCodes.BAD_REQUEST, message)
+    }
+  }
+
+  static parseSubnet(network) {
+    try {
+      const subnet = ip.cidrSubnet(String(network).trim())
+      return subnet?.subnetMaskLength ? subnet : null
+    } catch {
+      return null
+    }
+  }
+
+  static normalizeSubnet(subnetOrNetwork) {
+    if (!subnetOrNetwork) return null
+
+    if (typeof subnetOrNetwork === 'string') {
+      return this.parseSubnet(subnetOrNetwork)
+    }
+
+    if (typeof subnetOrNetwork.contains === 'function') {
+      return subnetOrNetwork
+    }
+
+    if (subnetOrNetwork.networkAddress && subnetOrNetwork.subnetMask) {
+      return this.parseSubnet(`${subnetOrNetwork.networkAddress}/${subnetOrNetwork.subnetMask}`)
+    }
+
+    return null
+  }
+
+  static validateRequiredString(value, message) {
+    if (value === undefined || value === null || !String(value).trim()) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, message)
+    }
+  }
+
+  static validateGatewayInSubnet(gateway, subnetOrNetwork) {
+    const trimmedGateway = String(gateway).trim()
+    const subnet = this.normalizeSubnet(subnetOrNetwork)
+
+    if (!subnet) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Network must be a valid CIDR!')
+    }
+
+    if (!ip.isV4Format(trimmedGateway)) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Default gateway must be a valid IPv4 address!')
+    }
+
+    if (!subnet.contains(trimmedGateway)) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Default gateway must be within network range!')
+    }
+
+    if (
+      trimmedGateway === subnet.networkAddress ||
+      trimmedGateway === subnet.broadcastAddress
+    ) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Default gateway cannot be network/broadcast address!')
     }
   }
 }
