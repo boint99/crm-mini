@@ -1,0 +1,266 @@
+paths:
+  # ========================
+  # VIETTEL EMPLOYEE APIs
+  # ========================
+  /api/viettel-employees/lists:
+    get:
+      summary: Get Viettel employee list
+      description: Retrieve list of all Viettel employees.
+      tags:
+        - Viettel Employees
+      responses:
+        200:
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViettelEmployeeListResponse'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViettelErrorResponse'
+
+  /api/viettel-employees:
+    post:
+      summary: Create Viettel employee
+      description: Create a new Viettel employee. VIETTEL_CODE must be exactly 6 characters and unique. VIETTEL_EMAIL must use an allowed domain.
+      tags:
+        - Viettel Employees
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViettelEmployeeCreateInput'
+      responses:
+        201:
+          description: Employee created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViettelEmployeeCreateResponse'
+        400:
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViettelErrorResponse'
+        409:
+          description: Duplicate Viettel code or email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViettelErrorResponse'
+
+    put:
+      summary: Update Viettel employee
+      description: Update Viettel employee information. VIETTEL_ID is required in request body.
+      tags:
+        - Viettel Employees
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViettelEmployeeUpdateInput'
+      responses:
+        200:
+          description: Employee updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViettelBaseResponse'
+        400:
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViettelErrorResponse'
+        404:
+          description: Employee not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViettelErrorResponse'
+        409:
+          description: Duplicate Viettel code or email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViettelErrorResponse'
+
+  /api/viettel-employees/{id}:
+    delete:
+      summary: Delete Viettel employee
+      description: Delete a Viettel employee by VIETTEL_ID passed as path parameter.
+      tags:
+        - Viettel Employees
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: VIETTEL_ID of the Viettel employee to delete
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Employee deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViettelBaseResponse'
+        400:
+          description: Invalid Viettel ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViettelErrorResponse'
+        404:
+          description: Employee not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViettelErrorResponse'
+
+components:
+  schemas:
+    # ========================
+    # Common Response
+    # ========================
+    ViettelBaseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Success
+        data:
+          nullable: true
+
+    ViettelErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Invalid request
+
+    # ========================
+    # VIETTEL EMPLOYEE
+    # ========================
+    ViettelEmployee:
+      type: object
+      properties:
+        VIETTEL_ID:
+          type: integer
+          example: 1
+        VIETTEL_CODE:
+          type: string
+          example: VTT001
+        VIETTEL_EMAIL:
+          type: string
+          format: email
+          example: user@viettel.com.vn
+        EMPLOYEE_ID:
+          type: integer
+          nullable: true
+          example: 5
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLED]
+          example: ENABLE
+        CREATE_AT:
+          type: string
+          format: date-time
+        UPDATE_AT:
+          type: string
+          format: date-time
+
+    ViettelEmployeeListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Employees fetched successfully.
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ViettelEmployee'
+
+    ViettelEmployeeCreateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Employee created successfully.
+        data:
+          $ref: '#/components/schemas/ViettelEmployee'
+
+    ViettelEmployeeCreateInput:
+      type: object
+      required:
+        - VIETTEL_CODE
+        - STATUS
+      properties:
+        VIETTEL_CODE:
+          type: string
+          minLength: 6
+          maxLength: 6
+          description: Must be exactly 6 characters and unique
+          example: VTT001
+        VIETTEL_EMAIL:
+          type: string
+          format: email
+          description: Must use an allowed email domain (e.g. @viettel.com.vn)
+          example: user@viettel.com.vn
+        EMPLOYEE_ID:
+          type: integer
+          nullable: true
+          description: Link to an existing employee (optional)
+          example: 5
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLED]
+          example: ENABLE
+
+    ViettelEmployeeUpdateInput:
+      type: object
+      required:
+        - VIETTEL_ID
+      properties:
+        VIETTEL_ID:
+          type: integer
+          description: ID of the Viettel employee to update
+          example: 1
+        VIETTEL_CODE:
+          type: string
+          minLength: 6
+          maxLength: 6
+          description: Must be exactly 6 characters and unique
+          example: VTT002
+        VIETTEL_EMAIL:
+          type: string
+          format: email
+          description: Must use an allowed email domain
+          example: updated@viettel.com.vn
+        EMPLOYEE_ID:
+          type: integer
+          nullable: true
+          description: Link to an existing employee (optional)
+          example: 3
+        STATUS:
+          type: string
+          enum: [ENABLE, DISABLED]
+          example: DISABLED
