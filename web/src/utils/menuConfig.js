@@ -17,34 +17,16 @@ export const NAV_ITEMS = [
     path: "/",
   },
   {
-    id: "organization",
-    label: "Tổ chức",
-    icon: Building,
-    children: [
-      { label: "Nhân viên", icon: Users, path: "/organization/employees" },
-      { label: "Chức vụ", icon: BriefcaseBusiness, path: "/organization/positions" },
-      { label: "Khối", icon: Network, path: "/organization/divisions" },
-      { label: "Chi nhánh", icon: Building, path: "/organization/branches" },
-      { label: "Công ty", icon: Building, path: "/organization/companies" },
-    ],
-  },
-  {
     id: "email",
     label: "Quản lý email",
     icon: Mail,
     path: "/email",
   },
   {
-    id: "ips",
-    label: "IPs",
-    icon: Shield,
-    path: "/ips",
-  },
-  {
-    id: "vlan",
-    label: "VLAN",
+    id: "network-management",
+    label: "Quản lý mạng",
     icon: Network,
-    path: "/vlan",
+    path: "/network-management",
   },
   {
     id: "os",
@@ -58,10 +40,16 @@ export const NAV_ITEMS = [
     icon: KeyRound,
     path: "/accounts",
   },
-  {
-    id: "devices",
-    label: "Tài khoản & thiết bị",
-    icon: MonitorSmartphone,
-    path: "/devices",
+   {
+    id: "organization",
+    label: "Tổ chức",
+    icon: Building,
+    children: [
+      { label: "Nhân viên", icon: Users, path: "/organization/employees" },
+      { label: "Chức vụ", icon: BriefcaseBusiness, path: "/organization/positions" },
+      { label: "Khối", icon: Network, path: "/organization/divisions" },
+      { label: "Chi nhánh", icon: Building, path: "/organization/branches" },
+      { label: "Công ty", icon: Building, paath: "/organization/companies" },
+    ],
   },
 ];

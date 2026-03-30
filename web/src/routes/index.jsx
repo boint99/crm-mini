@@ -11,6 +11,7 @@ const Companies = lazy(() => import("@/pages/Organization/Companies"));
 const Divisions = lazy(() => import("@/pages/Organization/Divisions"));
 const Positions = lazy(() => import("@/pages/Organization/Positions"));
 const Branches = lazy(() => import("@/pages/Organization/Branches"));
+const Networks = lazy(() => import("@/pages/Networks"));
 
 const Login = lazy(() => import("@/pages/Auth/Login"));
 const Register = lazy(() => import("@/pages/Auth/Register"));
@@ -82,6 +83,14 @@ const routes = [
             ),
           },
         ],
+      },
+      {
+        path: "network-management",
+        element: (
+          <WithSpinner>
+            <Networks />
+          </WithSpinner>
+        ),
       },
 
       { path: "*", element: <NotFound /> },

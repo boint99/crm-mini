@@ -1,29 +1,29 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from "react";
 
 function Header() {
-  const [open, setOpen] = useState(false)
-  const menuRef = useRef(null)
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     function onKeyDown(e) {
-      if (e.key === 'Escape') setOpen(false)
+      if (e.key === "Escape") setOpen(false);
     }
 
     function onPointerDown(e) {
-      if (!menuRef.current) return
-      if (!menuRef.current.contains(e.target)) setOpen(false)
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(e.target)) setOpen(false);
     }
 
-    document.addEventListener('keydown', onKeyDown)
-    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
     return () => {
-      document.removeEventListener('keydown', onKeyDown)
-      document.removeEventListener('pointerdown', onPointerDown)
-    }
-  }, [])
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, []);
 
   return (
-    <header className="sticky top-0 z-20 h-16 border-b border-gray-200 bg-gradient-to-r from-white via-white to-gray-50/70 backdrop-blur">
+    <header className="sticky top-0 z-20 h-14 border-b border-gray-200 bg-gradient-to-r from-white via-white to-gray-50/70 backdrop-blur">
       <div className="mx-auto flex h-full items-center justify-between px-6">
         <div className="flex items-center gap-3">
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-gray-900 text-white shadow-sm">
@@ -40,7 +40,9 @@ function Header() {
             </svg>
           </div>
           <div className="leading-tight">
-            <div className="text-sm font-semibold text-gray-900 cursor-pointer">CRM Mini</div>
+            <div className="text-sm font-semibold text-gray-900 cursor-pointer">
+              CRM Mini
+            </div>
             <div className="text-xs text-gray-500">Admin dashboard</div>
           </div>
         </div>
@@ -51,7 +53,7 @@ function Header() {
             type="button"
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm hover:bg-gray-50"
             aria-label="Background settings"
-            onClick={() => { }}
+            onClick={() => {}}
           >
             <svg
               viewBox="0 0 24 24"
@@ -70,7 +72,7 @@ function Header() {
             type="button"
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm hover:bg-gray-50"
             aria-label="Notifications"
-            onClick={() => { }}
+            onClick={() => {}}
           >
             <svg
               viewBox="0 0 24 24"
@@ -121,7 +123,9 @@ function Header() {
                 className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg"
               >
                 <div className="px-4 py-3">
-                  <div className="text-sm font-semibold text-gray-900">Admin</div>
+                  <div className="text-sm font-semibold text-gray-900">
+                    Admin
+                  </div>
                   <div className="text-xs text-gray-500">Quản trị hệ thống</div>
                 </div>
                 <div className="h-px bg-gray-100" />
@@ -131,10 +135,10 @@ function Header() {
                   role="menuitem"
                   className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
                   onClick={() => {
-                    setOpen(false)
+                    setOpen(false);
                     // TODO: open change password modal / navigate
                     // eslint-disable-next-line no-console
-                    console.log('Change password')
+                    console.log("Change password");
                   }}
                 >
                   <svg
@@ -156,10 +160,10 @@ function Header() {
                   role="menuitem"
                   className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer"
                   onClick={() => {
-                    setOpen(false)
+                    setOpen(false);
                     // TODO: logout
                     // eslint-disable-next-line no-console
-                    console.log('Logout')
+                    console.log("Logout");
                   }}
                 >
                   <svg
@@ -182,7 +186,7 @@ function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }
 
-export default Header
+export default Header;
