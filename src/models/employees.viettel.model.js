@@ -1,3 +1,4 @@
+import { PRISMA } from '../configs/db.config.js'
 import BaseModel from '../core/model.core.js'
 
 class EmployeesViettelModel extends BaseModel {
@@ -6,7 +7,12 @@ class EmployeesViettelModel extends BaseModel {
   }
 
   async lists() {
-    return await super.LISTALL()
+    return await PRISMA.vIETTEL_EMPLOYEES.findMany({
+      orderBy: { VIETTEL_ID: 'asc' },
+      include: {
+        EMPLOYEES: true
+      }
+    })
   }
 
   async create(data) {
@@ -30,7 +36,7 @@ class EmployeesViettelModel extends BaseModel {
   }
 
   async findById(id) {
-    return await super.FINDBYID(id, 'VIETTEL_ID')
+    return await super.FINDBYUNIQUE(id, 'VIETTEL_ID')
   }
 
   async deleteById(id) {

@@ -9,7 +9,7 @@ class FkValidator {
    * @param {string} fieldLabel - human-readable name used in error messages (e.g. 'Position ID')
    * @param {string} [message] - custom error message
    */
-  static async validate(value, model, fieldLabel, message = 'Invalid') {
+  static async validate(value, model, fieldLabel = null, message = 'Invalid') {
     if (value === undefined || value === null) return
 
     const id = Number(value)
@@ -17,7 +17,7 @@ class FkValidator {
       throw new ApiError(StatusCodes.BAD_REQUEST, message )
     }
 
-    const record = await model.FindById(id, fieldLabel)
+    const record = await model.findById(id, fieldLabel)
     if (!record) {
       throw new ApiError(StatusCodes.BAD_REQUEST, message )
     }

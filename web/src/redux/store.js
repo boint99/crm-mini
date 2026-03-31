@@ -6,10 +6,13 @@ import positionsReducer from "./slice/positionsSlice";
 import divisionsReducer from "./slice/divisionsSlice";
 import vlansReducer from "./slice/vlansSlice";
 import ipsReducer from "./slice/ipsSlice";
+import employeesViettelReducer from "./slice/employeesViettelSlice";
+
 export const store = configureStore({
   reducer: {
     companies: companiesReducer,
     employees: employeesReducer,
+    employeesViettel: employeesViettelReducer,
     branches: branchesReducer,
     positions: positionsReducer,
     divisions: divisionsReducer,

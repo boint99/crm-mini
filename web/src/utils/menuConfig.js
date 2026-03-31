@@ -30,9 +30,9 @@ export const NAV_ITEMS = [
   },
   {
     id: "os",
-    label: "Nhân viên OS",
+    label: "Viettel OS",
     icon: BriefcaseBusiness,
-    path: "/os",
+    path: "/viettel-employees",
   },
   {
     id: "accounts",

@@ -42,9 +42,8 @@ export const headerTableEmployees = {
 
 export const headerTableEmployeesViettel = {
     INDEX: 'STT',
-    EMPLOYEE_CODE: 'Mã nhân viên',
+    EMPLOYEE_CODE: 'NaNV',
     VIETTEL_EMAIL: 'Email',
-    VIETTEL: 'Mã Viettel',
     STATUS: 'Trạng thái',
     CREATED_AT: 'Ngày tạo',
     UPDATED_AT: 'Ngày cập nhật'

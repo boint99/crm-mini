@@ -29,11 +29,11 @@ class EmployeesServices {
 
     // 4. FK checks
     if (data.POSITION_ID) {
-      await FkValidator.validate(data.POSITION_ID, positionsModel, 'Position ID')
+      await FkValidator.validate(data.POSITION_ID, positionsModel)
     }
 
     if (data.VIETTEL_ID) {
-      await FkValidator.validate(data.VIETTEL_ID, employeesViettelModel, 'Viettel ID')
+      await FkValidator.validate(data.VIETTEL_ID, employeesViettelModel)
     }
 
     // 5. Check existence

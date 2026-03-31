@@ -77,24 +77,24 @@ model POSITIONS {
 }
 
 model EMPLOYEES {
-  EMPLOYEE_ID       Int                 @id @default(autoincrement()) @map("EMPLOYEE_ID")
-  EMPLOYEE_CODE     String              @unique @map("POSITION_CODE")
-  FIRST_NAME        String              @map("FIRST_NAME")
-  LAST_NAME         String              @map("LAST_NAME")
-  PHONE             String?             @map("PHONE")
-  EMAIL             String?             @map("EMAIL")
-  BIRTH_DATE        DateTime?           @map("BIRTH_DATE") @db.Date
-  UNIT_ID           Int?                @map("UNIT_ID")
-  VIETTEL_ID        Int?                @map("VIETTEL_ID")
-  STATUS            ENUMSTATUS          @default(ENABLE) @map("STATUS")
-  CREATED_AT        DateTime            @default(now()) @map("CREATED_AT")
-  UPDATED_AT        DateTime            @updatedAt @map("UPDATED_AT")
-  POSITION_ID       Int?                @map("POSITION_ID")
-  ACCOUNTS          ACCOUNTS[]
-  POSITION          POSITIONS?          @relation(fields: [POSITION_ID], references: [POSITION_ID])
-  ORG_UNIT          ORG_UNITS?          @relation(fields: [UNIT_ID], references: [ORG_UNIT_ID])
-  IPS               IPS[]
-  VIETTEL_EMPLOYEES VIETTEL_EMPLOYEES[]
+  EMPLOYEE_ID   Int        @id @default(autoincrement()) @map("EMPLOYEE_ID")
+  EMPLOYEE_CODE String     @unique @map("POSITION_CODE")
+  FIRST_NAME    String     @map("FIRST_NAME")
+  LAST_NAME     String     @map("LAST_NAME")
+  PHONE         String?    @map("PHONE")
+  EMAIL         String?    @map("EMAIL")
+  BIRTH_DATE    DateTime?  @map("BIRTH_DATE") @db.Date
+  UNIT_ID       Int?       @map("UNIT_ID")
+  VIETTEL_ID    Int?                @map("VIETTEL_ID")
+  STATUS        ENUMSTATUS          @default(ENABLE) @map("STATUS")
+  CREATED_AT    DateTime            @default(now()) @map("CREATED_AT")
+  UPDATED_AT    DateTime            @updatedAt @map("UPDATED_AT")
+  POSITION_ID   Int?                @map("POSITION_ID")
+  ACCOUNTS      ACCOUNTS[]
+  POSITION      POSITIONS?          @relation(fields: [POSITION_ID], references: [POSITION_ID])
+  ORG_UNIT      ORG_UNITS?          @relation(fields: [UNIT_ID], references: [ORG_UNIT_ID])
+  VIETTEL       VIETTEL_EMPLOYEES?  @relation(fields: [VIETTEL_ID], references: [VIETTEL_ID])
+  IPS           IPS[]
 
   @@map("EMPLOYEES")
 }
@@ -198,9 +198,8 @@ model VIETTEL_EMPLOYEES {
   STATUS        ENUMSTATUS @default(ENABLE) @map("STATUS")
   CREATE_AT     DateTime   @default(now()) @map("CREATE_AT")
   UPDATE_AT     DateTime   @updatedAt @map("UPDATE_AT")
-  EMPLOYEE_ID   Int?       @map("EMPLOYEE_ID")
-  EMPLOYEE      EMPLOYEES? @relation(fields: [EMPLOYEE_ID], references: [EMPLOYEE_ID])
 
+  EMPLOYEES     EMPLOYEES[]
   @@map("VIETTEL_EMPLOYEES")
 }
 
