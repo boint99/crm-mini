@@ -103,13 +103,13 @@ export default function Sidebar() {
     return anchorRefs.current[id];
   };
 
-  /* Tự mở submenu khi route khớp */
+  /* Tự mở submenu khi route khớp, đóng khi route không thuộc submenu nào */
   useEffect(() => {
     const parent =
       NAV_ITEMS.find((it) =>
         it.children?.some((c) => location.pathname.startsWith(c.path)),
       )?.id ?? null;
-    if (parent) setOpenId(parent);
+    setOpenId(parent);
   }, [location.pathname]);
 
   /* Đóng flyout khi sidebar mở rộng lại */

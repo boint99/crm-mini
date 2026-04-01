@@ -5,7 +5,8 @@ import EmployeesValidate from '../validates/empolyees.validate.js'
 const Router = express.Router()
 
 // GET - /api/employees
-Router.get('/lists' , employeesController.lists)
+// Node: add query param status to filter by status
+Router.get('/' , employeesController.lists)
 
 // POST /api/employees
 Router.post('/', EmployeesValidate.create, employeesController.create)

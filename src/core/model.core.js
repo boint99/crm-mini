@@ -12,6 +12,10 @@ class ModelCore {
     })
   }
 
+  async LISTQUERY(options = {}) {
+    return await this.model.findMany(options)
+  }
+
   async FINDBYUNIQUE(id, idField) {
     return await this.model.findUnique({
       where: { [idField]: id }

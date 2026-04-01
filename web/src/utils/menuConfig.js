@@ -17,12 +17,6 @@ export const NAV_ITEMS = [
     path: "/",
   },
   {
-    id: "email",
-    label: "Quản lý email",
-    icon: Mail,
-    path: "/email",
-  },
-  {
     id: "network-management",
     label: "Quản lý mạng",
     icon: Network,
@@ -49,7 +43,7 @@ export const NAV_ITEMS = [
       { label: "Chức vụ", icon: BriefcaseBusiness, path: "/organization/positions" },
       { label: "Khối", icon: Network, path: "/organization/divisions" },
       { label: "Chi nhánh", icon: Building, path: "/organization/branches" },
-      { label: "Công ty", icon: Building, paath: "/organization/companies" },
+      { label: "Công ty", icon: Building, path: "/organization/companies" },
     ],
   },
 ];
