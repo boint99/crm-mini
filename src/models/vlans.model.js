@@ -8,6 +8,25 @@ class VlansModel extends BaseModel {
   async lists() {
     return await super.LISTALL()
   }
+  async listQuery(dataQuery) {
+    return await super.LISTQUERY({
+      where: dataQuery || undefined,
+      include: {
+        IPS: {
+          include: {
+            EMPLOYEE: {
+              select: {
+                EMPLOYEE_ID: true,
+                FIRST_NAME: true,
+                LAST_NAME: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { [this.defaultOrderBy]: 'asc' }
+    })
+  }
 
   async create(data) {
     return await super.CREATE(data)
@@ -39,6 +58,10 @@ class VlansModel extends BaseModel {
 
   async deleteById(id) {
     return await super.DELETEBYID(id, 'VLAN_ID')
+  }
+
+  async findByUnique(id, field) {
+    return await super.FINDBYUNIQUE(id, field)
   }
 }
 

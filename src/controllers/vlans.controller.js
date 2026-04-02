@@ -1,5 +1,4 @@
 import { CreatedResponse, SuccessResponse } from '../utils/SuccessResponse.js'
-import { vlansModel } from '../models/vlans.model.js'
 import { vlansService } from '../services/vlans.service.js'
 
 
@@ -7,7 +6,10 @@ class VlansController {
   //  get list
   async lists(req, res, next) {
     try {
-      const result = await vlansModel.lists()
+      const { status, ...query } = req.query
+
+      let queryStatus = status ? status.toUpperCase() : null
+      const result = await vlansService.lists(queryStatus, query)
       new SuccessResponse({
         res: res,
         data: result,

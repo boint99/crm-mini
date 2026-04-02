@@ -7,13 +7,13 @@ class SuccessResponse {
     data = null,
     statusCode = StatusCodes.OK
   }) {
-    const mappedData = Array.isArray(data)
-      ? data.map((item, index) => ({ STT: index + 1, ...item }))
-      : data
+    // const mappedData = Array.isArray(data)
+    //   ? data.map((item, index) => ({ STT: index + 1, ...item }))
+    //   : data
     return res.status(statusCode).json({
       success: true,
       message,
-      data: mappedData
+      data:data
     })
   }
 }

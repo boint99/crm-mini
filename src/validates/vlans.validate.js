@@ -2,11 +2,57 @@ import ValidateCores from '../core/validate.core.js'
 import ip from 'ip'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '../utils/ApiError.js'
-import { ALLOWED_STATUS_NETWORK } from '../utils/constants.js'
+import { ALLOWED_STATUS_NETWORK, CHECK_ENUM } from '../utils/constants.js'
 import { vlansModel } from '../models/vlans.model.js'
 
 class VlansValidate {
+  static async List(req, res, next) {
+    try {
+      const query = req.query
 
+      // 1. Validate query params
+      const allowedFields = ['status', 'vlan_code']
+      const invalidKeys = Object.keys(query).filter(
+        key => !allowedFields.includes(key)
+      )
+
+      if (invalidKeys.length > 0) {
+        throw new ApiError(
+          StatusCodes.BAD_REQUEST,
+          'Invalid!'
+        )
+      }
+
+      // 2. Validate status
+      if (query.status) {
+        const status = query.status.toUpperCase()
+
+        const allowedStatus = ['ACTIVE', 'INACTIVE']
+
+        CHECK_ENUM(status, allowedStatus, StatusCodes.BAD_REQUEST, 'Invalid status!')
+
+        query.status = status
+      }
+
+      // 3. Validate vlan_code
+      if (query.vlan_code) {
+        const vlanCode = Number(query.vlan_code)
+
+        if (isNaN(vlanCode)) {
+          throw new ApiError(
+            StatusCodes.BAD_REQUEST,
+            'vlan_code must be a number'
+          )
+        }
+
+        query.vlan_code = vlanCode
+      }
+
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
   // ================= CREATE =================
   static async create(req, res, next) {
     try {
