@@ -8,7 +8,7 @@ services:
     env_file:
       - .env
     ports:
-      - "8080:${PROD_PORT_FE}"
+      - "3000:${PROD_PORT_FE}"
     depends_on:
       - backend
     networks:
@@ -26,7 +26,7 @@ services:
       - NODE_ENV=production
       - PORT=${PROD_PORT_BE}
     ports:
-      - "8080:${PROD_PORT_BE}"
+      - "9000:${PROD_PORT_BE}"
     depends_on:
       db:
         condition: service_healthy
