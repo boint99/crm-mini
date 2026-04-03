@@ -1,0 +1,61 @@
+services:
+  web:
+    build:
+      context: ./web
+      dockerfile: docker/Dockerfile.prod
+    container_name: web_prod
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8080:${PROD_PORT_FE}"
+    depends_on:
+      - backend
+    networks:
+      - app-net
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.prod
+    container_name: backend_prod
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=${PROD_PORT_BE}
+    ports:
+      - "8080:${PROD_PORT_BE}"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-net
+
+  db:
+    image: postgres:16
+    container_name: database_prod
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata_prod:
+
+networks:
+  app-net:
+    driver: bridge
