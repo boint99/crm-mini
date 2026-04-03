@@ -10,9 +10,9 @@ export const corsOptions = {
 
     if (!origin) return callback(null, true)
 
-    // if (origin.startsWith('http://192.168')) {
-    //   return callback(null, true)
-    // }
+    if (origin.startsWith('http://192.168')) {
+      return callback(null, true)
+    }
 
     if (WHITELIST_DOMAINS.includes(origin)) {
       return callback(null, true)
