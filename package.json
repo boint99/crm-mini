@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "cross-env NODE_ENV=production node src/server.js",
+    "start": "node src/server.js",
     "build": "cross-env NODE_ENV=production yarn install && yarn prisma:generate",
     "dev": "cross-env NODE_ENV=development node --watch src/server.js",
     "lint": "eslint .",
