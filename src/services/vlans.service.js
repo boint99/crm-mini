@@ -21,7 +21,7 @@ function parseNetwork(cidr) {
 
 class VlansService {
   async lists(queryStatus, query) {
-    const allowedFields = ['status', 'vlan_code']
+    const allowedFields = ['status', 'vlan_id']
 
     // Validate query params
     const queryKeys = Object.keys(query)
@@ -40,15 +40,15 @@ class VlansService {
 
     CHECK_ENUM(queryStatus, ALLOWED_STATUS_NETWORK, StatusCodes.BAD_REQUEST, 'Invalid status filter!')
 
-    if (query.vlan_code) {
-      const checkVlanCode =  await vlansModel.findByUnique(Number(query.vlan_code), 'VLAN_CODE')
-      if (!checkVlanCode) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, `Vlan code ${query.vlan_code} does not exist!`)
+    if (query.vlan_id) {
+      const checkVlanId =  await vlansModel.findByUnique(Number(query.vlan_id), 'VLAN_ID')
+      if (!checkVlanId) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, `Vlan ID ${query.vlan_id} does not exist!`)
       }
     }
     const data = {
       STATUS: queryStatus || undefined,
-      VLAN_CODE: query.vlan_code ? Number(query.vlan_code) : undefined
+      VLAN_ID: query.vlan_id ? Number(query.vlan_id) : undefined
     }
     return await vlansModel.listQuery(data)
   }

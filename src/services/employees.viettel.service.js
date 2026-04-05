@@ -1,7 +1,7 @@
 import { ALLOWED_EMAIL_DOMAINS, ALLOWED_STATUS, CHECK_ENUM } from '../utils/constants.js'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '../utils/ApiError.js'
-import FkValidator from '../core/fk.validator.core.js'
+import ServiceCore from '../core/service.core.js'
 import ValidateCores from '../core/validate.core.js'
 import { employeesViettelModel } from '../models/employees.viettel.model.js'
 
@@ -42,7 +42,7 @@ class EmployeesViettelServices {
     // 3. Check status enum
     CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
 
-    await FkValidator.validate(data.EMPLOYEE_ID, employeesViettelModel, 'EMPLOYEE_ID', 'Employee ID is invalid!')
+    await ServiceCore.CheckFindbyId(data.EMPLOYEE_ID, employeesViettelModel, 'EMPLOYEE_ID', 'Employee ID is invalid!')
 
 
     return await employeesViettelModel.create(data)
@@ -80,7 +80,7 @@ class EmployeesViettelServices {
 
     // FK checks
     if (payload.EMPLOYEE_ID) {
-      await FkValidator.validate(payload.EMPLOYEE_ID, employeesViettelModel, 'EMPLOYEE_ID', 'Employee ID is invalid!')
+      await ServiceCore.CheckFindbyId(payload.EMPLOYEE_ID, employeesViettelModel, 'EMPLOYEE_ID', 'Employee ID is invalid!')
     }
     return await employeesViettelModel.updateById(VIETTEL_ID, payload)
   }

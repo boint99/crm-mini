@@ -1,3 +1,4 @@
+import { customStyles } from "@/utils/contants";
 import { X } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -6,31 +7,16 @@ import Modal from "react-modal";
 const STATUS_OPTIONS = [
   { value: "ACTIVE", label: "Active" },
   { value: "INACTIVE", label: "Inactive" },
-  { value: "MAINTENANCE", label: "Maintenance" },
 ];
 
-const customStyles = {
-  overlay: {
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    zIndex: 50,
-  },
-  content: {
-    top: "50%",
-    left: "50%",
-    right: "auto",
-    bottom: "auto",
-    transform: "translate(-50%, -50%)",
-    padding: 0,
-    border: "none",
-    borderRadius: "0.75rem",
-    maxWidth: "520px",
-    width: "100%",
-    maxHeight: "90vh",
-    overflow: "auto",
-  },
-};
-
-export default function IpModal({ isOpen, onClose, onSubmit, mode, data, vlanId }) {
+export default function IpModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  mode,
+  data,
+  vlanId,
+}) {
   const {
     register,
     handleSubmit,
@@ -76,29 +62,41 @@ export default function IpModal({ isOpen, onClose, onSubmit, mode, data, vlanId 
 
   if (mode === "delete") {
     return (
-      <Modal isOpen={isOpen} onRequestClose={onClose} style={customStyles} ariaHideApp={false}>
+      <Modal
+        isOpen={isOpen}
+        onRequestClose={onClose}
+        style={customStyles}
+        ariaHideApp={false}
+      >
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Xác nhận xóa IP</h3>
-            <button onClick={onClose} className="p-1 rounded-md hover:bg-gray-100 cursor-pointer">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Are you sure you want to delete this IP?
+            </h3>
+            <button
+              onClick={onClose}
+              className="p-1 rounded-md hover:bg-gray-100 cursor-pointer"
+            >
               <X className="h-5 w-5 text-gray-400" />
             </button>
           </div>
           <p className="text-sm text-gray-600 mb-6">
-            Bạn có chắc muốn xóa IP <span className="font-semibold">{data?.HOST}</span>? Thao tác này không thể hoàn tác.
+            Are you sure you want to delete IP{" "}
+            <span className="font-semibold">{data?.HOST}</span>? This action
+            cannot be undone.
           </p>
           <div className="flex justify-end gap-3">
             <button
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
             >
-              Hủy
+              Cancel
             </button>
             <button
               onClick={() => handleFormSubmit()}
               className="px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-lg hover:bg-rose-700 cursor-pointer"
             >
-              Xóa
+              Delete
             </button>
           </div>
         </div>
@@ -111,28 +109,37 @@ export default function IpModal({ isOpen, onClose, onSubmit, mode, data, vlanId 
   const labelClass = "block text-sm font-medium text-gray-700 mb-1";
 
   return (
-    <Modal isOpen={isOpen} onRequestClose={onClose} style={customStyles} ariaHideApp={false}>
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={onClose}
+      style={customStyles}
+      ariaHideApp={false}
+    >
       <div className="p-6">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-semibold text-gray-900">
-            {mode === "edit" ? "Chỉnh sửa IP" : "Thêm IP mới"}
+            {mode === "edit" ? "Edit IP" : "Add IP"}
           </h3>
-          <button onClick={onClose} className="p-1 rounded-md hover:bg-gray-100 cursor-pointer">
+          <button
+            onClick={onClose}
+            className="p-1 rounded-md hover:bg-gray-100 cursor-pointer"
+          >
             <X className="h-5 w-5 text-gray-400" />
           </button>
         </div>
-
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           <div>
-            <label className={labelClass}>Địa chỉ IP</label>
+            <label className={labelClass}>IP Address</label>
             <input
               type="text"
               placeholder="VD: 192.168.10.5"
               className={inputClass}
-              {...register("HOST", { required: "Bắt buộc" })}
+              {...register("HOST", { required: "Required" })}
             />
             {errors.HOST && (
-              <p className="mt-1 text-xs text-rose-500">{errors.HOST.message}</p>
+              <p className="mt-1 text-xs text-rose-500">
+                {errors.HOST.message}
+              </p>
             )}
           </div>
 
@@ -140,24 +147,24 @@ export default function IpModal({ isOpen, onClose, onSubmit, mode, data, vlanId 
             <label className={labelClass}>Device Type</label>
             <input
               type="text"
-              placeholder="VD: STATIC, DHCP"
+              placeholder="Eg: Desktop, Laptop, Printer..."
               className={inputClass}
               {...register("DEVICE_TYPE")}
             />
           </div>
 
           <div>
-            <label className={labelClass}>Employee ID</label>
+            <label className={labelClass}>Employee_code</label>
             <input
               type="number"
-              placeholder="VD: 1"
+              placeholder="Eg: 123456"
               className={inputClass}
               {...register("EMPLOYEE_ID")}
             />
           </div>
 
           <div>
-            <label className={labelClass}>Trạng thái</label>
+            <label className={labelClass}>Status</label>
             <select className={inputClass} {...register("STATUS")}>
               {STATUS_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -173,14 +180,14 @@ export default function IpModal({ isOpen, onClose, onSubmit, mode, data, vlanId 
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
             >
-              Hủy
+              Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
               className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
             >
-              {mode === "edit" ? "Cập nhật" : "Thêm IP"}
+              {mode === "edit" ? "Update IP" : "Add IP"}
             </button>
           </div>
         </form>

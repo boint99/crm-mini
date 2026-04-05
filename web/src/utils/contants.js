@@ -57,3 +57,25 @@ export const CUSTOM_MESSAGES = {
     error: "Xóa thất bại",
   },
 };
+
+
+export const customStyles = {
+  overlay: {
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    zIndex: 50,
+  },
+  content: {
+    top: "10%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    transform: "translateX(-50%)",
+    padding: 0,
+    border: "none",
+    borderRadius: "0.75rem",
+    maxWidth: "520px",
+    width: "100%",
+    maxHeight: "90vh",
+    overflow: "auto",
+  },
+};

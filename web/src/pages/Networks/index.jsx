@@ -6,17 +6,12 @@ import {
   createVlan,
   updateVlan,
   deleteVlan,
+  refreshVlan,
   selectVlans,
   selectVlansLoading,
+  selectVlanDetailLoading,
 } from "@/redux/slice/vlansSlice";
-import {
-  getIps,
-  createIp,
-  updateIp,
-  deleteIp,
-  selectIps,
-  selectIpsLoading,
-} from "@/redux/slice/ipsSlice";
+import { createIp, updateIp, deleteIp } from "@/redux/slice/ipsSlice";
 import { CUSTOM_MESSAGES } from "@/utils/contants";
 import {
   Plus,
@@ -29,6 +24,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 import VlanModal from "./VlanModal";
 import IpModal from "./IpModal";
 
@@ -92,14 +88,13 @@ export default function Networks() {
   const dispatch = useDispatch();
   const vlans = useSelector(selectVlans);
   const vlansLoading = useSelector(selectVlansLoading);
-  const ips = useSelector(selectIps);
-  const ipsLoading = useSelector(selectIpsLoading);
+  const vlanDetailLoading = useSelector(selectVlanDetailLoading);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const dropdownRef = useRef(null);
 
   useEffect(() => {
     dispatchAsync(getVlans());
-    dispatchAsync(getIps());
   }, []);
 
   // Close dropdown on click outside
@@ -113,12 +108,28 @@ export default function Networks() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Auto-select first VLAN
+  // Auto-select VLAN: only runs on initial load (when selectedVlanId is null)
   useEffect(() => {
-    if (vlans.length > 0 && !selectedVlanId) {
-      setSelectedVlanId(vlans[0].VLAN_ID);
+    if (vlans.length === 0 || selectedVlanId) return;
+    const codeFromUrl = searchParams.get("vlan_id");
+    if (codeFromUrl) {
+      const match = vlans.find((v) => String(v.VLAN_CODE) === codeFromUrl);
+      if (match) {
+        setSelectedVlanId(match.VLAN_ID);
+        return;
+      }
     }
-  }, [vlans, selectedVlanId]);
+    setSelectedVlanId(vlans[0].VLAN_ID);
+  }, [vlans]);
+
+  // Sync URL + refresh IPs when selectedVlanId changes
+  useEffect(() => {
+    if (!selectedVlanId) return;
+    const vlan = vlans.find((v) => v.VLAN_ID === selectedVlanId);
+    if (!vlan) return;
+    setSearchParams({ vlan_id: String(vlan.VLAN_ID) }, { replace: true });
+    dispatchAsync(refreshVlan({ vlan_id: selectedVlanId }));
+  }, [selectedVlanId]);
 
   const selectedVlan = useMemo(
     () => vlans.find((v) => v.VLAN_ID === selectedVlanId),
@@ -127,14 +138,21 @@ export default function Networks() {
 
   // Filter IPs for the selected VLAN
   const filteredIps = useMemo(() => {
-    let list = ips.filter((ip) => ip.VLAN_ID === selectedVlanId);
+    let list = [...(selectedVlan?.IPS || [])];
     if (statusFilter !== "ALL") {
       list = list.filter((ip) => ip.STATUS === statusFilter);
     }
     if (query.trim()) {
       const q = query.trim().toLowerCase();
       list = list.filter((ip) => {
-        const hay = [ip.HOST, ip.DEVICE_TYPE, ip.EMPLOYEE_ID, ip.STATUS]
+        const hay = [
+          ip.HOST,
+          ip.DEVICE_TYPE,
+          ip.EMPLOYEE_CODE,
+          ip.FIRST_NAME,
+          ip.LAST_NAME,
+          ip.STATUS,
+        ]
           .filter(Boolean)
           .join(" ")
           .toLowerCase();
@@ -142,7 +160,7 @@ export default function Networks() {
       });
     }
     return list;
-  }, [ips, selectedVlanId, statusFilter, query]);
+  }, [selectedVlan, statusFilter, query]);
 
   // ── VLAN actions ──
   const openCreateVlan = () => {
@@ -173,7 +191,8 @@ export default function Networks() {
         payload,
         messages: CUSTOM_MESSAGES.delete,
       });
-      setSelectedVlanId(null);
+      const remaining = vlans.filter((v) => v.VLAN_ID !== payload);
+      setSelectedVlanId(remaining.length > 0 ? remaining[0].VLAN_ID : null);
     } else if (vlanMode === "edit") {
       await dispatchWithToast({
         dispatch,
@@ -242,15 +261,39 @@ export default function Networks() {
   // CSV export
   const handleExport = () => {
     if (!filteredIps.length) return;
-    const headers = ["IP Address", "Device Type", "Employee ID", "Status"];
+
+    const headers = [
+      "IP Address",
+      "Device Type",
+      "Employee code",
+      "Full Name",
+      "Type",
+      "Status",
+    ];
+
+    const escapeCSV = (value) => {
+      if (!value) return "";
+      const str = String(value).replace(/"/g, '""'); // escape dấu "
+      return `"${str}"`;
+    };
+
     const rows = filteredIps.map((ip) => [
-      ip.HOST,
-      ip.DEVICE_TYPE || "",
-      ip.EMPLOYEE_ID || "",
-      ip.STATUS,
+      escapeCSV(ip.HOST),
+      escapeCSV(ip.DEVICE_TYPE),
+      escapeCSV(ip.EMPLOYEE_CODE),
+      escapeCSV(`${ip.FIRST_NAME || ""} ${ip.LAST_NAME || ""}`.trim()),
+      escapeCSV(ip.TYPE),
+      escapeCSV(ip.STATUS),
     ]);
-    const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+
+    const csvContent = [headers, ...rows]
+      .map((row) => row.join(","))
+      .join("\n");
+
+    const blob = new Blob(["\uFEFF" + csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -263,7 +306,7 @@ export default function Networks() {
     <div>
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Quản lý mạng</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Network management</h1>
         <p className="mt-1 text-sm text-gray-500">
           Configure network segments and manage address space allocation.
         </p>
@@ -277,7 +320,7 @@ export default function Networks() {
       ) : vlans.length === 0 ? (
         <div className="mt-6 flex flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white py-16 text-gray-400">
           <Network className="h-10 w-10 mb-2" />
-          <p className="text-sm">Chưa có VLAN nào</p>
+          <p className="text-sm">No VLANs available</p>
         </div>
       ) : selectedVlan ? (
         <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -356,7 +399,7 @@ export default function Networks() {
                 className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
               >
                 <Plus className="h-3.5 w-3.5" />
-                Thêm VLAN
+                Add VLAN
               </button>
               <button
                 onClick={openEditVlan}
@@ -417,11 +460,9 @@ export default function Networks() {
           {/* Table header */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-6 py-4">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-bold text-gray-900">IP Allocation</h2>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                VLAN {selectedVlan.VLAN_CODE} Active View
-              </span>
+              <h2 className="text-lg font-bold text-gray-900">
+                IP Addresses in VLAN {selectedVlan.VLAN_CODE}
+              </h2>
             </div>
             <div className="flex items-center gap-3">
               {/* Status filter */}
@@ -479,7 +520,10 @@ export default function Networks() {
                     Device Name
                   </th>
                   <th className="px-6 py-3 text-left text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
-                    Employee ID
+                    Employee code
+                  </th>
+                  <th className="px-6 py-3 text-left text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
+                    FullName
                   </th>
                   <th className="px-6 py-3 text-left text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
                     Type
@@ -493,19 +537,19 @@ export default function Networks() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
-                {ipsLoading ? (
+                {vlanDetailLoading ? (
                   <tr>
-                    <td colSpan={6}>
+                    <td colSpan={7}>
                       <LoadingItem />
                     </td>
                   </tr>
                 ) : filteredIps.length === 0 ? (
                   <tr>
-                    <td colSpan={6}>
+                    <td colSpan={7}>
                       <div className="flex flex-col items-center justify-center py-12 text-gray-400">
                         <Network className="h-8 w-8 mb-2" />
                         <p className="text-sm">
-                          Không có IP nào trong VLAN này
+                          No IP addresses found for this VLAN
                         </p>
                       </div>
                     </td>
@@ -521,8 +565,17 @@ export default function Networks() {
                       <td className="px-6 py-3 whitespace-nowrap text-gray-700">
                         {ip.DEVICE_TYPE || "—"}
                       </td>
+                      <td className="px-6 py-3 whitespace-nowrap">
+                        {ip.EMPLOYEE_CODE ? (
+                          <span className="inline-flex items-center rounded px-2 py-0.5 text-[11px] font-mono font-semibold bg-gray-100 text-gray-700">
+                            {ip.EMPLOYEE_CODE}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
                       <td className="px-6 py-3 whitespace-nowrap text-gray-500">
-                        {ip.EMPLOYEE_ID || "—"}
+                        {ip.FIRST_NAME || "—"} {ip.LAST_NAME || ""}
                       </td>
                       <td className="px-6 py-3 whitespace-nowrap">
                         <DeviceTypeBadge type={ip.DEVICE_TYPE} />
@@ -535,14 +588,14 @@ export default function Networks() {
                           <button
                             onClick={() => openEditIp(ip)}
                             className="rounded-md p-2 text-indigo-600 hover:bg-indigo-50 cursor-pointer"
-                            title="Chỉnh sửa"
+                            title="Edit"
                           >
                             <Pencil className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => openDeleteIp(ip)}
                             className="rounded-md p-2 text-rose-600 hover:bg-rose-50 cursor-pointer"
-                            title="Xóa"
+                            title="Delete"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>

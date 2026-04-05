@@ -5,7 +5,7 @@ import { employeesModel } from '../models/employees.model.js'
 import { positionsModel } from '../models/postisions.model.js'
 import { employeesViettelModel } from '../models/employees.viettel.model.js'
 import { orgUnitsModel } from '../models/org.units.model.js'
-import CheckedForeignKeyCore from '../core/checkedForigenKey.core.js'
+import ServiceCore from '../core/service.core.js'
 
 class EmployeesServices {
   /**
@@ -41,7 +41,7 @@ class EmployeesServices {
 
     // 4. FK: POSITION_ID
     if (data.POSITION_ID) {
-      await CheckedForeignKeyCore.checked(
+      await ServiceCore.CheckFindbyId(
         data.POSITION_ID,
         positionsModel,
         'Position ID',
@@ -51,7 +51,7 @@ class EmployeesServices {
 
     // 5. FK: VIETTEL_ID
     if (data.VIETTEL_ID) {
-      await CheckedForeignKeyCore.checked(
+      await ServiceCore.CheckFindbyId(
         data.VIETTEL_ID,
         employeesViettelModel,
         'Viettel ID',
@@ -60,7 +60,7 @@ class EmployeesServices {
     }
     // 6. FK: ORG_UNIT_ID
     if (data.ORG_UNIT_ID) {
-      await CheckedForeignKeyCore.checked(
+      await ServiceCore.CheckFindbyId(
         data.ORG_UNIT_ID,
         orgUnitsModel,
         'ORG_UNIT_ID',

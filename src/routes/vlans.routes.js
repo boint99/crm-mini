@@ -5,8 +5,7 @@ import { vlansValidate } from '../validates/vlans.validate.js'
 const Router = express.Router()
 
 // GET - /api/vlans/lists
-// NOTE: Query params: page, limit, search
-// NOTE: /api/vlans?status=active&vlan_code=10
+// NOTE: /api/vlans?status=active&vlan_id=10
 Router.get('/vlans/', vlansValidate.List, vlansController.lists)
 
 // // POST /api/vlans

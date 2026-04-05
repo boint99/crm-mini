@@ -11,7 +11,7 @@ class VlansValidate {
       const query = req.query
 
       // 1. Validate query params
-      const allowedFields = ['status', 'vlan_code']
+      const allowedFields = ['status', 'vlan_id']
       const invalidKeys = Object.keys(query).filter(
         key => !allowedFields.includes(key)
       )
@@ -34,18 +34,18 @@ class VlansValidate {
         query.status = status
       }
 
-      // 3. Validate vlan_code
-      if (query.vlan_code) {
-        const vlanCode = Number(query.vlan_code)
+      // 3. Validate vlan_id
+      if (query.vlan_id) {
+        const vlanCode = Number(query.vlan_id)
 
         if (isNaN(vlanCode)) {
           throw new ApiError(
             StatusCodes.BAD_REQUEST,
-            'vlan_code must be a number'
+            'vlan_id must be a number'
           )
         }
 
-        query.vlan_code = vlanCode
+        query.vlan_id = vlanCode
       }
 
       next()

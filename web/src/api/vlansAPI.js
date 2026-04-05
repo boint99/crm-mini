@@ -2,8 +2,8 @@ import { ROOT_DOMAIN } from "@/utils/contants";
 import axios from "axios";
 
 export const vlansAPI = {
-  getLists: async () => {
-    const res = await axios.get(`${ROOT_DOMAIN}/networks/vlan/all`);
+  getLists: async (params = {}) => {
+    const res = await axios.get(`${ROOT_DOMAIN}/networks/vlans`, { params });
     return res.data;
   },
   create: async (payload) => {
