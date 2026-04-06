@@ -2,7 +2,7 @@ paths:
   # ========================
   # VLAN APIs
   # ========================
-  /api/networks/vlan/all:
+  /api/networks/vlans/lists:
     get:
       summary: Get all VLANs
       description: Retrieve list of all VLANs.

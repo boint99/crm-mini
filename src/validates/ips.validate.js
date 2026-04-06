@@ -8,7 +8,7 @@ class IpsValidate {
 
   // ================= COMMON =================
   static validateCommon(data) {
-    const { HOST, VLAN_ID, DEVICE_TYPE, EMPLOYEE_ID, STATUS } = data
+    const { HOST, VLAN_ID, DEVICE_TYPE, EMPLOYEE_CODE, STATUS } = data
 
     // VLAN
     ValidateCores.validateId(VLAN_ID, 'Vlan ID is required and must be a number!')
@@ -26,9 +26,11 @@ class IpsValidate {
       ValidateCores.validateStringLength(DEVICE_TYPE, 1, 'Device type must not be empty!')
     }
 
-    // EMPLOYEE
-    if (EMPLOYEE_ID) {
-      ValidateCores.validateId(EMPLOYEE_ID, 'Employee ID is not valid!')
+    // EMPLOYEE_CODE (optional string)
+    if (EMPLOYEE_CODE !== undefined && EMPLOYEE_CODE !== null && EMPLOYEE_CODE !== '') {
+      if (typeof EMPLOYEE_CODE !== 'string' || !EMPLOYEE_CODE.trim()) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Employee code is not valid!')
+      }
     }
 
     // STATUS
@@ -37,6 +39,25 @@ class IpsValidate {
     return { host }
   }
 
+  static async lists(req, res, next) {
+    try {
+      const { vlan_id } = req.query
+
+      if (vlan_id !== undefined) {
+        const id = Number(vlan_id)
+
+        if (isNaN(id) || id <= 0) {
+          throw new ApiError(StatusCodes.BAD_REQUEST, 'vlan_id is invalid!')
+        }
+
+        req.query.vlan_id = id
+      }
+
+      next()
+    } catch (err) {
+      next(err)
+    }
+  }
   // ================= CREATE =================
   static async create(req, res, next) {
     try {

@@ -8,36 +8,6 @@ class VlansModel extends BaseModel {
   async lists() {
     return await super.LISTALL()
   }
-  async listQuery(dataQuery) {
-    const result = await super.LISTQUERY({
-      where: dataQuery || undefined,
-      include: {
-        IPS: {
-          include: {
-            EMPLOYEE: {
-              select: {
-                EMPLOYEE_CODE: true,
-                EMPLOYEE_ID: true,
-                FIRST_NAME: true,
-                LAST_NAME: true
-              }
-            }
-          }
-        }
-      },
-      orderBy: { [this.defaultOrderBy]: 'asc' }
-    })
-
-    return result.map(vlan => ({
-      ...vlan,
-      IPS: vlan.IPS.map(({ EMPLOYEE, ...ip }) => ({
-        ...ip,
-        EMPLOYEE_CODE: EMPLOYEE ? EMPLOYEE.EMPLOYEE_CODE : null,
-        FIRST_NAME: EMPLOYEE ? EMPLOYEE.FIRST_NAME : null,
-        LAST_NAME: EMPLOYEE ? EMPLOYEE.LAST_NAME : null
-      }))
-    }))
-  }
 
   async create(data) {
     return await super.CREATE(data)

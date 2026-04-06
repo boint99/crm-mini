@@ -20,38 +20,6 @@ function parseNetwork(cidr) {
 }
 
 class VlansService {
-  async lists(queryStatus, query) {
-    const allowedFields = ['status', 'vlan_id']
-
-    // Validate query params
-    const queryKeys = Object.keys(query)
-
-    // Only allow certain fields for filtering
-    const invalidKeys = queryKeys.filter(
-      key => !allowedFields.includes(key)
-    )
-    // If there are invalid query params, throw an error
-    if (invalidKeys.length > 0) {
-      throw new ApiError(
-        StatusCodes.BAD_REQUEST,
-        `Invalid query params: ${invalidKeys.join(', ')}`
-      )
-    }
-
-    CHECK_ENUM(queryStatus, ALLOWED_STATUS_NETWORK, StatusCodes.BAD_REQUEST, 'Invalid status filter!')
-
-    if (query.vlan_id) {
-      const checkVlanId =  await vlansModel.findByUnique(Number(query.vlan_id), 'VLAN_ID')
-      if (!checkVlanId) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, `Vlan ID ${query.vlan_id} does not exist!`)
-      }
-    }
-    const data = {
-      STATUS: queryStatus || undefined,
-      VLAN_ID: query.vlan_id ? Number(query.vlan_id) : undefined
-    }
-    return await vlansModel.listQuery(data)
-  }
   async create(data) {
     const { VLAN_CODE, VLAN_NAME, NETWORK, DEFAULT_GATEWAY, STATUS } = data
 

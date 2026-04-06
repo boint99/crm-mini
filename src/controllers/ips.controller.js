@@ -1,5 +1,4 @@
 import { CreatedResponse, SuccessResponse } from '../utils/SuccessResponse.js'
-import { ipsModel } from '../models/ips.model.js'
 import { ipsService } from '../services/ips.service.js'
 
 
@@ -7,7 +6,7 @@ class IpsController {
   //  get list
   async lists(req, res, next) {
     try {
-      const result = await ipsModel.lists()
+      const result = await ipsService.ipqueryBuilder(req.query).lists()
       new SuccessResponse({
         res: res,
         data: result,

@@ -30,14 +30,14 @@ export default function IpModal({
         reset({
           HOST: data.HOST,
           DEVICE_TYPE: data.DEVICE_TYPE || "",
-          EMPLOYEE_ID: data.EMPLOYEE_ID || "",
+          EMPLOYEE_CODE: data.EMPLOYEE?.EMPLOYEE_CODE || "",
           STATUS: data.STATUS || "ACTIVE",
         });
       } else if (mode === "create") {
         reset({
           HOST: "",
           DEVICE_TYPE: "",
-          EMPLOYEE_ID: "",
+          EMPLOYEE_CODE: "",
           STATUS: "ACTIVE",
         });
       }
@@ -52,7 +52,7 @@ export default function IpModal({
     const payload = {
       ...formData,
       VLAN_ID: vlanId,
-      EMPLOYEE_ID: formData.EMPLOYEE_ID ? Number(formData.EMPLOYEE_ID) : null,
+      EMPLOYEE_CODE: formData.EMPLOYEE_CODE?.trim() || null,
     };
     if (mode === "edit") {
       payload.IP_ID = data.IP_ID;
@@ -154,12 +154,12 @@ export default function IpModal({
           </div>
 
           <div>
-            <label className={labelClass}>Employee_code</label>
+            <label className={labelClass}>Employee Code</label>
             <input
-              type="number"
-              placeholder="Eg: 123456"
+              type="text"
+              placeholder="Eg: EMP001"
               className={inputClass}
-              {...register("EMPLOYEE_ID")}
+              {...register("EMPLOYEE_CODE")}
             />
           </div>
 

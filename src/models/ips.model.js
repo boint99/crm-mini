@@ -9,6 +9,10 @@ class IpsModel extends BaseModel {
     return await super.LISTALL()
   }
 
+  async listQuery(options = {}) {
+    return await super.LISTQUERY(options)
+  }
+
   async create(data) {
     return await super.CREATE(data)
   }

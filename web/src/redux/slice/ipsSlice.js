@@ -8,9 +8,9 @@ const getErrorMessage = (error, fallback = "Có lỗi xảy ra") => {
 
 export const getIps = createAsyncThunk(
   "ips/getIps",
-  async (_, { rejectWithValue }) => {
+  async (params = {}, { rejectWithValue }) => {
     try {
-      const data = await ipsAPI.getLists();
+      const data = await ipsAPI.getLists(params);
       return data.data || [];
     } catch (error) {
       return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.get.error));
@@ -78,25 +78,11 @@ const ipsSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(createIp.fulfilled, (state, action) => {
-        if (action.payload) {
-          state.items.unshift(action.payload);
-        }
-      })
       .addCase(createIp.rejected, (state, action) => {
         state.error = action.payload;
       })
-      .addCase(updateIp.fulfilled, (state, action) => {
-        const idx = state.items.findIndex(
-          (ip) => ip.IP_ID === action.payload.IP_ID
-        );
-        if (idx !== -1) state.items[idx] = { ...state.items[idx], ...action.payload };
-      })
       .addCase(updateIp.rejected, (state, action) => {
         state.error = action.payload;
-      })
-      .addCase(deleteIp.fulfilled, (state, action) => {
-        state.items = state.items.filter((ip) => ip.IP_ID !== action.payload);
       })
       .addCase(deleteIp.rejected, (state, action) => {
         state.error = action.payload;

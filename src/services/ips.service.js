@@ -8,6 +8,31 @@ import { employeesModel } from '../models/employees.model.js'
 
 
 class IpsService {
+  ipqueryBuilder(query) {
+    const { vlan_id } = query
+
+    const options = {
+      where: vlan_id ? { VLAN_ID: Number(vlan_id) } : undefined,
+      include: {
+        EMPLOYEE: {
+          select: {
+            EMPLOYEE_ID: true,
+            EMPLOYEE_CODE: true,
+            FIRST_NAME: true,
+            LAST_NAME: true,
+            PHONE: true,
+            EMAIL: true,
+            STATUS: true
+          }
+        }
+      },
+      orderBy: { IP_ID: 'asc' }
+    }
+
+    return {
+      lists: () => ipsModel.listQuery(options)
+    }
+  }
   async checkeHostForVlan(host, vlan) {
     const subnet = ip.cidrSubnet(vlan.NETWORK)
 
@@ -32,6 +57,15 @@ class IpsService {
     }
   }
 
+  async resolveEmployeeCode(code) {
+    if (code === undefined || code === null || code === '') return null
+    const employee = await employeesModel.findByCode(code.trim())
+    if (!employee) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid EMPLOYEE_CODE!')
+    }
+    return employee.EMPLOYEE_ID
+  }
+
   async checkEmployee(employeeId, currentIpId = null) {
     if (employeeId === undefined || employeeId === null) return
 
@@ -47,7 +81,7 @@ class IpsService {
   }
 
   async create(data) {
-    const { HOST, VLAN_ID, DEVICE_TYPE, EMPLOYEE_ID, STATUS } = data
+    const { HOST, VLAN_ID, DEVICE_TYPE, EMPLOYEE_CODE, STATUS } = data
 
     // 1. Validate HOST
     if (!HOST || !HOST.trim() || !ip.isV4Format(HOST)) {
@@ -70,6 +104,7 @@ class IpsService {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'IP already exists!')
     }
 
+    const EMPLOYEE_ID = await this.resolveEmployeeCode(EMPLOYEE_CODE)
     await this.checkEmployee(EMPLOYEE_ID)
 
     // 8. Check status enum
@@ -119,9 +154,12 @@ class IpsService {
       payload.DEVICE_TYPE = String(payload.DEVICE_TYPE).trim()
     }
 
-    if (payload.EMPLOYEE_ID !== undefined) {
-      await this.checkEmployee(payload.EMPLOYEE_ID, Number(IP_ID))
+    if (payload.EMPLOYEE_CODE !== undefined) {
+      const resolvedId = await this.resolveEmployeeCode(payload.EMPLOYEE_CODE)
+      await this.checkEmployee(resolvedId, Number(IP_ID))
+      payload.EMPLOYEE_ID = resolvedId
     }
+    delete payload.EMPLOYEE_CODE
 
     CHECK_ENUM(payload.STATUS, ALLOWED_STATUS_NETWORK, StatusCodes.BAD_REQUEST, 'Invalid status!')
 

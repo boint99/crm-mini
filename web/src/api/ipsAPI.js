@@ -2,8 +2,8 @@ import { ROOT_DOMAIN } from "@/utils/contants";
 import axios from "axios";
 
 export const ipsAPI = {
-  getLists: async () => {
-    const res = await axios.get(`${ROOT_DOMAIN}/networks/ipaddress/all`);
+  getLists: async (params = {}) => {
+    const res = await axios.get(`${ROOT_DOMAIN}/networks/ipaddress`, { params });
     return res.data;
   },
   create: async (payload) => {
