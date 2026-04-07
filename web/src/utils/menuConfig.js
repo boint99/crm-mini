@@ -54,13 +54,13 @@ export const NAV_GROUPS = [
     group: "ORGANIZATION",
     items: [
       {
-        id: "organization", label: "Tổ chức", icon: Building,
+        id: "organization", label: "Organization", icon: Building,
         children: [
-          { id: "employees",  label: "Nhân viên", icon: Users,             path: "/organization/employees" },
-          { id: "positions",  label: "Chức vụ",   icon: BriefcaseBusiness, path: "/organization/positions" },
-          { id: "divisions",  label: "Khối",      icon: Network,           path: "/organization/divisions" },
-          { id: "branches",   label: "Chi nhánh", icon: Building,          path: "/organization/branches" },
-          { id: "companies",  label: "Công ty",   icon: Building,          path: "/organization/companies" },
+          { id: "employees",  label: "Employees", icon: Users,             path: "/organization/employees" },
+          { id: "positions",  label: "Positions",   icon: BriefcaseBusiness, path: "/organization/positions" },
+          { id: "divisions",  label: "Divisions",      icon: Network,           path: "/organization/divisions" },
+          { id: "branches",   label: "Branches", icon: Building,          path: "/organization/branches" },
+          { id: "companies",  label: "Companies",   icon: Building,          path: "/organization/companies" },
         ],
       },
       { id: "network",   label: "Networks", icon: Network,           path: "/network-management" },
@@ -70,8 +70,8 @@ export const NAV_GROUPS = [
   {
     group: "MANAGEMENT",
     items: [
-      { id: "accounts",    label: "Tài khoản",   icon: KeyRound, path: "/accounts" },
-      { id: "permissions", label: "Phân quyền",  icon: Shield,   path: "/permissions" },
+      { id: "accounts",    label: "Accounts",   icon: KeyRound, path: "/accounts" },
+      { id: "permissions", label: "Permissions",  icon: Shield,   path: "/permissions" },
     ],
   },
 ];

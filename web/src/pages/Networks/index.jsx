@@ -92,6 +92,7 @@ export default function Networks() {
   const dispatchAsync = useAppDispatch();
   const dispatch = useDispatch();
   const vlans = useSelector(selectVlans);
+
   const vlansLoading = useSelector(selectVlansLoading);
   const ips = useSelector(selectIps);
   const ipsLoading = useSelector(selectIpsLoading);
@@ -335,9 +336,23 @@ export default function Networks() {
           <LoadingItem />
         </div>
       ) : vlans.length === 0 ? (
-        <div className="mt-6 flex flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white py-16 text-gray-400">
-          <Network className="h-10 w-10 mb-2" />
-          <p className="text-sm">No VLANs available</p>
+        <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-gray-900">No VLANs</h2>
+            <button
+              onClick={openCreateVlan}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add VLAN
+            </button>
+          </div>
+          <div className="flex flex-col items-center justify-center py-10 text-gray-400">
+            <Network className="h-10 w-10 mb-2" />
+            <p className="text-sm">
+              No VLANs available. Create one to get started.
+            </p>
+          </div>
         </div>
       ) : (
         <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -476,42 +491,46 @@ export default function Networks() {
               )}
             </div>
           </div>
-          {selectedVlan && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="rounded-lg bg-gray-50 p-3">
-                <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
-                  Network
-                </p>
-                <p className="mt-1 text-sm font-semibold text-gray-800">
-                  {selectedVlan.NETWORK || "—"}
-                </p>
+          {selectedVlan &&
+            (selectedVlan.NETWORK ||
+              selectedVlan.DEFAULT_GATEWAY ||
+              selectedVlan.SUBNET_MASK ||
+              selectedVlan.IP_RANGE) && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="rounded-lg bg-gray-50 p-3">
+                  <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
+                    Network
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-gray-800">
+                    {selectedVlan.NETWORK || "—"}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-gray-50 p-3">
+                  <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
+                    Gateway
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-gray-800">
+                    {selectedVlan.DEFAULT_GATEWAY || "—"}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-gray-50 p-3">
+                  <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
+                    Subnet Mask
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-gray-800">
+                    /{selectedVlan.SUBNET_MASK || "—"}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-gray-50 p-3">
+                  <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
+                    IP Range
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-gray-800">
+                    {selectedVlan.IP_RANGE || "—"}
+                  </p>
+                </div>
               </div>
-              <div className="rounded-lg bg-gray-50 p-3">
-                <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
-                  Gateway
-                </p>
-                <p className="mt-1 text-sm font-semibold text-gray-800">
-                  {selectedVlan.DEFAULT_GATEWAY || "—"}
-                </p>
-              </div>
-              <div className="rounded-lg bg-gray-50 p-3">
-                <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
-                  Subnet Mask
-                </p>
-                <p className="mt-1 text-sm font-semibold text-gray-800">
-                  /{selectedVlan.SUBNET_MASK || "—"}
-                </p>
-              </div>
-              <div className="rounded-lg bg-gray-50 p-3">
-                <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
-                  IP Range
-                </p>
-                <p className="mt-1 text-sm font-semibold text-gray-800">
-                  {selectedVlan.IP_RANGE || "—"}
-                </p>
-              </div>
-            </div>
-          )}
+            )}
         </div>
       )}
 

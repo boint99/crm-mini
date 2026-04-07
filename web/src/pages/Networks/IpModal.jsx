@@ -162,7 +162,6 @@ export default function IpModal({
               {...register("EMPLOYEE_CODE")}
             />
           </div>
-
           <div>
             <label className={labelClass}>Status</label>
             <select className={inputClass} {...register("STATUS")}>

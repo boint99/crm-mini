@@ -38,23 +38,23 @@ export const formatDateTime = (isoString) => {
 export const CUSTOM_MESSAGES = {
   get: {
     pending: "Đang tải danh sách...",
-    success: "Lấy danh sách thành công",
-    error: "Không thể tải danh sách",
+    success: "Lấy danh sách thành công!",
+    error: "Không thể tải danh sách!",
   },
   create: {
     pending: "Đang thêm...",
-    success: "Thêm thành công",
-    error: "Thêm thất bại",
+    success: "Thêm thành công!",
+    error: "Thêm thất bại!",
   },
   update: {
     pending: "Đang cập nhật...",
-    success: "Cập nhật thành công",
-    error: "Cập nhật thất bại",
+    success: "Cập nhật thành công!",
+    error: "Cập nhật thất bại!",
   },
   delete: {
     pending: "Đang xóa...",
-    success: "Xóa thành công",
-    error: "Xóa thất bại",
+    success: "Xóa thành công!",
+    error: "Xóa thất bại!",
   },
 };
 

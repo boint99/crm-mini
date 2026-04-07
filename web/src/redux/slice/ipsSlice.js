@@ -76,16 +76,16 @@ const ipsSlice = createSlice({
       })
       .addCase(getIps.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload || action.error.message;
       })
       .addCase(createIp.rejected, (state, action) => {
-        state.error = action.payload;
+        state.error = action.payload || action.error.message;
       })
       .addCase(updateIp.rejected, (state, action) => {
-        state.error = action.payload;
+        state.error = action.payload || action.error.message;
       })
       .addCase(deleteIp.rejected, (state, action) => {
-        state.error = action.payload;
+        state.error = action.payload || action.error.message;
       });
   },
 });
