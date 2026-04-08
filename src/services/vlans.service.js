@@ -4,6 +4,7 @@ import { vlansModel } from '../models/vlans.model.js'
 import ApiError from '../utils/ApiError.js'
 import { ALLOWED_STATUS_NETWORK, CHECK_ENUM } from '../utils/constants.js'
 import ValidateCores from '../core/validate.core.js'
+import { ipsModel } from '../models/ips.model.js'
 
 /**
  * Parse a CIDR string (e.g. "192.168.1.0/24") and return subnet info.
@@ -136,9 +137,14 @@ class VlansService {
   }
 
   async delete(id) {
-    const existing = await vlansModel.findById(Number(id))
+    const vlanId = Number(id)
+    const existing = await vlansModel.findById(vlanId)
     if (!existing) throw new ApiError(StatusCodes.NOT_FOUND, 'VLAN not found!')
-    return await vlansModel.deleteById(Number(id))
+
+    const linkedIp = await ipsModel.findByField(vlanId, 'VLAN_ID')
+    if (linkedIp) throw new ApiError(StatusCodes.CONFLICT, 'Cannot delete VLAN: it is still referenced by some IPs!')
+
+    return await vlansModel.deleteById(vlanId)
   }
 }
 

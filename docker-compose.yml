@@ -39,15 +39,14 @@ services:
       - .:/app
       - /app/node_modules
     command: sh -c "npm install && npx prisma generate && npm run dev"
-    depends_on:
-      db:
-        condition: service_healthy
     networks:
       - app-net
 
   db:
     image: postgres:16
     container_name: database
+    profiles:
+      - local-db
     restart: always
     env_file:
       - .env
