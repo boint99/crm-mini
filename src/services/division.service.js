@@ -98,6 +98,10 @@ class DivisionService {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Division not found!')
     }
 
+    const linkedCompany = await companyModel.findById(idToNumber, 'COMPANY_ID')
+    if (linkedCompany) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Cannot delete division linked to a company!')
+    }
     return await divisionModel.deleteById(idToNumber)
   }
 }

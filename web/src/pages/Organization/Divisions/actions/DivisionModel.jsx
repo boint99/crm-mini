@@ -1,5 +1,11 @@
 import { X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  getCompanies,
+  selectCompanies,
+  selectLoading as selectCompaniesLoading,
+} from "@/redux/slice/companiesSilce";
 
 const emptyDivision = {
   DIVISION_ID: null,
@@ -36,16 +42,39 @@ function DivisionModel({
   mode = "create",
   initialValues = null,
 }) {
+  const dispatch = useDispatch();
+  const companies = useSelector(selectCompanies);
+  const companiesLoading = useSelector(selectCompaniesLoading);
   const [values, setValues] = useState(emptyDivision);
   const [touched, setTouched] = useState({});
   const isEdit = mode === "edit";
   const isDelete = mode === "delete";
+  const defaultApplied = useRef(false);
 
   useEffect(() => {
     if (!open) return;
     setValues(normalizeDivision(initialValues));
     setTouched({});
+    defaultApplied.current = false;
   }, [initialValues, open]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (companies.length > 0) return;
+    dispatch(getCompanies());
+  }, [companies.length, dispatch, open]);
+
+  useEffect(() => {
+    if (!open || isEdit || isDelete) return;
+    if (!companies.length) return;
+    if (defaultApplied.current) return;
+    defaultApplied.current = true;
+
+    setValues((prev) => ({
+      ...prev,
+      COMPANY_ID: prev.COMPANY_ID || String(companies[0].COMPANY_ID),
+    }));
+  }, [companies, isDelete, isEdit, open]);
 
   const errors = useMemo(() => {
     if (isDelete) return {};
@@ -161,20 +190,17 @@ function DivisionModel({
                 ) : null}
               </Field>
 
-              <Field label="Trạng thái *">
+              <Field label="Trạng thái">
                 <select
                   value={values.STATUS}
                   onChange={setField("STATUS")}
                   onBlur={markTouched("STATUS")}
                   disabled={isDelete}
-                  className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900 ${isDelete ? "disabled-input" : ""}`}
+                  className={`w-full border border-gray-300 cursor-pointer rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900 ${isDelete ? "disabled-input" : ""}`}
                 >
-                  <option value="ENABLE">ENABLE (Hoạt động)</option>
+                  <option value="ENABLE">ENABLE</option>
                   <option value="DISABLED">DISABLED</option>
                 </select>
-                {touched.STATUS && errors.STATUS ? (
-                  <p className="mt-1 text-xs text-rose-600">{errors.STATUS}</p>
-                ) : null}
               </Field>
 
               <Field label="Tên khối *">
@@ -193,15 +219,31 @@ function DivisionModel({
                 ) : null}
               </Field>
 
-              <Field label="Mã công ty">
-                <input
-                  inputMode="numeric"
+              <Field label="Công ty">
+                <select
                   value={values.COMPANY_ID}
                   onChange={setField("COMPANY_ID")}
                   disabled={isDelete}
-                  placeholder="VD: 1"
-                  className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900 ${isDelete ? "disabled-input" : ""}`}
-                />
+                  className={`w-full border border-gray-300 cursor-pointer rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900 ${isDelete ? "disabled-input" : ""}`}
+                >
+                  <option value="" className="cursor-pointer">
+                    Chọn
+                  </option>
+                  {companies.map((company) => (
+                    <option
+                      key={company.COMPANY_ID}
+                      value={String(company.COMPANY_ID)}
+                      className="cursor-pointer"
+                    >
+                      {company.COMPANY_CODE}
+                    </option>
+                  ))}
+                </select>
+                {companiesLoading ? (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Đang tải danh sách công ty...
+                  </p>
+                ) : null}
               </Field>
             </div>
 

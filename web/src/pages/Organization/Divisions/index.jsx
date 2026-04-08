@@ -14,7 +14,7 @@ import { headerTableDivision } from "@/utils/headerTable";
 import { FolderTree, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import DivisionModel from "@/pages/Organization/Divisions/actions/DivisionModel";
+import DivisionModel from "@/pages/Organization/Divisions/Actions/DivisionModel";
 
 const divisionColumns = Object.entries(headerTableDivision);
 

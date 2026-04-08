@@ -43,6 +43,7 @@ function AcctionModal({ open, onClose, action, item }) {
     if ((action === "edit" || action === "delete") && item) {
       reset({
         COMPANY_NAME: item.COMPANY_NAME ?? "",
+        COMPANY_CODE: item.COMPANY_CODE ?? "",
         STATUS: item.STATUS ?? "ENABLE",
       });
     } else {
@@ -58,6 +59,7 @@ function AcctionModal({ open, onClose, action, item }) {
           action: createCompany,
           payload: {
             COMPANY_NAME: data.COMPANY_NAME.trim(),
+            COMPANY_CODE: data.COMPANY_CODE.trim(),
             STATUS: data.STATUS,
           },
           messages: {
@@ -71,6 +73,7 @@ function AcctionModal({ open, onClose, action, item }) {
           payload: {
             COMPANY_ID: item.COMPANY_ID,
             COMPANY_NAME: data.COMPANY_NAME.trim(),
+            COMPANY_CODE: data.COMPANY_CODE.trim(),
             STATUS: data.STATUS,
           },
           messages: {
@@ -139,7 +142,7 @@ function AcctionModal({ open, onClose, action, item }) {
           {/* Form */}
           <form onSubmit={handleSubmit(onValid)} className="px-5 py-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Tên công ty (COMPANY_NAME) *">
+              <Field label="Tên công ty *">
                 <input
                   {...register("COMPANY_NAME", {
                     required: "Vui lòng nhập tên công ty",
@@ -160,7 +163,27 @@ function AcctionModal({ open, onClose, action, item }) {
                   </p>
                 )}
               </Field>
-
+              <Field label="Tên viết tắt">
+                <input
+                  {...register("COMPANY_CODE", {
+                    required: "Vui lòng nhập tên viết tắt",
+                    validate: (v) => !!v.trim() || "Vui lòng nhập tên viết tắt",
+                  })}
+                  readOnly={isDelete}
+                  className={[
+                    "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none text-gray-900",
+                    isDelete
+                      ? "bg-gray-50 text-gray-500 cursor-not-allowed"
+                      : "focus:border-blue-500 focus:ring-2 focus:ring-blue-100",
+                  ].join(" ")}
+                  placeholder="VD: Công ty ABC"
+                />
+                {errors.COMPANY_CODE && (
+                  <p className="mt-1 text-xs text-rose-600">
+                    {errors.COMPANY_CODE.message}
+                  </p>
+                )}
+              </Field>
               <Field label="Trạng thái (STATUS) *">
                 <select
                   {...register("STATUS", {

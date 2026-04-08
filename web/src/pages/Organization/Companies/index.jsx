@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import AcctionModal from "@/pages/Organization/AcctionModal";
+import AcctionModal from "./Actions";
 import { useAppDispatch } from "@/hook/useAppDispatch";
 import {
   getCompanies,

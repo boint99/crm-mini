@@ -1,7 +1,7 @@
 import LoadingItem from "@/components/ui/LoadingItem";
 import { dispatchWithToast } from "@/components/ui/dispatchWithToast";
 import { useAppDispatch } from "@/hook/useAppDispatch";
-import BranchModel from "@/pages/Organization/Branches/action/BranchModel";
+import BranchModel from "@/pages/Organization/Branches/Action/BranchModel";
 import {
   createBranch,
   deleteBranch,
@@ -151,7 +151,10 @@ function Branches() {
 
               if (key === "INDEX") {
                 return (
-                  <td key={key} className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
+                  <td
+                    key={key}
+                    className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap"
+                  >
                     {rowIndex + 1}
                   </td>
                 );
@@ -167,7 +170,9 @@ function Branches() {
                           : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
                       }`}
                     >
-                      {branch.STATUS === "ENABLE" ? "Hoạt động" : "Ngưng hoạt động"}
+                      {branch.STATUS === "ENABLE"
+                        ? "Hoạt động"
+                        : "Ngưng hoạt động"}
                     </span>
                   </td>
                 );

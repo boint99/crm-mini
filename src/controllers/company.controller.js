@@ -4,7 +4,7 @@ import { CreatedResponse, SuccessResponse } from '../utils/SuccessResponse.js'
 
 class CompanyController {
   //  get list
-  async getList(req, res, next) {
+  async lists(req, res, next) {
     try {
       const result = await companyModel.listAll()
 

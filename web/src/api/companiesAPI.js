@@ -10,6 +10,7 @@ import axios from "axios";
 
     // CREATE
     create: async (payload) => {
+      console.log("🚀 ~ payload:", payload)
       const res = await axios.post(`${ROOT_DOMAIN}/company`, payload);
       return res.data;
     },
