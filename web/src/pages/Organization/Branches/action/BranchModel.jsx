@@ -162,7 +162,7 @@ function BranchModel({
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Tên chi nhánh (Branch Name) *">
+                <Field label="Tên chi nhánh *">
                   <input
                     value={values.BRANCH_NAME}
                     onChange={setField("BRANCH_NAME")}
@@ -176,7 +176,7 @@ function BranchModel({
                     </p>
                   ) : null}
                 </Field>
-                <Field label="Tên viết tắt (Branch Code) *">
+                <Field label="Tên viết tắt *">
                   <input
                     value={values.BRANCH_CODE}
                     onChange={setField("BRANCH_CODE")}
@@ -191,7 +191,7 @@ function BranchModel({
                   ) : null}
                 </Field>
 
-                <Field label="Trạng thái (STATUS) *">
+                <Field label="Trạng thái *">
                   <select
                     value={values.STATUS}
                     onChange={setField("STATUS")}
@@ -207,7 +207,7 @@ function BranchModel({
                     </p>
                   ) : null}
                 </Field>
-                <Field label="Địa điểm (Location)">
+                <Field label="Địa điểm ">
                   <input
                     value={values.LOCATION}
                     onChange={setField("LOCATION")}

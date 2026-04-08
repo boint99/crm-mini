@@ -45,6 +45,11 @@ model ORG_UNITS {
   BRANCHES       BRANCHES[]
   EMPLOYEES      EMPLOYEES[]
   DIVISION       DIVISIONS?  @relation(fields: [DIVISION_ID], references: [DIVISION_ID])
+  PARENT_UNIT    ORG_UNITS?  @relation("OrgUnitTree", fields: [PARENT_UNIT_ID], references: [ORG_UNIT_ID])
+  CHILD_UNITS    ORG_UNITS[] @relation("OrgUnitTree")
+
+  @@index([DIVISION_ID])
+  @@index([PARENT_UNIT_ID])
 
   @@map("ORG_UNITS")
 }
