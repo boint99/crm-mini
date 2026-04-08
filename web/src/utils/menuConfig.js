@@ -59,6 +59,7 @@ export const NAV_GROUPS = [
           { id: "employees",  label: "Employees", icon: Users,             path: "/organization/employees" },
           { id: "positions",  label: "Positions",   icon: BriefcaseBusiness, path: "/organization/positions" },
           { id: "divisions",  label: "Divisions",      icon: Network,           path: "/organization/divisions" },
+          { id: "org-units",  label: "Org Units",      icon: Network,           path: "/organization/org-units" },
           { id: "branches",   label: "Branches", icon: Building,          path: "/organization/branches" },
           { id: "companies",  label: "Companies",   icon: Building,          path: "/organization/companies" },
         ],

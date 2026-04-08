@@ -21,6 +21,10 @@ class BranchesModel extends BaseModel {
     return await super.FINDBYFIELD(code, 'BRANCH_CODE')
   }
 
+  async findByField(value, field) {
+    return await super.FINDBYFIELD(value, field)
+  }
+
   async updateById(id, updateData) {
     return await super.UPDATE(id, 'BRANCH_ID', updateData)
   }

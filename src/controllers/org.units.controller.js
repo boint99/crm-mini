@@ -15,6 +15,17 @@ class OrgUnitsController {
       })
     } catch (error) { next(error) }
   }
+
+  async buildTree(req, res, next) {
+    try {
+      const result = await orgUnitsServices.buildTree()
+      new SuccessResponse({
+        res: res,
+        data: result,
+        message: 'Org units tree fetched successfully.'
+      })
+    } catch (error) { next(error) }
+  }
   // create
   async create(req, res, next) {
     try {

@@ -11,6 +11,7 @@ const Companies = lazy(() => import("@/pages/Organization/Companies"));
 const Divisions = lazy(() => import("@/pages/Organization/Divisions"));
 const Positions = lazy(() => import("@/pages/Organization/Positions"));
 const Branches = lazy(() => import("@/pages/Organization/Branches"));
+const OrgUnit = lazy(() => import("@/pages/Organization/OrgUnit"));
 const Networks = lazy(() => import("@/pages/Networks"));
 const Viettel = lazy(() => import("@/pages/Viettel"));
 
@@ -80,6 +81,14 @@ const routes = [
             element: (
               <WithSpinner>
                 <Branches />
+              </WithSpinner>
+            ),
+          },
+          {
+            path: "org-units",
+            element: (
+              <WithSpinner>
+                <OrgUnit />
               </WithSpinner>
             ),
           },

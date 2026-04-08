@@ -2,8 +2,13 @@ import { ALLOWED_STATUS, CHECK_ENUM } from '../utils/constants.js'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '../utils/ApiError.js'
 import { orgUnitsModel } from '../models/org.units.model.js'
+import { employeesModel } from '../models/employees.model.js'
+import { branchesModel } from '../models/branch.model.js'
 
 class OrgUnitsServices {
+  async buildTree() {
+    return await orgUnitsModel.listTree()
+  }
   /**
    * Create a new org.units
    */
@@ -95,6 +100,30 @@ class OrgUnitsServices {
 
     if (!existing) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Org units is not found!')
+    }
+
+    const hasChildren = await orgUnitsModel.findByField(idToNumber, 'PARENT_UNIT_ID')
+    if (hasChildren) {
+      throw new ApiError(
+        StatusCodes.CONFLICT,
+        'Cannot delete Org unit: it still has child Org units!'
+      )
+    }
+
+    const hasEmployees = await employeesModel.findbyField(idToNumber, 'UNIT_ID')
+    if (hasEmployees) {
+      throw new ApiError(
+        StatusCodes.CONFLICT,
+        'Cannot delete Org unit: it is still referenced by employees!'
+      )
+    }
+
+    const hasBranches = await branchesModel.findByField(idToNumber, 'ORG_UNIT_ID')
+    if (hasBranches) {
+      throw new ApiError(
+        StatusCodes.CONFLICT,
+        'Cannot delete Org unit: it is still referenced by branches!'
+      )
     }
 
     return await orgUnitsModel.deleteById(idToNumber)
