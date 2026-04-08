@@ -3,7 +3,7 @@ import axios from "axios";
 
 export const vlansAPI = {
   getLists: async () => {
-    const res = await axios.get(`${ROOT_DOMAIN}/networks/vlans/lists`,);
+    const res = await axios.get(`${ROOT_DOMAIN}/networks/vlan/lists`,);
     return res.data;
   },
   create: async (payload) => {

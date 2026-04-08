@@ -1,4 +1,4 @@
-export const ROOT_DOMAIN = 'http://localhost:8017/api'
+export const ROOT_DOMAIN = import.meta.env.VITE_API_URL
 
 export const dispatchAsync = async (dispatch, action, options = {}) => {
     const { onSuccess, onError, successMessage, errorMessage } = options;
