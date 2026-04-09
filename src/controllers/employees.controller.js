@@ -6,9 +6,7 @@ class EmployeesController {
   // list
   async lists(req, res, next) {
     try {
-      const { status } = req.query
-      let queryData = status.toUpperCase()
-      const result = await employeesServices.lists(queryData)
+      const result = await employeesServices.lists(req.query)
       new SuccessResponse({
         res: res,
         data: result,

@@ -9,8 +9,8 @@ const emptyEmployee = {
   PHONE: "",
   EMAIL: "",
   BIRTH_DATE: "",
-  UNIT_ID: "",
-  VT_CODE: "",
+  ORG_UNIT_ID: "",
+  VIETTEL_CODE: "",
   POSITION_ID: "",
   STATUS: "ENABLE",
 };
@@ -28,9 +28,9 @@ const normalizeEmployee = (employee) => {
     BIRTH_DATE: employee.BIRTH_DATE
       ? String(employee.BIRTH_DATE).slice(0, 10)
       : "",
-    UNIT_ID: employee.UNIT_ID ?? "",
-    VT_CODE: employee.VT_CODE ?? "",
-    POSITION_ID: employee.POSITION_ID ?? "",
+    ORG_UNIT_ID: employee.ORG_UNIT?.ORG_UNIT_ID ?? employee.UNIT_ID ?? "",
+    VIETTEL_CODE: employee.VIETTEL?.VIETTEL_CODE ?? "",
+    POSITION_ID: employee.POSITION?.POSITION_ID ?? employee.POSITION_ID ?? "",
     STATUS: employee.STATUS ?? "ENABLE",
   };
 };
@@ -118,8 +118,10 @@ function EmployeeModel({
         : {}),
       FIRST_NAME: values.FIRST_NAME.trim(),
       LAST_NAME: values.LAST_NAME.trim(),
-      UNIT_ID: values.UNIT_ID ? Number(values.UNIT_ID) : null,
-      VT_CODE: values.VT_CODE ? Number(values.VT_CODE) : null,
+      ORG_UNIT_ID: values.ORG_UNIT_ID ? Number(values.ORG_UNIT_ID) : null,
+      ...(values.VIETTEL_CODE?.trim()
+        ? { VIETTEL_CODE: values.VIETTEL_CODE.trim() }
+        : {}),
       POSITION_ID: values.POSITION_ID ? Number(values.POSITION_ID) : null,
       BIRTH_DATE: values.BIRTH_DATE || null,
       STATUS: values.STATUS,
@@ -304,24 +306,23 @@ function EmployeeModel({
                 <Field label="Đơn vị (Unit)">
                   <input
                     inputMode="numeric"
-                    value={values.UNIT_ID}
-                    onChange={setField("UNIT_ID")}
+                    value={values.ORG_UNIT_ID}
+                    onChange={setField("ORG_UNIT_ID")}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
                     placeholder="VD: 1"
                   />
                 </Field>
 
-                <Field label="Chức vụ (Position)">
+                <Field label="Mã Viettel">
                   <input
-                    inputMode="numeric"
-                    value={values.VT_CODE}
-                    onChange={setField("VT_CODE")}
+                    value={values.VIETTEL_CODE}
+                    onChange={setField("VIETTEL_CODE")}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
-                    placeholder="VD: 101"
+                    placeholder="VD: VT001"
                   />
                 </Field>
 
-                <Field label="Phòng ban (Department)">
+                <Field label="Chức vụ (Position)">
                   <input
                     inputMode="numeric"
                     value={values.POSITION_ID}

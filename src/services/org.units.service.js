@@ -37,6 +37,13 @@ class OrgUnitsServices {
     // 4. Check status enum
     CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
 
+    if (data.BRANCH_ID) {
+      const branch = await branchesModel.findById(Number(data.BRANCH_ID))
+      if (!branch) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Branch ID is invalid!')
+      }
+    }
+
     return await orgUnitsModel.create(data)
   }
 
@@ -83,6 +90,13 @@ class OrgUnitsServices {
     // 3. Check status enum
     CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, `Invalid status. Allowed values: ${ALLOWED_STATUS.join(', ')}`)
 
+    if (payload.BRANCH_ID !== undefined && payload.BRANCH_ID !== null) {
+      const branch = await branchesModel.findById(Number(payload.BRANCH_ID))
+      if (!branch) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Branch ID is invalid!')
+      }
+    }
+
     return await orgUnitsModel.updateById(ORG_UNIT_ID, payload)
   }
 
@@ -115,14 +129,6 @@ class OrgUnitsServices {
       throw new ApiError(
         StatusCodes.CONFLICT,
         'Cannot delete Org unit: it is still referenced by employees!'
-      )
-    }
-
-    const hasBranches = await branchesModel.findByField(idToNumber, 'ORG_UNIT_ID')
-    if (hasBranches) {
-      throw new ApiError(
-        StatusCodes.CONFLICT,
-        'Cannot delete Org unit: it is still referenced by branches!'
       )
     }
 

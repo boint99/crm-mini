@@ -6,7 +6,6 @@ const emptyBranch = {
   BRANCH_NAME: "",
   BRANCH_CODE: "",
   LOCATION: "",
-  ORG_UNIT_ID: "",
   STATUS: "ENABLE",
 };
 
@@ -18,7 +17,6 @@ const normalizeBranch = (branch) => {
     BRANCH_NAME: branch.BRANCH_NAME ?? "",
     BRANCH_CODE: branch.BRANCH_CODE ?? "",
     LOCATION: branch.LOCATION ?? "",
-    ORG_UNIT_ID: branch.ORG_UNIT_ID ?? "",
     STATUS: branch.STATUS ?? "ENABLE",
   };
 };
@@ -93,7 +91,6 @@ function BranchModel({
       BRANCH_NAME: values.BRANCH_NAME.trim(),
       BRANCH_CODE: values.BRANCH_CODE.trim(),
       LOCATION: values.LOCATION?.trim() || null,
-      ORG_UNIT_ID: values.ORG_UNIT_ID ? Number(values.ORG_UNIT_ID) : null,
       STATUS: values.STATUS,
     };
 
@@ -213,16 +210,6 @@ function BranchModel({
                     onChange={setField("LOCATION")}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
                     placeholder="VD: 123 Đường ABC, Tp.HCM"
-                  />
-                </Field>
-
-                <Field label="Mã đơn vị (Org Unit)">
-                  <input
-                    inputMode="numeric"
-                    value={values.ORG_UNIT_ID}
-                    onChange={setField("ORG_UNIT_ID")}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
-                    placeholder="VD: 1"
                   />
                 </Field>
               </div>

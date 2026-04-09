@@ -18,19 +18,19 @@ class EmployeesViettelModel extends BaseModel {
   async create(data) {
     return await super.CREATE({
       VIETTEL_CODE: data.VIETTEL_CODE,
-      VIETTEL_EMAIL: data.VIETTEL_EMAIL ? data.VIETTEL_EMAIL.toLowerCase() : null,
+      VIETTEL_EMAIL: data.VIETTEL_EMAIL ? data.VIETTEL_EMAIL.toLowerCase() : `${data.VIETTEL_CODE.toLowerCase()}@os.viettel.com.vn`,
       STATUS: data.STATUS
     })
   }
 
-  async findByName(name) {
-    return await super.FINDBYFIELD(name, 'VIETTEL_CODE')
+  async findByName(name, field = 'VIETTEL_CODE') {
+    return await super.FINDBYFIELD(name, field)
   }
 
   async updateById(id, updateData) {
     return await super.UPDATE(id, 'VIETTEL_ID', {
       VIETTEL_CODE: updateData.VIETTEL_CODE,
-      VIETTEL_EMAIL: updateData.VIETTEL_EMAIL ? updateData.VIETTEL_EMAIL.toLowerCase() : null,
+      VIETTEL_EMAIL: updateData.VIETTEL_EMAIL ? updateData.VIETTEL_EMAIL.toLowerCase() : `${updateData.VIETTEL_CODE.toLowerCase()}@os.viettel.com.vn`,
       STATUS: updateData.STATUS
     })
   }

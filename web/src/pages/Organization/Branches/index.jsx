@@ -186,14 +186,6 @@ function Branches() {
                 );
               }
 
-              if (key === "ORG_UNIT") {
-                return (
-                  <td key={key} className={cellClass}>
-                    {branch.ORG_UNIT_ID ?? "-"}
-                  </td>
-                );
-              }
-
               return (
                 <td key={key} className={cellClass}>
                   {branch[key] || "-"}

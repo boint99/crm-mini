@@ -9,12 +9,114 @@ class EmployeesModel extends BaseModel {
     return await super.LISTALL()
   }
 
-  async listQuery(status) {
+  async listQuery(status, info) {
+    const where = {
+      ...(status ? { STATUS: status } : {}),
+      ...(info ? { EMPLOYEE_ID: Number(info) } : {})
+    }
+
+    if (info) {
+      return await this.model.findFirst({
+        where,
+        include: {
+          POSITION: { select: { POSITION_ID: true, POSITION_CODE: true, POSITION_NAME: true, LEVEL: true, STATUS: true } },
+          ORG_UNIT: {
+            select: {
+              ORG_UNIT_ID: true,
+              UNIT_CODE: true,
+              UNIT_NAME: true,
+              UNIT_TYPE: true,
+              STATUS: true,
+              DIVISION: {
+                select: {
+                  DIVISION_ID: true,
+                  DIVISION_CODE: true,
+                  DIVISION_NAME: true,
+                  STATUS: true,
+                  COMPANY: {
+                    select: {
+                      COMPANY_ID: true,
+                      COMPANY_CODE: true,
+                      COMPANY_NAME: true,
+                      STATUS: true
+                    }
+                  }
+                }
+              },
+              PARENT_UNIT: { select: { ORG_UNIT_ID: true, UNIT_CODE: true, UNIT_NAME: true, UNIT_TYPE: true } },
+              CHILD_UNITS: { select: { ORG_UNIT_ID: true, UNIT_CODE: true, UNIT_NAME: true, UNIT_TYPE: true, STATUS: true } },
+              BRANCH: { select: { BRANCH_ID: true, BRANCH_CODE: true, BRANCH_NAME: true, LOCATION: true, STATUS: true } }
+            }
+          },
+          VIETTEL: { select: { VIETTEL_ID: true, VIETTEL_CODE: true, VIETTEL_EMAIL: true, STATUS: true } },
+          ACCOUNTS: {
+            select: {
+              ACCOUNT_ID: true,
+              ACCOUNT_CODE: true,
+              IS_LOGIN: true,
+              LOGIN: true,
+              STATUS: true,
+              ACCOUNT_ROLES: {
+                select: {
+                  AR_ID: true,
+                  AR_CODE: true,
+                  ROLE: {
+                    select: {
+                      ROLE_ID: true,
+                      ROLE_CODE: true,
+                      ROLE_NAME: true,
+                      DESCRIPTION: true,
+                      STATUS: true,
+                      PERMISSIONS: {
+                        select: {
+                          PER_ID: true,
+                          PER_CODE: true,
+                          PER_NAME: true,
+                          STATUS: true,
+                          NOTES: true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          IPS: {
+            select: {
+              IP_ID: true,
+              HOST: true,
+              DEVICE_TYPE: true,
+              STATUS: true,
+              VLAN: {
+                select: {
+                  VLAN_ID: true,
+                  VLAN_CODE: true,
+                  VLAN_NAME: true,
+                  NETWORK: true,
+                  DEFAULT_GATEWAY: true,
+                  IP_RANGE: true,
+                  STATUS: true
+                }
+              }
+            }
+          }
+        }
+      })
+    }
+
     return await super.LISTQUERY({
-      where: status ? { STATUS: status } : undefined,
+      where: Object.keys(where).length ? where : undefined,
       include: {
         POSITION: { select: { POSITION_ID: true, POSITION_NAME: true, LEVEL: true } },
-        ORG_UNIT: { select: { ORG_UNIT_ID: true, UNIT_NAME: true, UNIT_TYPE: true } },
+        ORG_UNIT: {
+          select: {
+            ORG_UNIT_ID: true,
+            UNIT_NAME: true,
+            UNIT_TYPE: true,
+            PARENT_UNIT: { select: { ORG_UNIT_ID: true, UNIT_NAME: true, UNIT_TYPE: true } }
+          }
+        },
         VIETTEL: { select: { VIETTEL_ID: true, VIETTEL_CODE: true, VIETTEL_EMAIL: true } }
       },
       orderBy: { [this.defaultOrderBy]: 'asc' }

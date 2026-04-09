@@ -72,30 +72,76 @@ class EmployeesServices {
   /**
    * Create a new employee
    */
-  async lists(query) {
-    const { status } = query
-    if (status) {
-      CHECK_ENUM(status, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status.')
+  async lists(data) {
+    const { status, info } = data
+
+    const queryStatus = status ? status.toUpperCase() : undefined
+
+    const queryInfo = info !== undefined && info !== null && info !== '' ? Number(info) : undefined
+
+    if (queryStatus) {
+      CHECK_ENUM(queryStatus, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status.')
     }
-    return await employeesModel.listQuery(status)
+
+    if (queryInfo !== undefined) {
+      await ServiceCore.CheckFindbyId(queryInfo, employeesModel, 'Employee ID', 'Employee ID is invalid!')
+    }
+
+    return await employeesModel.listQuery(queryStatus, queryInfo)
   }
 
   async create(data) {
-    if (!data.EMPLOYEE_CODE) throw new ApiError(StatusCodes.BAD_REQUEST, 'The employee code cannot be left blank!')
-    if (!data.STATUS) throw new ApiError(StatusCodes.BAD_REQUEST, 'Status is required!')
-    await this.checked(data)
+    let viettelRecord = null
+    const { VIETTEL_CODE, ...payload } = data
 
-    return await employeesModel.create(data)
+    if (!payload.EMPLOYEE_CODE) throw new ApiError(StatusCodes.BAD_REQUEST, 'The employee code cannot be left blank!')
+    if (!payload.STATUS) throw new ApiError(StatusCodes.BAD_REQUEST, 'Status is required!')
+    await this.checked(payload)
+
+    if (VIETTEL_CODE) {
+      const existedViettelCode = await employeesViettelModel.findbyField(VIETTEL_CODE, 'VIETTEL_CODE')
+      if (existedViettelCode) {
+        throw new ApiError(StatusCodes.CONFLICT, 'This Viettel code is already taken!')
+      }
+
+      const newViettel = await employeesViettelModel.create({
+        VIETTEL_CODE
+      })
+
+      viettelRecord = newViettel
+
+    }
+
+    const dataCreate = {
+      ...payload,
+      VIETTEL_ID: viettelRecord ? viettelRecord.VIETTEL_ID : (payload.VIETTEL_ID ?? null)
+    }
+    return await employeesModel.create(dataCreate)
   }
 
   /**
    * Update Employee details
    */
   async update(data) {
-    const { EMPLOYEE_ID, ...payload } = data
+    let viettelRecord = null
+    const { EMPLOYEE_ID, VIETTEL_CODE, ...payload } = data
 
     const existing = await employeesModel.findById(EMPLOYEE_ID)
     if (!existing) throw new ApiError(StatusCodes.NOT_FOUND, 'Employee is not found!')
+
+    if (VIETTEL_CODE) {
+      const existedViettelCode = await employeesViettelModel.findByName(VIETTEL_CODE, 'VIETTEL_CODE')
+      if (existedViettelCode) {
+        throw new ApiError(StatusCodes.CONFLICT, 'This Viettel code is already taken!')
+      }
+
+      const newViettel = await employeesViettelModel.create({
+        VIETTEL_CODE
+      })
+
+      viettelRecord = newViettel
+      payload.VIETTEL_ID = viettelRecord.VIETTEL_ID
+    }
 
     await this.checked(payload, EMPLOYEE_ID)
 

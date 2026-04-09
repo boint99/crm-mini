@@ -1,0 +1,20 @@
+/*
+  Warnings:
+
+  - You are about to drop the column `ORG_UNIT_ID` on the `BRANCHES` table. All the data in the column will be lost.
+
+*/
+-- DropForeignKey
+ALTER TABLE "BRANCHES" DROP CONSTRAINT "BRANCHES_ORG_UNIT_ID_fkey";
+
+-- AlterTable
+ALTER TABLE "BRANCHES" DROP COLUMN "ORG_UNIT_ID";
+
+-- AlterTable
+ALTER TABLE "ORG_UNITS" ADD COLUMN     "BRANCH_ID" INTEGER;
+
+-- CreateIndex
+CREATE INDEX "ORG_UNITS_BRANCH_ID_idx" ON "ORG_UNITS"("BRANCH_ID");
+
+-- AddForeignKey
+ALTER TABLE "ORG_UNITS" ADD CONSTRAINT "ORG_UNITS_BRANCH_ID_fkey" FOREIGN KEY ("BRANCH_ID") REFERENCES "BRANCHES"("BRANCH_ID") ON DELETE SET NULL ON UPDATE CASCADE;

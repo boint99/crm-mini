@@ -169,9 +169,6 @@ components:
         STATUS:
           type: string
           enum: [ENABLE, DISABLED]
-        ORG_UNIT_ID:
-          type: integer
-          nullable: true
         CREATED_AT:
           type: string
           format: date-time
@@ -225,10 +222,6 @@ components:
           type: string
           enum: [ENABLE, DISABLED]
           example: ENABLE
-        ORG_UNIT_ID:
-          type: integer
-          nullable: true
-          example: 1
 
     BranchUpdateInput:
       type: object
@@ -252,7 +245,3 @@ components:
           type: string
           enum: [ENABLE, DISABLED]
           example: DISABLED
-        ORG_UNIT_ID:
-          type: integer
-          nullable: true
-          example: 2

@@ -2,40 +2,43 @@ import { ALLOWED_STATUS, CHECK_ENUM } from '../utils/constants.js'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '../utils/ApiError.js'
 import { branchesModel } from '../models/branch.model.js'
+import { orgUnitsModel } from '../models/org.units.model.js'
 
 class BranchesServices {
   /**
    * Create a new branch
    */
   async create(data) {
+    const { ORG_UNIT_ID, ...payload } = data
+
     // 1. Check required fields
-    if (!data.BRANCH_NAME || !data.BRANCH_NAME.trim()) {
+    if (!payload.BRANCH_NAME || !payload.BRANCH_NAME.trim()) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'The name cannot be left blank!')
     }
-    if (!data.BRANCH_CODE || !data.BRANCH_CODE.trim()) {
+    if (!payload.BRANCH_CODE || !payload.BRANCH_CODE.trim()) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'The branch code cannot be left blank!')
     }
     // 2. Check unique BRANCH_CODE
-    const codeExists = await branchesModel.findByCode(data.BRANCH_CODE.trim())
+    const codeExists = await branchesModel.findByCode(payload.BRANCH_CODE.trim())
     if (codeExists) {
       throw new ApiError(StatusCodes.CONFLICT, 'This branch code is already taken!')
     }
     // 3. Check unique BRANCH_NAME
-    const isNameExisted = await branchesModel.findByName(data.BRANCH_NAME.trim())
+    const isNameExisted = await branchesModel.findByName(payload.BRANCH_NAME.trim())
     if (isNameExisted) {
       throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken!')
     }
     // 4. Check status enum
-    CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
+    CHECK_ENUM(payload.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
 
-    return await branchesModel.create(data)
+    return await branchesModel.create(payload)
   }
 
   /**
    * Update Branch details
    */
   async update(data) {
-    const { BRANCH_ID, ...payload } = data
+    const { BRANCH_ID, ORG_UNIT_ID, ...payload } = data
 
     // 1. Verify existence
     const checkId = await branchesModel.findById(BRANCH_ID)
@@ -78,6 +81,14 @@ class BranchesServices {
 
     if (!existing) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Branch is not found!')
+    }
+
+    const hasOrgUnits = await orgUnitsModel.findByField(idToNumber, 'BRANCH_ID')
+    if (hasOrgUnits) {
+      throw new ApiError(
+        StatusCodes.CONFLICT,
+        'Cannot delete branch: it is still referenced by org units!'
+      )
     }
 
     return await branchesModel.deleteById(idToNumber)

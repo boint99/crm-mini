@@ -10,6 +10,9 @@ class OrgUnitsValidate extends ValidateCore {
       OrgUnitsValidate.validateStringLength(data.UNIT_NAME, 3, 'UNIT_NAME is required!')
       OrgUnitsValidate.validateStringLength(data.UNIT_CODE, 2, 'UNIT_CODE is required!')
       OrgUnitsValidate.validateEnum(data.STATUS, ALLOWED_STATUS)
+      if (data.BRANCH_ID !== undefined && data.BRANCH_ID !== null) {
+        OrgUnitsValidate.validateId(data.BRANCH_ID, 'BRANCH_ID is invalid!.')
+      }
       next()
     } catch (error) {
       next(error)
@@ -30,6 +33,9 @@ class OrgUnitsValidate extends ValidateCore {
       }
       if (data.STATUS !== undefined) {
         OrgUnitsValidate.validateEnum(data.STATUS, ALLOWED_STATUS)
+      }
+      if (data.BRANCH_ID !== undefined && data.BRANCH_ID !== null) {
+        OrgUnitsValidate.validateId(data.BRANCH_ID, 'BRANCH_ID is invalid!.')
       }
 
       next()

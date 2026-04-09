@@ -4,7 +4,7 @@ import axios from "axios";
   export const employeesAPI = {
     // GET list
     getLists: async () => {
-      const res = await axios.get(`${ROOT_DOMAIN}/employees/lists`);
+      const res = await axios.get(`${ROOT_DOMAIN}/employees/`);
       return res.data;
     },
 

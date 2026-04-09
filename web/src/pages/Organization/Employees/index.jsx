@@ -45,6 +45,10 @@ function Employees() {
         employee.LAST_NAME,
         employee.EMAIL,
         employee.PHONE,
+        employee.ORG_UNIT?.UNIT_NAME,
+        employee.ORG_UNIT?.PARENT_UNIT?.UNIT_NAME,
+        employee.POSITION?.POSITION_NAME,
+        employee.VIETTEL?.VIETTEL_CODE,
         employee.STATUS,
       ]
         .filter(Boolean)
@@ -154,7 +158,10 @@ function Employees() {
 
               if (key === "INDEX") {
                 return (
-                  <td key={key} className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
+                  <td
+                    key={key}
+                    className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap"
+                  >
                     {rowIndex + 1}
                   </td>
                 );
@@ -162,7 +169,10 @@ function Employees() {
 
               if (key === "EMPLOYEE_CODE") {
                 return (
-                  <td key={key} className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
+                  <td
+                    key={key}
+                    className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap"
+                  >
                     {employee.EMPLOYEE_CODE}
                   </td>
                 );
@@ -195,9 +205,23 @@ function Employees() {
               }
 
               if (key === "UNIT") {
+                const parentName = employee.ORG_UNIT?.PARENT_UNIT?.UNIT_NAME;
+                const unitName = employee.ORG_UNIT?.UNIT_NAME;
+                const hierarchy =
+                  parentName && unitName
+                    ? `${parentName} > ${unitName}`
+                    : unitName;
                 return (
                   <td key={key} className={cellClass}>
-                    {employee.UNIT_ID ?? "-"}
+                    {hierarchy || employee.UNIT_ID || "-"}
+                  </td>
+                );
+              }
+
+              if (key === "UNIT_PARENT") {
+                return (
+                  <td key={key} className={cellClass}>
+                    {employee.ORG_UNIT?.PARENT_UNIT?.UNIT_NAME || "-"}
                   </td>
                 );
               }
@@ -205,7 +229,9 @@ function Employees() {
               if (key === "POSITION") {
                 return (
                   <td key={key} className={cellClass}>
-                    {employee.POSITION_ID ?? "-"}
+                    {employee.POSITION?.POSITION_NAME ||
+                      employee.POSITION_ID ||
+                      "-"}
                   </td>
                 );
               }
@@ -213,7 +239,9 @@ function Employees() {
               if (key === "VIETTEL") {
                 return (
                   <td key={key} className={cellClass}>
-                    {employee.VT_CODE ?? "-"}
+                    {employee.VIETTEL?.VIETTEL_CODE ||
+                      employee.VIETTEL_ID ||
+                      "-"}
                   </td>
                 );
               }
@@ -228,7 +256,9 @@ function Employees() {
                           : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
                       }`}
                     >
-                      {employee.STATUS === "ENABLE" ? "Hoạt động" : "Ngưng hoạt động"}
+                      {employee.STATUS === "ENABLE"
+                        ? "Hoạt động"
+                        : "Ngưng hoạt động"}
                     </span>
                   </td>
                 );

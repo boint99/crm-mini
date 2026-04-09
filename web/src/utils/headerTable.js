@@ -32,7 +32,7 @@ export const headerTableEmployees = {
     NAME: 'Tên nhân viên',
     EMAIL: 'Email',
     BIRTHDAY: 'Ngày sinh',
-    UNIT: 'Đơn vị',
+    UNIT: 'Phòng ban/Bộ Phận',
     POSITION: 'Chức vụ',
     VIETTEL: 'Mã Viettel',
     STATUS: 'Trạng thái',
@@ -66,7 +66,6 @@ export const headerTableBranch = {
     BRANCH_CODE: 'Mã chi nhánh',
     BRANCH_NAME: 'Tên chi nhánh',
     LOCATION: 'Địa điểm',
-    ORG_UNIT: 'Đơn vị',
     STATUS: 'Trạng thái',
     CREATED_AT: 'Ngày tạo',
     UPDATED_AT: 'Ngày cập nhật'

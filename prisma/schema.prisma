@@ -37,17 +37,19 @@ model ORG_UNITS {
   UNIT_CODE      String      @unique @map("UNIT_CODE")
   UNIT_NAME      String      @map("UNIT_NAME")
   UNIT_TYPE      String?     @map("UNIT_TYPE")
+  BRANCH_ID      Int?        @map("BRANCH_ID")
   DIVISION_ID    Int?        @map("DIVISION_ID")
   PARENT_UNIT_ID Int?        @map("PARENT_UNIT_ID")
   STATUS         ENUMSTATUS  @default(ENABLE) @map("STATUS")
   CREATED_AT     DateTime    @default(now()) @map("CREATED_AT")
   UPDATED_AT     DateTime    @updatedAt @map("UPDATED_AT")
-  BRANCHES       BRANCHES[]
+  BRANCH         BRANCHES?   @relation(fields: [BRANCH_ID], references: [BRANCH_ID])
   EMPLOYEES      EMPLOYEES[]
   DIVISION       DIVISIONS?  @relation(fields: [DIVISION_ID], references: [DIVISION_ID])
   PARENT_UNIT    ORG_UNITS?  @relation("OrgUnitTree", fields: [PARENT_UNIT_ID], references: [ORG_UNIT_ID])
   CHILD_UNITS    ORG_UNITS[] @relation("OrgUnitTree")
 
+  @@index([BRANCH_ID])
   @@index([DIVISION_ID])
   @@index([PARENT_UNIT_ID])
 
@@ -62,8 +64,7 @@ model BRANCHES {
   STATUS      ENUMSTATUS @default(ENABLE) @map("STATUS")
   CREATED_AT  DateTime   @default(now()) @map("CREATED_AT")
   UPDATED_AT  DateTime   @updatedAt @map("UPDATED_AT")
-  ORG_UNIT_ID Int?       @map("ORG_UNIT_ID")
-  ORG_UNIT    ORG_UNITS? @relation(fields: [ORG_UNIT_ID], references: [ORG_UNIT_ID])
+  ORG_UNITS   ORG_UNITS[]
 
   @@map("BRANCHES")
 }
@@ -83,7 +84,7 @@ model POSITIONS {
 
 model EMPLOYEES {
   EMPLOYEE_ID   Int        @id @default(autoincrement()) @map("EMPLOYEE_ID")
-  EMPLOYEE_CODE String     @unique @map("POSITION_CODE")
+  EMPLOYEE_CODE String     @unique @map("EMPLOYEE_CODE")
   FIRST_NAME    String     @map("FIRST_NAME")
   LAST_NAME     String     @map("LAST_NAME")
   PHONE         String?    @map("PHONE")

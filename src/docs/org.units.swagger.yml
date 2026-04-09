@@ -165,6 +165,9 @@ components:
         UNIT_TYPE:
           type: string
           nullable: true
+        BRANCH_ID:
+          type: integer
+          nullable: true
         DIVISION_ID:
           type: integer
           nullable: true
@@ -209,6 +212,10 @@ components:
           type: string
           nullable: true
           example: OFFICE
+        BRANCH_ID:
+          type: integer
+          nullable: true
+          example: 1
         DIVISION_ID:
           type: integer
           nullable: true
@@ -240,6 +247,10 @@ components:
           type: string
           nullable: true
           example: OFFICE
+        BRANCH_ID:
+          type: integer
+          nullable: true
+          example: 1
         DIVISION_ID:
           type: integer
           nullable: true
