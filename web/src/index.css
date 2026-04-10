@@ -38,3 +38,14 @@
 .disabled-input {
   @apply bg-gray-50 text-gray-500 cursor-not-allowed;
 }
+
+.layout-main {
+  padding: 1.25rem;
+}
+.header {
+  height: 60px;
+}
+
+.not-found {
+  min-height: 100%;
+}

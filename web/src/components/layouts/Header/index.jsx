@@ -23,7 +23,7 @@ function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-20 h-14 border-b border-gray-200 bg-gradient-to-r from-white via-white to-gray-50/70 backdrop-blur">
+    <header className="header sticky top-0 z-20 h-14 border-b border-gray-200 bg-gradient-to-r from-white via-white to-gray-50/70 backdrop-blur">
       <div className="mx-auto flex h-full items-center justify-between px-6">
         <div className="flex items-center gap-3">
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-gray-900 text-white shadow-sm">

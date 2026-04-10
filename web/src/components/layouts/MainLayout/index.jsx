@@ -10,10 +10,12 @@ function MainLayout() {
       <div className="flex-1 flex flex-col min-w-0">
         <Header />
         <div className="flex-1 overflow-y-auto">
-          <main className="p-5">
-            <Outlet />
-          </main>
-          <Footer />
+          <div className="flex min-h-full flex-col">
+            <main className="layout-main flex-1">
+              <Outlet />
+            </main>
+            <Footer />
+          </div>
         </div>
       </div>
     </div>
