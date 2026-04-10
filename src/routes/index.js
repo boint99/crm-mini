@@ -8,6 +8,7 @@ import { employeesRoutes } from './empolyees.routes.js'
 import { employeesViettelRoutes } from './employees.viettel.routes.js'
 import { vlansRoutes } from './vlans.routes.js'
 import { ipsRoutes } from './ips.routes.js'
+import { accountsRoutes } from './accounts.routes.js'
 
 const Router = express.Router()
 
@@ -34,5 +35,7 @@ Router.use('/viettel-employees', employeesViettelRoutes)
 Router.use('/networks', vlansRoutes)
 
 Router.use('/networks', ipsRoutes)
+
+Router.use('/accounts', accountsRoutes)
 
 export const APIs_Routes = Router
