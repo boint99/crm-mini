@@ -27,3 +27,12 @@ export function CHECK_ENUM (value, allowedArray, code, message) {
     throw new ApiError(code, message)
   }
 }
+
+
+export const saltRoundsPassword = 10
+
+export const accountDTO = (acc) => ({
+  ACCOUNT_ID: acc.ACCOUNT_ID,
+  ACCOUNT_NAME: acc.ACCOUNT_NAME,
+  STATUS: acc.STATUS
+})

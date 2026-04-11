@@ -1,19 +1,19 @@
 import ModelCore from '../core/model.core.js'
-import { PRISMA } from '../configs/db.config.js'
 
 class AccountsModel extends ModelCore {
   constructor() {
     super('ACCOUNTS', 'ACCOUNT_ID')
   }
 
-  async listAll() {
-    return await PRISMA.ACCOUNTS.findMany({
+  async lists() {
+    return await super.LISTQUERY({
       orderBy: { ACCOUNT_ID: 'asc' },
       include: {
         EMPLOYEE: {
           select: {
             EMPLOYEE_ID: true,
-            NAME: true,
+            FIRST_NAME: true,
+            LAST_NAME: true,
             EMPLOYEE_CODE: true
           }
         }
@@ -21,8 +21,12 @@ class AccountsModel extends ModelCore {
     })
   }
 
-  async create(data) {
-    return await super.CREATE(data)
+  async create(createData) {
+    const account = await super.CREATE(createData)
+
+    delete account.PASSWORD
+    delete account.DELETE_AT
+    return account
   }
 
   async findByCode(code) {
@@ -33,20 +37,12 @@ class AccountsModel extends ModelCore {
     return await super.FINDBYUNIQUE(id, 'ACCOUNT_ID')
   }
 
+  async findByUnique(id, field = 'ACCOUNT_ID') {
+    return await super.FINDBYUNIQUE(id, field)
+  }
+
   async updateById(id, updateData) {
-    return await PRISMA.ACCOUNTS.update({
-      where: { ACCOUNT_ID: id },
-      data: updateData,
-      include: {
-        EMPLOYEE: {
-          select: {
-            EMPLOYEE_ID: true,
-            NAME: true,
-            EMPLOYEE_CODE: true
-          }
-        }
-      }
-    })
+    return await super.UPDATE(id, 'ACCOUNT_ID', updateData)
   }
 
   async deleteById(id) {

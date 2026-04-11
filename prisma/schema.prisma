@@ -37,14 +37,14 @@ model ORG_UNITS {
   UNIT_CODE      String      @unique @map("UNIT_CODE")
   UNIT_NAME      String      @map("UNIT_NAME")
   UNIT_TYPE      String?     @map("UNIT_TYPE")
-  BRANCH_ID      Int?        @map("BRANCH_ID")
   DIVISION_ID    Int?        @map("DIVISION_ID")
   PARENT_UNIT_ID Int?        @map("PARENT_UNIT_ID")
   STATUS         ENUMSTATUS  @default(ENABLE) @map("STATUS")
   CREATED_AT     DateTime    @default(now()) @map("CREATED_AT")
   UPDATED_AT     DateTime    @updatedAt @map("UPDATED_AT")
-  BRANCH         BRANCHES?   @relation(fields: [BRANCH_ID], references: [BRANCH_ID])
+  BRANCH_ID      Int?        @map("BRANCH_ID")
   EMPLOYEES      EMPLOYEES[]
+  BRANCH         BRANCHES?   @relation(fields: [BRANCH_ID], references: [BRANCH_ID])
   DIVISION       DIVISIONS?  @relation(fields: [DIVISION_ID], references: [DIVISION_ID])
   PARENT_UNIT    ORG_UNITS?  @relation("OrgUnitTree", fields: [PARENT_UNIT_ID], references: [ORG_UNIT_ID])
   CHILD_UNITS    ORG_UNITS[] @relation("OrgUnitTree")
@@ -52,18 +52,17 @@ model ORG_UNITS {
   @@index([BRANCH_ID])
   @@index([DIVISION_ID])
   @@index([PARENT_UNIT_ID])
-
   @@map("ORG_UNITS")
 }
 
 model BRANCHES {
-  BRANCH_ID   Int        @id @default(autoincrement()) @map("BRANCH_ID")
-  BRANCH_CODE String     @unique @map("BRANCH_CODE")
-  BRANCH_NAME String     @map("BRANCH_NAME")
-  LOCATION    String?    @map("LOCATION")
-  STATUS      ENUMSTATUS @default(ENABLE) @map("STATUS")
-  CREATED_AT  DateTime   @default(now()) @map("CREATED_AT")
-  UPDATED_AT  DateTime   @updatedAt @map("UPDATED_AT")
+  BRANCH_ID   Int         @id @default(autoincrement()) @map("BRANCH_ID")
+  BRANCH_CODE String      @unique @map("BRANCH_CODE")
+  BRANCH_NAME String      @map("BRANCH_NAME")
+  LOCATION    String?     @map("LOCATION")
+  STATUS      ENUMSTATUS  @default(ENABLE) @map("STATUS")
+  CREATED_AT  DateTime    @default(now()) @map("CREATED_AT")
+  UPDATED_AT  DateTime    @updatedAt @map("UPDATED_AT")
   ORG_UNITS   ORG_UNITS[]
 
   @@map("BRANCHES")
@@ -83,23 +82,23 @@ model POSITIONS {
 }
 
 model EMPLOYEES {
-  EMPLOYEE_ID   Int        @id @default(autoincrement()) @map("EMPLOYEE_ID")
-  EMPLOYEE_CODE String     @unique @map("EMPLOYEE_CODE")
-  FIRST_NAME    String     @map("FIRST_NAME")
-  LAST_NAME     String     @map("LAST_NAME")
-  PHONE         String?    @map("PHONE")
-  EMAIL         String?    @map("EMAIL")
-  BIRTH_DATE    DateTime?  @map("BIRTH_DATE") @db.Date
-  UNIT_ID       Int?       @map("UNIT_ID")
-  VIETTEL_ID    Int?                @map("VIETTEL_ID")
-  STATUS        ENUMSTATUS          @default(ENABLE) @map("STATUS")
-  CREATED_AT    DateTime            @default(now()) @map("CREATED_AT")
-  UPDATED_AT    DateTime            @updatedAt @map("UPDATED_AT")
-  POSITION_ID   Int?                @map("POSITION_ID")
+  EMPLOYEE_ID   Int                @id @default(autoincrement()) @map("EMPLOYEE_ID")
+  EMPLOYEE_CODE String             @unique @map("EMPLOYEE_CODE")
+  FIRST_NAME    String             @map("FIRST_NAME")
+  LAST_NAME     String             @map("LAST_NAME")
+  PHONE         String?            @map("PHONE")
+  EMAIL         String?            @map("EMAIL")
+  BIRTH_DATE    DateTime?          @map("BIRTH_DATE") @db.Date
+  UNIT_ID       Int?               @map("UNIT_ID")
+  VIETTEL_ID    Int?               @map("VIETTEL_ID")
+  STATUS        ENUMSTATUS         @default(ENABLE) @map("STATUS")
+  CREATED_AT    DateTime           @default(now()) @map("CREATED_AT")
+  UPDATED_AT    DateTime           @updatedAt @map("UPDATED_AT")
+  POSITION_ID   Int?               @map("POSITION_ID")
   ACCOUNTS      ACCOUNTS[]
-  POSITION      POSITIONS?          @relation(fields: [POSITION_ID], references: [POSITION_ID])
-  ORG_UNIT      ORG_UNITS?          @relation(fields: [UNIT_ID], references: [ORG_UNIT_ID])
-  VIETTEL       VIETTEL_EMPLOYEES?  @relation(fields: [VIETTEL_ID], references: [VIETTEL_ID])
+  POSITION      POSITIONS?         @relation(fields: [POSITION_ID], references: [POSITION_ID])
+  ORG_UNIT      ORG_UNITS?         @relation(fields: [UNIT_ID], references: [ORG_UNIT_ID])
+  VIETTEL       VIETTEL_EMPLOYEES? @relation(fields: [VIETTEL_ID], references: [VIETTEL_ID])
   IPS           IPS[]
 
   @@map("EMPLOYEES")
@@ -107,7 +106,7 @@ model EMPLOYEES {
 
 model ACCOUNTS {
   ACCOUNT_ID    Int             @id @default(autoincrement()) @map("ACCOUNT_ID")
-  ACCOUNT_CODE  String          @unique @map("ACCOUNT_CODE")
+  ACCOUNT_NAME  String          @unique(map: "ACCOUNTS_ACCOUNT_CODE_key")
   PASSWORD      String?         @map("PASSWORD")
   IS_LOGIN      Boolean         @default(false) @map("IS_LOGIN")
   LOGIN         Int             @default(0) @map("LOGIN")
@@ -115,6 +114,8 @@ model ACCOUNTS {
   EMPLOYEE_ID   Int?            @map("EMPLOYEE_ID")
   CREATED_AT    DateTime        @default(now()) @map("CREATED_AT")
   UPDATED_AT    DateTime        @updatedAt @map("UPDATED_AT")
+  DESCRIPTION   String?         @db.VarChar(255)
+  DELETED_AT    DateTime?       @db.Timestamp(6)
   EMPLOYEE      EMPLOYEES?      @relation(fields: [EMPLOYEE_ID], references: [EMPLOYEE_ID])
   ACCOUNT_ROLES ACCOUNT_ROLES[]
 
@@ -174,9 +175,9 @@ model VLANS {
   DEFAULT_GATEWAY String?        @map("DEFAULT_GATEWAY")
   SUBNET_MASK     String?        @map("SUBNET_MASK")
   IP_RANGE        String         @map("IP_RANGE")
-  STATUS          NETWORK_STATUS @default(ACTIVE) @map("STATUS")
   CREATED_AT      DateTime       @default(now()) @map("CREATED_AT")
   UPDATED_AT      DateTime       @updatedAt @map("UPDATED_AT")
+  STATUS          NETWORK_STATUS @default(ACTIVE) @map("STATUS")
   IPS             IPS[]
 
   @@map("VLANS")
@@ -198,14 +199,14 @@ model IPS {
 }
 
 model VIETTEL_EMPLOYEES {
-  VIETTEL_ID    Int        @id @default(autoincrement()) @map("VIETTEL_ID")
-  VIETTEL_CODE  String     @unique @map("VIETTEL_CODE")
-  VIETTEL_EMAIL String     @unique @map("VIETTEL_EMAIL")
-  STATUS        ENUMSTATUS @default(ENABLE) @map("STATUS")
-  CREATE_AT     DateTime   @default(now()) @map("CREATE_AT")
-  UPDATE_AT     DateTime   @updatedAt @map("UPDATE_AT")
-
+  VIETTEL_ID    Int         @id @default(autoincrement()) @map("VIETTEL_ID")
+  VIETTEL_CODE  String      @unique @map("VIETTEL_CODE")
+  VIETTEL_EMAIL String      @unique @map("VIETTEL_EMAIL")
+  STATUS        ENUMSTATUS  @default(ENABLE) @map("STATUS")
+  CREATE_AT     DateTime    @default(now()) @map("CREATE_AT")
+  UPDATE_AT     DateTime    @updatedAt @map("UPDATE_AT")
   EMPLOYEES     EMPLOYEES[]
+
   @@map("VIETTEL_EMPLOYEES")
 }
 
