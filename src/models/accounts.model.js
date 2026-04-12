@@ -47,7 +47,7 @@ class AccountsModel extends ModelCore {
   }
 
   async deleteById(id) {
-    return await super.UPDATE(id, 'ACCOUNT_ID', { DELETED_AT: new Date() })
+    return await super.UPDATE(id, 'ACCOUNT_ID', { DELETED_AT: new Date(), STATUS: 'DISABLED' })
   }
 }
 
