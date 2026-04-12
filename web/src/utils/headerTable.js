@@ -72,12 +72,13 @@ export const headerTableBranch = {
 }
 
 export const headerTableAccounts = {
-    INDEX: 'STT',
-    ACCOUNT_CODE: 'Tài khoản',
+    ACCOUNT_ID: 'STT',
+    ACCOUNT_NAME: 'Tài khoản',
     EMPLOYEE: 'Nhân viên',
     IS_LOGIN: 'Đang đăng nhập',
     LOGIN: 'Số lần đăng nhập',
     STATUS: 'Trạng thái',
+    DESCRIPTION: 'Mô tả',
     CREATED_AT: 'Ngày tạo',
     UPDATED_AT: 'Ngày cập nhật'
 }

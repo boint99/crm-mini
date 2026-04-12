@@ -105,13 +105,13 @@ function Accounts() {
                       const cellClass =
                         "px-4 py-2 text-gray-700 whitespace-nowrap";
 
-                      if (key === "INDEX") {
+                      if (key === "ACCOUNT_ID") {
                         return (
                           <td
                             key={key}
                             className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap"
                           >
-                            {rowIndex + 1}
+                            {account.ACCOUNT_ID}
                           </td>
                         );
                       }
@@ -156,9 +156,7 @@ function Accounts() {
                             {account.EMPLOYEE ? (
                               `${account.EMPLOYEE.NAME} (${account.EMPLOYEE.EMPLOYEE_CODE})`
                             ) : (
-                              <span className="text-gray-400 italic">
-                                Chưa liên kết
-                              </span>
+                              <span className="text-gray-400 italic"></span>
                             )}
                           </td>
                         );
