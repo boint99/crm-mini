@@ -3,6 +3,8 @@ import ApiError from '../utils/ApiError.js'
 import { accountDTO, ALLOWED_STATUS, CHECK_ENUM, saltRoundsPassword } from '../utils/constants.js'
 import { accountsModel } from '../models/accounts.model.js'
 import bcrypt from 'bcrypt'
+import ServiceCore from '../core/service.core.js'
+import { employeesModel } from '../models/employees.model.js'
 
 
 class AccountsService {
@@ -10,7 +12,9 @@ class AccountsService {
   async lists() {
     const result = await accountsModel.lists()
 
-    return result.map(accountDTO)
+    // return result.map(accountDTO)
+    return result
+
   }
   /**
    * Create a new account
@@ -64,6 +68,12 @@ class AccountsService {
       data.ACCOUNT_NAME = trimmed
     }
 
+    if (data.EMPLOYEE_ID !== undefined) {
+      const checkedEmployeeId = employeesModel.findById(data.EMPLOYEE_ID)
+      if (!checkedEmployeeId) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Employee is duplicated!')
+      }
+    }
     if (data.STATUS) {
       CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
     }
@@ -71,7 +81,8 @@ class AccountsService {
     const updatePayload = {
       ...(data.ACCOUNT_NAME && { ACCOUNT_NAME: data.ACCOUNT_NAME }),
       ...(data.STATUS && { STATUS: data.STATUS }),
-      ...('EMPLOYEE_ID' in data && { EMPLOYEE_ID: data.EMPLOYEE_ID ? Number(data.EMPLOYEE_ID) : null })
+      ...('EMPLOYEE_ID' in data && { EMPLOYEE_ID: data.EMPLOYEE_ID ? Number(data.EMPLOYEE_ID) : null }),
+      ...('DESCRIPTION' in data && { DESCRIPTION: data.DESCRIPTION?.trim() || null })
     }
 
     return await accountsModel.updateById(ACCOUNT_ID, updatePayload)

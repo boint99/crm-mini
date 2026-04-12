@@ -154,7 +154,7 @@ function Accounts() {
                         return (
                           <td key={key} className={cellClass}>
                             {account.EMPLOYEE ? (
-                              `${account.EMPLOYEE.NAME} (${account.EMPLOYEE.EMPLOYEE_CODE})`
+                              `${account.EMPLOYEE.EMPLOYEE_CODE}`
                             ) : (
                               <span className="text-gray-400 italic"></span>
                             )}

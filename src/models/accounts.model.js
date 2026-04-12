@@ -6,20 +6,21 @@ class AccountsModel extends ModelCore {
   }
 
   async lists() {
-    return await super.LISTQUERY({
+    const data = await super.LISTQUERY({
       where: { DELETED_AT: null },
       orderBy: { ACCOUNT_ID: 'asc' },
       include: {
         EMPLOYEE: {
           select: {
             EMPLOYEE_ID: true,
+            EMPLOYEE_CODE: true,
             FIRST_NAME: true,
-            LAST_NAME: true,
-            EMPLOYEE_CODE: true
+            LAST_NAME: true
           }
         }
       }
     })
+    return data
   }
 
   async create(createData) {

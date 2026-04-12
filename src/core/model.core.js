@@ -1,58 +1,90 @@
 import { PRISMA } from '../configs/db.config.js'
 
+const DEFAULT_HIDDEN_FIELDS = ['PASSWORD', 'DELETED_AT']
+
+function sanitize(data, hiddenFields) {
+  if (Array.isArray(data)) {
+    return data.map(item => sanitize(item, hiddenFields))
+  }
+
+  if (data instanceof Date) {
+    return data
+  }
+
+  if (data && typeof data === 'object') {
+    const result = {}
+
+    for (const key in data) {
+      if (hiddenFields.includes(key)) continue
+      result[key] = sanitize(data[key], hiddenFields)
+    }
+
+    return result
+  }
+
+  return data
+}
+
 class ModelCore {
-  constructor(modelName, defaultOrderBy = 'id') {
+  constructor(modelName, defaultOrderBy = 'id', hiddenFields = []) {
     this.model = PRISMA[modelName]
     this.defaultOrderBy = defaultOrderBy
+    this.hiddenFields = [...DEFAULT_HIDDEN_FIELDS, ...hiddenFields]
+  }
+
+  _sanitize(data) {
+    return sanitize(data, this.hiddenFields)
   }
 
   async LISTALL() {
-    return await this.model.findMany({
+    const data = await this.model.findMany({
       orderBy: { [this.defaultOrderBy]: 'asc' }
     })
+    return this._sanitize(data)
   }
 
   async LISTQUERY(options = {}) {
-    return await this.model.findMany(options)
+    const data = await this.model.findMany(options)
+    return this._sanitize(data)
   }
 
   async FINDBYUNIQUE(id, idField) {
-    return await this.model.findUnique({
+    const data = await this.model.findUnique({
       where: { [idField]: id }
     })
+    return this._sanitize(data)
   }
 
   async DELETEBYID(id, idField) {
-    return await this.model.delete(
-      {
-        where: { [idField]: id }
-      }
-    )
+    const data = await this.model.delete({
+      where: { [idField]: id }
+    })
+    return this._sanitize(data)
   }
 
   async FINDBYFIELD(value, fieldName) {
-    return await this.model.findFirst({
-      where: {
-        [fieldName]: value
-      }
+    const data = await this.model.findFirst({
+      where: { [fieldName]: value }
     })
+    return this._sanitize(data)
   }
 
   async FINDBYFIELD_WHERE(whereObj) {
-    return await this.model.findFirst({ where: whereObj })
+    const data = await this.model.findFirst({ where: whereObj })
+    return this._sanitize(data)
   }
 
   async CREATE(data) {
-    return await this.model.create({ data })
+    const result = await this.model.create({ data })
+    return this._sanitize(result)
   }
 
   async UPDATE(id, idField, updateData) {
-    return await this.model.update(
-      {
-        where: { [idField]: id },
-        data: updateData
-      }
-    )
+    const result = await this.model.update({
+      where: { [idField]: id },
+      data: updateData
+    })
+    return this._sanitize(result)
   }
 }
 

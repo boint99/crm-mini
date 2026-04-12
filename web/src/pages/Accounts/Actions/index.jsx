@@ -19,6 +19,8 @@ const defaultValues = {
   PASSWORD: "",
   STATUS: "ENABLE",
   EMPLOYEE_ID: "",
+  DESCRIPTION: "",
+  LOGIN: "false",
 };
 
 const inputClass =
@@ -55,7 +57,8 @@ function ActionModal({ open, onClose, action, item }) {
         ACCOUNT_NAME: item?.ACCOUNT_NAME ?? "",
         PASSWORD: "",
         STATUS: item?.STATUS ?? "ENABLE",
-        EMPLOYEE_ID: item?.EMPLOYEE_ID ?? "",
+        EMPLOYEE_ID: item?.EMPLOYEE_ID ? String(item.EMPLOYEE_ID) : "",
+        DESCRIPTION: item?.DESCRIPTION ?? "",
       });
     }
   }, [open, action, item, reset]);
@@ -81,6 +84,8 @@ function ActionModal({ open, onClose, action, item }) {
           PASSWORD: data.PASSWORD.trim(),
           STATUS: data.STATUS,
           EMPLOYEE_ID: data.EMPLOYEE_ID ? Number(data.EMPLOYEE_ID) : null,
+          DESCRIPTION: data.DESCRIPTION?.trim() || null,
+          LOGIN: data.LOGIN === "true",
         },
         messages: { success: "Tạo tài khoản thành công!" },
       });
@@ -92,6 +97,8 @@ function ActionModal({ open, onClose, action, item }) {
           ACCOUNT_ID: item.ACCOUNT_ID,
           STATUS: data.STATUS,
           EMPLOYEE_ID: data.EMPLOYEE_ID ? Number(data.EMPLOYEE_ID) : null,
+          DESCRIPTION: data.DESCRIPTION?.trim() || null,
+          LOGIN: data.LOGIN === "true",
         },
         messages: { success: "Cập nhật tài khoản thành công!" },
       });
@@ -257,7 +264,7 @@ function ActionModal({ open, onClose, action, item }) {
             {/* EMPLOYEE_ID — ẩn khi reset-password */}
             {!isResetPwd && (
               <div>
-                <label className={labelClass}>Nhân viên</label>
+                <label className={labelClass}>MaNV</label>
                 <select className={inputClass} {...register("EMPLOYEE_ID")}>
                   <option value="">-- Chọn --</option>
                   {employeeItems.map((emp) => (
@@ -268,7 +275,30 @@ function ActionModal({ open, onClose, action, item }) {
                 </select>
               </div>
             )}
+            <div>
+              <label className={labelClass}>Đăng nhập</label>
+              <select
+                className={inputClass}
+                {...register("LOGIN", { required: true })}
+              >
+                <option value="true">True</option>
+                <option value="false">False</option>
+              </select>
+            </div>
           </div>
+
+          {/* DESCRIPTION — ẩn khi reset-password */}
+          {!isResetPwd && (
+            <div>
+              <label className={labelClass}>Mô tả</label>
+              <textarea
+                rows={3}
+                placeholder="Ghi chú về tài khoản..."
+                className={`${inputClass} resize-none`}
+                {...register("DESCRIPTION")}
+              />
+            </div>
+          )}
 
           <div className="flex justify-end gap-3 pt-2">
             <button
