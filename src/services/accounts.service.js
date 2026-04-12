@@ -47,6 +47,9 @@ class AccountsService {
    * Update an account (name, status, employee link)
    */
   async update(ACCOUNT_ID, data) {
+
+    delete data.ACCOUNT_NAME
+
     const existing = await accountsModel.findById(ACCOUNT_ID)
     if (!existing) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')

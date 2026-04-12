@@ -7,6 +7,7 @@ class AccountsModel extends ModelCore {
 
   async lists() {
     return await super.LISTQUERY({
+      where: { DELETED_AT: null },
       orderBy: { ACCOUNT_ID: 'asc' },
       include: {
         EMPLOYEE: {
@@ -25,7 +26,7 @@ class AccountsModel extends ModelCore {
     const account = await super.CREATE(createData)
 
     delete account.PASSWORD
-    delete account.DELETE_AT
+    delete account.DELETED_AT
     return account
   }
 
@@ -34,7 +35,7 @@ class AccountsModel extends ModelCore {
   }
 
   async findById(id) {
-    return await super.FINDBYUNIQUE(id, 'ACCOUNT_ID')
+    return await super.FINDBYFIELD_WHERE({ ACCOUNT_ID: id, DELETED_AT: null })
   }
 
   async findByUnique(id, field = 'ACCOUNT_ID') {
@@ -46,7 +47,7 @@ class AccountsModel extends ModelCore {
   }
 
   async deleteById(id) {
-    return await super.DELETEBYID(id, 'ACCOUNT_ID')
+    return await super.UPDATE(id, 'ACCOUNT_ID', { DELETED_AT: new Date() })
   }
 }
 

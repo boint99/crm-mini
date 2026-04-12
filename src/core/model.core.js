@@ -38,6 +38,10 @@ class ModelCore {
     })
   }
 
+  async FINDBYFIELD_WHERE(whereObj) {
+    return await this.model.findFirst({ where: whereObj })
+  }
+
   async CREATE(data) {
     return await this.model.create({ data })
   }
