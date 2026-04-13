@@ -247,7 +247,7 @@ function ActionModal({ open, onClose, action, item }) {
               </div>
             )}
 
-            {/* STATUS — ẩn khi reset-password */}
+            {/* STATUS —hidden when reset-password*/}
             {!isResetPwd && (
               <div>
                 <label className={labelClass}>Trạng thái *</label>
@@ -261,18 +261,16 @@ function ActionModal({ open, onClose, action, item }) {
               </div>
             )}
 
-            {/* EMPLOYEE_ID — ẩn khi reset-password */}
+            {/* EMPLOYEE_ID — hidden when reset-password */}
             {!isResetPwd && (
               <div>
                 <label className={labelClass}>MaNV</label>
-                <select className={inputClass} {...register("EMPLOYEE_ID")}>
-                  <option value="">-- Chọn --</option>
-                  {employeeItems.map((emp) => (
-                    <option key={emp.EMPLOYEE_ID} value={emp.EMPLOYEE_ID}>
-                      {emp.FIRST_NAME} {emp.LAST_NAME} ({emp.EMPLOYEE_CODE})
-                    </option>
-                  ))}
-                </select>
+                <input
+                  type="text"
+                  placeholder="Nhập mã nhân viên"
+                  className={inputClass}
+                  {...register("EMPLOYEE_ID")}
+                />
               </div>
             )}
             <div>

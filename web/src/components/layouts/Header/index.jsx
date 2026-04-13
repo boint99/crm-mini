@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { CircleChevronLeft, CircleChevronRight } from "lucide-react";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 
 function Header({ collapsed, setCollapsed }) {
@@ -35,9 +35,9 @@ function Header({ collapsed, setCollapsed }) {
             title={collapsed ? "Mở rộng sidebar" : "Thu nhỏ sidebar"}
           >
             {collapsed ? (
-              <PanelLeftOpen size={18} />
+              <CircleChevronRight size={18} />
             ) : (
-              <PanelLeftClose size={18} />
+              <CircleChevronLeft size={18} />
             )}
           </button>
           {/* Divider */}

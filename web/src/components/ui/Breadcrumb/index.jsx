@@ -61,28 +61,33 @@ function Breadcrumb() {
 
   return (
     <nav aria-label="breadcrumb" className="flex items-center gap-1.5 text-sm">
-      {crumbs.map((crumb, index) => (
-        <span key={index} className="flex items-center gap-1.5">
-          {crumb.path ? (
-            <Link
-              to={crumb.path}
-              className="text-gray-500 hover:text-primary transition-colors font-medium"
-            >
-              {crumb.label}
-            </Link>
-          ) : (
-            <span
-              className={
-                index === crumbs.length - 1
-                  ? "text-gray-800 font-semibold"
-                  : "text-gray-500 font-medium"
-              }
-            >
-              {crumb.label}
-            </span>
-          )}
-        </span>
-      ))}
+      {crumbs.map((crumb, index) => {
+        const displayLabel =
+          index === 0 ? crumb.label : `/ ${crumb.label.toUpperCase()}`;
+
+        return (
+          <span key={index} className="flex items-center gap-1.5">
+            {crumb.path ? (
+              <Link
+                to={crumb.path}
+                className="text-gray-500 hover:text-primary transition-colors font-medium"
+              >
+                {displayLabel}
+              </Link>
+            ) : (
+              <span
+                className={
+                  index === crumbs.length - 1
+                    ? "text-gray-800 font-semibold"
+                    : "text-gray-500 font-medium"
+                }
+              >
+                {displayLabel}
+              </span>
+            )}
+          </span>
+        );
+      })}
     </nav>
   );
 }
