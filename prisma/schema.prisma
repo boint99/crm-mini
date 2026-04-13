@@ -118,6 +118,7 @@ model ACCOUNTS {
   DELETED_AT    DateTime?       @db.Timestamp(6)
   EMPLOYEE      EMPLOYEES?      @relation(fields: [EMPLOYEE_ID], references: [EMPLOYEE_ID])
   ACCOUNT_ROLES ACCOUNT_ROLES[]
+  OTP_TOKENS    OTP_TOKENS[]
 
   @@map("ACCOUNTS")
 }
@@ -208,6 +209,26 @@ model VIETTEL_EMPLOYEES {
   EMPLOYEES     EMPLOYEES[]
 
   @@map("VIETTEL_EMPLOYEES")
+}
+
+model OTP_TOKENS {
+  ID         Int       @id @default(autoincrement()) @map("ID")
+  EMAIL      String    @map("EMAIL")
+  OTP_CODE   String    @map("OTP_CODE")
+  OTP_TYPE   OTP_TYPE  @map("OTP_TYPE")
+  EXPIRED_AT DateTime  @map("EXPIRED_AT")
+  CREATED_AT DateTime  @default(now()) @map("CREATED_AT")
+  ACCOUNT_ID Int?      @map("ACCOUNT_ID")
+  ACCOUNT    ACCOUNTS? @relation(fields: [ACCOUNT_ID], references: [ACCOUNT_ID])
+
+  @@unique([EMAIL, OTP_TYPE])
+  @@index([EMAIL])
+  @@map("OTP_TOKENS")
+}
+
+enum OTP_TYPE {
+  REGISTER
+  RESET_PASSWORD
 }
 
 enum ENUMSTATUS {
