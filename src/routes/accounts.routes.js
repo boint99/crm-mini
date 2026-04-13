@@ -7,6 +7,9 @@ const Router = express.Router()
 // GET /api/accounts/lists
 Router.get('/lists', accountsController.lists)
 
+// POST /api/accounts/register
+Router.post('/account/register', AccountsValidate.register.bind(AccountsValidate), accountsController.register)
+
 // POST /api/accounts
 Router.post('/', AccountsValidate.create.bind(AccountsValidate), accountsController.create)
 

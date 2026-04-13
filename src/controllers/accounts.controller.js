@@ -46,6 +46,13 @@ class AccountsController {
       new SuccessResponse({ res, message: 'Account deleted successfully.' })
     } catch (error) { next(error) }
   }
+
+  async register(req, res, next) {
+    try {
+      const result = await accountsService.register(req.body)
+      new CreatedResponse({ res, data: result, message: 'Account registered successfully.' })
+    } catch (error) { next(error) }
+  }
 }
 
 export const accountsController = new AccountsController()

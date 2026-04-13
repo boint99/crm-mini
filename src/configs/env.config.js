@@ -16,5 +16,11 @@ export const environments = {
   DB_PASSWORD: process.env.DB_PASSWORD,
 
   // Link host
-  HOST: process.env.HOST
+  HOST: process.env.HOST,
+
+  // Mail server
+  MAIL_HOST: process.env.MAIL_HOST,
+  MAIL_PORT: process.env.MAIL_PORT,
+  SMTP_USER: process.env.SMTP_USER,
+  SMTP_PASS: process.env.SMTP_PASS
 }

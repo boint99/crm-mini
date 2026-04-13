@@ -2,6 +2,18 @@ import ValidateCores from '../core/validate.core.js'
 import { ALLOWED_STATUS } from '../utils/constants.js'
 
 class AccountsValidate extends ValidateCores {
+  static register(req, res, next) {
+    try {
+      const data = req.body
+      this.validateStringLength(data.FIRST_NAME, 1, 'FIRST_NAME is required!')
+      this.validateStringLength(data.LAST_NAME, 1, 'LAST_NAME is required!')
+      this.validateEmail(data.EMAIL)
+      this.validateStringLength(data.PASSWORD, 8, 'PASSWORD must be at least 8 characters!')
+      this.validateStringLength(data.RE_PASSWORD, 8, 'RE_PASSWORD must be at least 8 characters!')
+      next()
+    } catch (error) { next(error) }
+  }
+
   static create(req, res, next) {
     try {
       const data = req.body
