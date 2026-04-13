@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import Breadcrumb from "@/components/ui/Breadcrumb";
 
-function Header() {
+function Header({ collapsed, setCollapsed }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -26,25 +28,22 @@ function Header() {
     <header className="header sticky top-0 z-20 h-14 border-b border-gray-200 bg-gradient-to-r from-white via-white to-gray-50/70 backdrop-blur">
       <div className="mx-auto flex h-full items-center justify-between px-6">
         <div className="flex items-center gap-3">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gray-900 text-white shadow-sm">
-            {/* App icon */}
-            <svg
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M12 2l8 4v6c0 5-3.5 9.4-8 10-4.5-.6-8-5-8-10V6l8-4z" />
-            </svg>
-          </div>
-          <div className="leading-tight">
-            <div className="text-sm font-semibold text-gray-900 cursor-pointer">
-              CRM Mini
-            </div>
-            <div className="text-xs text-gray-500">Admin dashboard</div>
-          </div>
+          <button
+            type="button"
+            onClick={() => setCollapsed((v) => !v)}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-primary transition-colors cursor-pointer"
+            title={collapsed ? "Mở rộng sidebar" : "Thu nhỏ sidebar"}
+          >
+            {collapsed ? (
+              <PanelLeftOpen size={18} />
+            ) : (
+              <PanelLeftClose size={18} />
+            )}
+          </button>
+          {/* Divider */}
+          <div className="mx-1 h-5 w-px bg-gray-200" />
+
+          <Breadcrumb />
         </div>
 
         <div className="flex items-center gap-2">
