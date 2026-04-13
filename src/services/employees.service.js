@@ -6,6 +6,8 @@ import { positionsModel } from '../models/postisions.model.js'
 import { employeesViettelModel } from '../models/employees.viettel.model.js'
 import { orgUnitsModel } from '../models/org.units.model.js'
 import ServiceCore from '../core/service.core.js'
+import { accountsModel } from '../models/accounts.model.js'
+import { PRISMA } from '../configs/db.config.js'
 
 class EmployeesServices {
   /**
@@ -69,14 +71,24 @@ class EmployeesServices {
     }
   }
 
+  async createAccount(IS_ACCOUNT, email) {
+    if (IS_ACCOUNT === true) {
+      const emailToAccount = email?.includes('@') ? email.split('@')[0] : null
+      if (!emailToAccount) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'A valid EMAIL is required to create an account!')
+      }
+      await accountsModel.create({
+        ACCOUNT_NAME: emailToAccount,
+        IS_LOGIN: true
+      })
+    }
+  }
   /**
    * Create a new employee
    */
   async lists(data) {
     const { status, info } = data
-
     const queryStatus = status ? status.toUpperCase() : undefined
-
     const queryInfo = info !== undefined && info !== null && info !== '' ? Number(info) : undefined
 
     if (queryStatus) {
@@ -91,32 +103,46 @@ class EmployeesServices {
   }
 
   async create(data) {
-    let viettelRecord = null
-    const { VIETTEL_CODE, ...payload } = data
+    const { VIETTEL_CODE, IS_ACCOUNT, ...payload } = data
 
     if (!payload.EMPLOYEE_CODE) throw new ApiError(StatusCodes.BAD_REQUEST, 'The employee code cannot be left blank!')
     if (!payload.STATUS) throw new ApiError(StatusCodes.BAD_REQUEST, 'Status is required!')
     await this.checked(payload)
 
+    // Validate trước khi vào transaction
     if (VIETTEL_CODE) {
       const existedViettelCode = await employeesViettelModel.findbyField(VIETTEL_CODE, 'VIETTEL_CODE')
       if (existedViettelCode) {
         throw new ApiError(StatusCodes.CONFLICT, 'This Viettel code is already taken!')
       }
+    }
 
-      const newViettel = await employeesViettelModel.create({
-        VIETTEL_CODE
+    let emailToAccount = null
+    if (IS_ACCOUNT === true) {
+      emailToAccount = payload.EMAIL?.includes('@') ? payload.EMAIL.split('@')[0] : null
+      if (!emailToAccount) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'A valid EMAIL is required to create an account!')
+      }
+    }
+
+    return await PRISMA.$transaction(async (tx) => {
+      let viettelId = payload.VIETTEL_ID ?? null
+
+      if (VIETTEL_CODE) {
+        const newViettel = await tx['vIETTEL_EMPLOYEES'].create({ data: { VIETTEL_CODE } })
+        viettelId = newViettel.VIETTEL_ID
+      }
+
+      if (IS_ACCOUNT === true) {
+        await tx['ACCOUNTS'].create({
+          data: { ACCOUNT_NAME: emailToAccount, IS_LOGIN: true }
+        })
+      }
+
+      return await tx['EMPLOYEES'].create({
+        data: { ...payload, VIETTEL_ID: viettelId }
       })
-
-      viettelRecord = newViettel
-
-    }
-
-    const dataCreate = {
-      ...payload,
-      VIETTEL_ID: viettelRecord ? viettelRecord.VIETTEL_ID : (payload.VIETTEL_ID ?? null)
-    }
-    return await employeesModel.create(dataCreate)
+    })
   }
 
   /**
@@ -124,7 +150,7 @@ class EmployeesServices {
    */
   async update(data) {
     let viettelRecord = null
-    const { EMPLOYEE_ID, VIETTEL_CODE, ...payload } = data
+    const { EMPLOYEE_ID, VIETTEL_CODE, IS_ACCOUNT, ...payload } = data
 
     const existing = await employeesModel.findById(EMPLOYEE_ID)
     if (!existing) throw new ApiError(StatusCodes.NOT_FOUND, 'Employee is not found!')
@@ -145,6 +171,9 @@ class EmployeesServices {
 
     await this.checked(payload, EMPLOYEE_ID)
 
+    if (IS_ACCOUNT === true) {
+      await this.createAccount(IS_ACCOUNT, data.EMAIL)
+    }
     return await employeesModel.updateById(EMPLOYEE_ID, payload)
   }
 
