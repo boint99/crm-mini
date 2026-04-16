@@ -6,16 +6,11 @@ import {
   BriefcaseBusiness,
   KeyRound,
   Building,
-  CreditCard,
-  BookOpen,
-  List,
-  AlignJustify,
-  Pencil,
-  Calendar,
   MessageCircle,
   Folder,
   CheckSquare,
   Shield,
+  Group,
 } from "lucide-react";
 
 export const NAV_GROUPS = [
@@ -31,6 +26,7 @@ export const NAV_GROUPS = [
       { id: "tasklist",  label: "Task List",  icon: CheckSquare,    path: "/tasklist" },
       { id: "chat",      label: "Chat",       icon: MessageCircle,  path: "/chat" },
       { id: "files",     label: "Files",      icon: Folder,         path: "/files" },
+       { id: "group",     label: "Group Mail",      icon: Group,         path: "/group" },
       {
         id: "mail", label: "Mail", icon: Mail,
         children: [
@@ -38,6 +34,12 @@ export const NAV_GROUPS = [
           { id: "mail-sent",   label: "Sent",   icon: Mail,         path: "/mail/sent" },
         ],
       },
+    ],
+  },
+  {
+    group: "NETWORKS",
+    items: [
+      { id: "network",   label: "Networks", icon: Network, path: "/network-management" },
     ],
   },
   {
@@ -54,7 +56,6 @@ export const NAV_GROUPS = [
           { id: "companies",  label: "Companies", icon: Building, path: "/organization/companies" },
         ],
       },
-      { id: "network",   label: "Networks", icon: Network, path: "/network-management" },
       { id: "viettel",   label: "Viettel OS",   icon: BriefcaseBusiness, path: "/viettel-employees" },
     ],
   },

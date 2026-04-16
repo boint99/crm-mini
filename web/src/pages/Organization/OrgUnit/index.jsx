@@ -167,7 +167,7 @@ const iconByType = {
   ROOT: Shapes,
 };
 
-function OrgUnitPage() {
+function OrgUnit() {
   const id = useId();
 
   const collection = useMemo(
@@ -331,4 +331,4 @@ function OrgUnitPage() {
   );
 }
 
-export default OrgUnitPage;
+export default OrgUnit;
