@@ -17,7 +17,7 @@
 
   /* Font size */
   --font-size-base: 0.875rem;
-
+  --font-size-sidebar: 1.1rem;
 }
 
 :root {
@@ -48,4 +48,8 @@
 
 .not-found {
   min-height: 100%;
+}
+
+.sidebar-font {
+  font-size: var(--font-size-sidebar);
 }
