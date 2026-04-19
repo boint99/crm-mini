@@ -1,4 +1,4 @@
-import { sendMail } from '../configs/nodemailer.config'
+import { sendMail } from '../configs/nodemailer.config.js'
 
 /**
  * @param {object} options
@@ -9,7 +9,7 @@ import { sendMail } from '../configs/nodemailer.config'
  * @param {string} [options.buttonText] - Text nút CTA (nếu có)
  * @param {string} [options.buttonUrl]  - URL nút CTA (nếu có)
  */
-export const sendMailTemplate = async ({ to, subject, title, body, buttonText, buttonUrl }) => {
+export const emailTemplate = async ({ to, subject, title, body , buttonText , buttonUrl }) => {
   const button = buttonText && buttonUrl
     ? `<a href="${buttonUrl}"
           style="display:inline-block;margin-top:24px;padding:12px 28px;
@@ -57,7 +57,7 @@ export const sendMailTemplate = async ({ to, subject, title, body, buttonText, b
                 © ${new Date().getFullYear()} CRM Mini. All rights reserved.
               </p>
               <p style="margin:6px 0 0;color:#9ca3af;font-size:12px;">
-                Email này được gửi tự động, vui lòng không reply.
+                This is an automated email, please do not reply.
               </p>
             </td>
           </tr>

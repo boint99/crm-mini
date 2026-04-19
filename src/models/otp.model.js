@@ -1,8 +1,13 @@
 import ModelCore from '../core/model.core.js'
 
 class OtpModel extends ModelCore {
+  constructor() {
+    super('oTP_TOKENS', 'ID')
+  }
 
-  static async generateOtp() {}
+  async generateOtp(data) {
+    return await super.CREATE(data)
+  }
 }
 
-export const otpModel = OtpModel
+export const otpModel = new OtpModel()
