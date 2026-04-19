@@ -42,3 +42,7 @@ export const accountDTO = (acc) => ({
   UPDATED_AT: acc.UPDATED_AT,
   EMPLOYEE: acc.EMPLOYEE ?? null
 })
+
+export const removeDomain = (email) => {
+  return email.split('@')[0]
+}

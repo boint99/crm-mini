@@ -1,4 +1,3 @@
-import { accountsModel } from '../models/accounts.model.js'
 import { accountsService } from '../services/accounts.service.js'
 import { CreatedResponse, SuccessResponse } from '../utils/SuccessResponse.js'
 
@@ -11,7 +10,6 @@ class AccountsController {
       new SuccessResponse({ res, data: result, message: 'Get accounts list successfully.' })
     } catch (error) { next(error) }
   }
-
   // POST /api/accounts
   async create(req, res, next) {
     try {
@@ -44,13 +42,6 @@ class AccountsController {
       const { id } = req.params
       await accountsService.delete(id)
       new SuccessResponse({ res, message: 'Account deleted successfully.' })
-    } catch (error) { next(error) }
-  }
-
-  async register(req, res, next) {
-    try {
-      const result = await accountsService.register(req.body)
-      new CreatedResponse({ res, data: result, message: 'Account registered successfully.' })
     } catch (error) { next(error) }
   }
 }

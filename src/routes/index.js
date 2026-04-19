@@ -10,6 +10,7 @@ import { vlansRoutes } from './vlans.routes.js'
 import { ipsRoutes } from './ips.routes.js'
 import { accountsRoutes } from './accounts.routes.js'
 import { otpRoutes } from './otp.routes.js'
+import { authRoutes } from './auth.routes.js'
 
 const Router = express.Router()
 
@@ -40,5 +41,7 @@ Router.use('/networks', ipsRoutes)
 Router.use('/accounts', accountsRoutes)
 
 Router.use('/otp', otpRoutes)
+
+Router.use('/auth', authRoutes)
 
 export const APIs_Routes = Router

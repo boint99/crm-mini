@@ -7,14 +7,11 @@ const Router = express.Router()
 // GET /api/accounts/lists
 Router.get('/lists', accountsController.lists)
 
-// POST /api/accounts/register
-Router.post('/account/register', AccountsValidate.register.bind(AccountsValidate), accountsController.register)
+// POST /api/accounts/create
+Router.post('/create', AccountsValidate.create.bind(AccountsValidate), accountsController.create)
 
-// POST /api/accounts
-Router.post('/', AccountsValidate.create.bind(AccountsValidate), accountsController.create)
-
-// PUT /api/accounts
-Router.put('/', AccountsValidate.update.bind(AccountsValidate), accountsController.update)
+// PUT /api/accounts/update
+Router.put('/update', AccountsValidate.update.bind(AccountsValidate), accountsController.update)
 
 // PATCH /api/accounts/reset-password
 Router.patch('/reset-password', AccountsValidate.resetPassword.bind(AccountsValidate), accountsController.resetPassword)
