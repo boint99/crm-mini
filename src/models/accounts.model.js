@@ -39,8 +39,8 @@ class AccountsModel extends ModelCore {
     return await super.FINDBYFIELD_WHERE({ ACCOUNT_ID: id, DELETED_AT: null })
   }
 
-  async findByUnique(id, field = 'ACCOUNT_ID') {
-    return await super.FINDBYUNIQUE(id, field)
+  async findByUnique(data, field = 'ACCOUNT_ID') {
+    return await super.FINDBYUNIQUE(data, field, { hiddenFields: ['DELETED_AT'] })
   }
 
   async updateById(id, updateData) {

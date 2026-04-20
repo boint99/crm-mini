@@ -1,6 +1,6 @@
 import { PRISMA } from '../configs/db.config.js'
 
-const DEFAULT_HIDDEN_FIELDS = ['PASSWORD', 'DELETED_AT']
+const DEFAULT_HIDDEN_FIELDS = ['DELETED_AT']
 
 function sanitize(data, hiddenFields) {
   if (Array.isArray(data)) {

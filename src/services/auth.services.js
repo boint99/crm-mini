@@ -4,6 +4,8 @@ import ApiError from '../utils/ApiError.js'
 import { accountsModel } from '../models/accounts.model.js'
 import { employeesModel } from '../models/employees.model.js'
 import { removeDomain, saltRoundsPassword } from '../utils/constants.js'
+import { signAccessToken } from '../utils/jwt.js'
+import _serializer from '../utils/_serializer.js'
 
 class AuthService {
   // ================= VALIDATE + NORMALIZE =================
@@ -79,6 +81,43 @@ class AuthService {
 
     return account
   }
+
+  async login(data) {
+    const { USERNAME, PASSWORD } = data
+    let accountName = USERNAME.trim().toLowerCase()
+    let password = PASSWORD.trim()
+
+    const account = await accountsModel.findByUnique(accountName, 'ACCOUNT_NAME')
+
+    if (!account) {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid username or password!')
+    }
+
+    if (account.STATUS !== 'ENABLE') {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Account is not active!')
+    }
+
+    if (!account.IS_LOGIN) {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Account is not logged in!')
+    }
+
+    const isMatch = await bcrypt.compare(password, account.PASSWORD)
+    console.log('🚀 ~ AuthService ~ login ~ isMatch:', isMatch)
+    if (!isMatch) {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid username or password!')
+    }
+
+    const tokenPayload = {
+      id: account.ACCOUNT_ID,
+      name: account.ACCOUNT_NAME
+    }
+
+    const accessToken = signAccessToken(tokenPayload)
+    const safeAccount = _serializer.sanitize(account, ['PASSWORD'])
+
+    return { ...safeAccount, accessToken }
+  }
+
 }
 
 export const authService = new AuthService()

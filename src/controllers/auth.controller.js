@@ -9,6 +9,12 @@ class AuthController {
       new CreatedResponse({ res, data: result, message: 'Account registered successfully.' })
     } catch (error) { next(error) }
   }
-}
 
+  static async login(req, res, next) {
+    try {
+      const result = await authService.login(req.body)
+      new CreatedResponse({ res, data: result, message: 'Login successful.' })
+    } catch (error) { next(error) }
+  }
+}
 export const authController = AuthController
