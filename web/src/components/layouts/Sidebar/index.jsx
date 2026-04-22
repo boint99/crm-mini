@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { NAV_GROUPS } from "@/utils/menuConfig";
 import logoCrm from "@/assets/images/logo-crm.png";
+import logoCrmSmall from "@/assets/images/logo-crm-small.png";
 import NavGroupItem from "@/components/navigate/NavGroupItem";
 import NavItem from "@/components/navigate/NavItem";
 import NavGroupCollapsed from "@/components/navigate/NavGroupCollapsed";
@@ -17,15 +18,14 @@ export default function Sidebar({ collapsed }) {
     >
       {/* Logo */}
       <div className="flex items-center justify-center py-5 px-3">
+        <div className="flex items-center justify-center py-5">
         <img
-          src={logoCrm}
+          src={collapsed ? logoCrmSmall : logoCrm}
           alt="CRM Logo"
-          style={
-            collapsed
-              ? { height: "36px", width: "auto" }
-              : { height: "100px", width: "auto" }
-          }
+          className={collapsed ? "h-9 w-auto" : "h-full w-auto"}
         />
+    </div>
+
       </div>
 
       {/* Nav groups */}
