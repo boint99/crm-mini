@@ -1,90 +1,93 @@
 import { PRISMA } from '../configs/db.config.js'
 
-const DEFAULT_HIDDEN_FIELDS = ['DELETED_AT']
-
-function sanitize(data, hiddenFields) {
-  if (Array.isArray(data)) {
-    return data.map(item => sanitize(item, hiddenFields))
-  }
-
-  if (data instanceof Date) {
-    return data
-  }
-
-  if (data && typeof data === 'object') {
-    const result = {}
-
-    for (const key in data) {
-      if (hiddenFields.includes(key)) continue
-      result[key] = sanitize(data[key], hiddenFields)
-    }
-
-    return result
-  }
-
-  return data
-}
-
 class ModelCore {
-  constructor(modelName, defaultOrderBy = 'id', hiddenFields = []) {
+  constructor(modelName, defaultOrderBy = 'id') {
     this.model = PRISMA[modelName]
     this.defaultOrderBy = defaultOrderBy
-    this.hiddenFields = [...DEFAULT_HIDDEN_FIELDS, ...hiddenFields]
   }
 
-  _sanitize(data) {
-    return sanitize(data, this.hiddenFields)
+  _buildWhere(where = null, includeDeleted = false) {
+    const safeWhere = { ...where }
+    delete safeWhere.DELETED_AT
+    return {
+      ...(where || {}),
+      ...(includeDeleted ? {} : { DELETED_AT: null })
+    }
   }
 
-  async LISTALL() {
-    const data = await this.model.findMany({
-      orderBy: { [this.defaultOrderBy]: 'asc' }
-    })
-    return this._sanitize(data)
+  // 🔥 build query options
+  _buildQuery(options = {}, includeDeleted = false) {
+    return {
+      ...options,
+      where: this._buildWhere(options.where, includeDeleted),
+      orderBy: options.orderBy || { [this.defaultOrderBy]: 'asc' }
+    }
   }
 
-  async LISTQUERY(options = {}) {
-    const data = await this.model.findMany(options)
-    return this._sanitize(data)
+  async LISTALL(includeDeleted = false) {
+    return await this.model.findMany(
+      this._buildQuery({}, includeDeleted)
+    )
   }
 
-  async FINDBYUNIQUE(id, idField) {
+  async LISTQUERY(options = {}, includeDeleted = false) {
+    return await this.model.findMany(
+      this._buildQuery(options, includeDeleted)
+    )
+  }
+
+  async FINDBYUNIQUE(id, idField, includeDeleted = false) {
     const data = await this.model.findUnique({
       where: { [idField]: id }
     })
-    return this._sanitize(data)
+
+    // filter soft delete thủ công
+    if (!includeDeleted && data?.DELETED_AT) return null
+
+    return data
   }
 
-  async DELETEBYID(id, idField) {
-    const data = await this.model.delete({
-      where: { [idField]: id }
+  async FINDBYFIELD(value, fieldName, includeDeleted = false) {
+    return await this.model.findFirst({
+      where: this._buildWhere({ [fieldName]: value }, includeDeleted)
     })
-    return this._sanitize(data)
   }
 
-  async FINDBYFIELD(value, fieldName) {
-    const data = await this.model.findFirst({
-      where: { [fieldName]: value }
+  async FINDBYFIELD_WHERE(whereObj = {}, includeDeleted = false) {
+    return await this.model.findFirst({
+      where: this._buildWhere(whereObj, includeDeleted)
     })
-    return this._sanitize(data)
-  }
-
-  async FINDBYFIELD_WHERE(whereObj) {
-    const data = await this.model.findFirst({ where: whereObj })
-    return this._sanitize(data)
   }
 
   async CREATE(data) {
-    const result = await this.model.create({ data })
-    return this._sanitize(result)
+    return await this.model.create({ data })
   }
 
-  async UPDATE(id, idField, updateData) {
-    const result = await this.model.update({
+  async UPDATE(id, updateData, idField) {
+    return await this.model.update({
       where: { [idField]: id },
       data: updateData
     })
-    return this._sanitize(result)
+  }
+
+  async DELETEBYID(id, idField) {
+    return await this.model.delete({
+      where: { [idField]: id }
+    })
+  }
+
+  // soft delete
+  async SOFT_DELETE(id, idField) {
+    return await this.UPDATE(id, idField, {
+      DELETED_AT: new Date()
+    })
+  }
+
+  // restore data
+  async RESTORE(id, idField) {
+    return await this.UPDATE(id, idField, {
+      DELETED_AT: null
+    })
   }
 }
 

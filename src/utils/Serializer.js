@@ -1,6 +1,6 @@
-class _serializer {
-  static sanitize(data, hiddenFields = []) {
-    if (!data) return data
+class Serializer {
+  static sanitize(data, hiddenFields = ['PASSWORD', 'DELETED_AT']) {
+    if (data === null || data === undefined) return data
 
     // Array
     if (Array.isArray(data)) {
@@ -16,7 +16,7 @@ class _serializer {
     if (typeof data === 'object') {
       const result = {}
 
-      for (const key in data) {
+      for (const key of Object.keys(data)) {
         if (hiddenFields.includes(key)) continue
 
         result[key] = this.sanitize(data[key], hiddenFields)
@@ -25,9 +25,9 @@ class _serializer {
       return result
     }
 
-    // Primitive (string, number, boolean...)
+    // Primitive
     return data
   }
 }
 
-export default _serializer
+export default Serializer

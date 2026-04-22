@@ -5,50 +5,45 @@ class AccountsModel extends ModelCore {
     super('ACCOUNTS', 'ACCOUNT_ID')
   }
 
-  async lists() {
-    const data = await super.LISTQUERY({
-      where: { DELETED_AT: null },
-      orderBy: { ACCOUNT_ID: 'asc' },
-      include: {
-        EMPLOYEE: {
-          select: {
-            EMPLOYEE_ID: true,
-            EMPLOYEE_CODE: true,
-            FIRST_NAME: true,
-            LAST_NAME: true
+  async lists(where = null, includeDeleted = false) {
+    return await super.LISTQUERY(
+      {
+        where,
+        include: {
+          EMPLOYEE: {
+            select: {
+              EMPLOYEE_ID: true,
+              EMPLOYEE_CODE: true,
+              FIRST_NAME: true,
+              LAST_NAME: true
+            }
           }
         }
-      }
-    })
-    return data
+      },
+      includeDeleted
+    )
   }
 
   async create(createData) {
-    const account = await super.CREATE(createData)
-
-    delete account.PASSWORD
-    delete account.DELETED_AT
-    return account
+    return await super.CREATE(createData)
   }
 
-  async findByCode(code) {
-    return await super.FINDBYFIELD(code, 'ACCOUNT_CODE')
+  async findByUnique(id, includeDeleted = false) {
+    return await super.FINDBYFIELD_WHERE(
+      { ACCOUNT_ID: id },
+      includeDeleted
+    )
   }
 
-  async findById(id) {
-    return await super.FINDBYFIELD_WHERE({ ACCOUNT_ID: id, DELETED_AT: null })
+  async updateById(id, updateData, field = 'ACCOUNT_ID') {
+    return await super.UPDATE(id, updateData, field)
   }
 
-  async findByUnique(data, field = 'ACCOUNT_ID') {
-    return await super.FINDBYUNIQUE(data, field, { hiddenFields: ['DELETED_AT'] })
-  }
-
-  async updateById(id, updateData) {
-    return await super.UPDATE(id, 'ACCOUNT_ID', updateData)
-  }
-
-  async deleteById(id) {
-    return await super.UPDATE(id, 'ACCOUNT_ID', { DELETED_AT: new Date(), STATUS: 'DISABLED' })
+  async softDeleteById(id, field = 'ACCOUNT_ID') {
+    return await super.UPDATE(id, {
+      DELETED_AT: new Date(),
+      STATUS: 'DISABLED'
+    }, field)
   }
 }
 
