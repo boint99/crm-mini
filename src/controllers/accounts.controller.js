@@ -21,8 +21,7 @@ class AccountsController {
   // PUT /api/accounts
   async update(req, res, next) {
     try {
-      const { ACCOUNT_ID } = req.body
-      const result = await accountsService.update(Number(ACCOUNT_ID), req.body)
+      const result = await accountsService.update(req.body)
       new SuccessResponse({ res, data: result, message: 'Account updated successfully.' })
     } catch (error) { next(error) }
   }

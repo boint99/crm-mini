@@ -31,18 +31,6 @@ export function CHECK_ENUM (value, allowedArray, code, message) {
 
 export const saltRoundsPassword = 10
 
-export const accountDTO = (acc) => ({
-  ACCOUNT_ID: acc.ACCOUNT_ID,
-  ACCOUNT_NAME: acc.ACCOUNT_NAME,
-  STATUS: acc.STATUS,
-  IS_LOGIN: acc.IS_LOGIN,
-  LOGIN: acc.LOGIN,
-  DESCRIPTION: acc.DESCRIPTION ?? null,
-  CREATED_AT: acc.CREATED_AT,
-  UPDATED_AT: acc.UPDATED_AT,
-  EMPLOYEE: acc.EMPLOYEE ?? null
-})
-
 export const removeDomain = (email) => {
   return email.split('@')[0]
 }

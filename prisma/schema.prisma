@@ -7,42 +7,48 @@ datasource db {
 }
 
 model COMPANY {
+  ID           String      @unique @map("ID") @db.Uuid
   COMPANY_ID   Int         @id @default(autoincrement()) @map("COMPANY_ID")
   COMPANY_CODE String      @unique @map("COMPANY_CODE")
   COMPANY_NAME String      @map("COMPANY_NAME")
   STATUS       ENUMSTATUS  @default(ENABLE) @map("STATUS")
   CREATED_AT   DateTime    @default(now()) @map("CREATED_AT")
   UPDATED_AT   DateTime    @updatedAt @map("UPDATED_AT")
-  Divisions    DIVISIONS[]
+  DELETED_AT   DateTime?   @map("DELETED_AT") @db.Timestamp(6)
+  DIVISIONS    DIVISIONS[]
 
   @@map("COMPANY")
 }
 
 model DIVISIONS {
+  ID            String      @unique @map("ID") @db.Uuid
   DIVISION_ID   Int         @id @default(autoincrement()) @map("DIVISION_ID")
   DIVISION_CODE String      @unique @map("DIVISION_CODE")
   DIVISION_NAME String      @map("DIVISION_NAME")
-  COMPANY_ID    Int         @map("COMPANY_ID")
+  COMPANY_ID    Int?        @map("COMPANY_ID")
   STATUS        ENUMSTATUS  @default(ENABLE) @map("STATUS")
   CREATED_AT    DateTime    @default(now()) @map("CREATED_AT")
-  UPDATED_AT    DateTime    @updatedAt @map("UPDATED_AT")
-  COMPANY       COMPANY     @relation(fields: [COMPANY_ID], references: [COMPANY_ID])
+  UPDATED_AT    DateTime?   @updatedAt @map("UPDATED_AT")
+  DELETED_AT    DateTime?   @map("DELETED_AT") @db.Timestamp(6)
+  COMPANY       COMPANY?    @relation(fields: [COMPANY_ID], references: [COMPANY_ID])
   ORG_UNITS     ORG_UNITS[]
 
   @@map("DIVISIONS")
 }
 
 model ORG_UNITS {
+  ID             String      @unique @map("ID") @db.Uuid
   ORG_UNIT_ID    Int         @id @default(autoincrement()) @map("ORG_UNIT_ID")
   UNIT_CODE      String      @unique @map("UNIT_CODE")
   UNIT_NAME      String      @map("UNIT_NAME")
   UNIT_TYPE      String?     @map("UNIT_TYPE")
   DIVISION_ID    Int?        @map("DIVISION_ID")
   PARENT_UNIT_ID Int?        @map("PARENT_UNIT_ID")
+  BRANCH_ID      Int?        @map("BRANCH_ID")
   STATUS         ENUMSTATUS  @default(ENABLE) @map("STATUS")
   CREATED_AT     DateTime    @default(now()) @map("CREATED_AT")
-  UPDATED_AT     DateTime    @updatedAt @map("UPDATED_AT")
-  BRANCH_ID      Int?        @map("BRANCH_ID")
+  UPDATED_AT     DateTime?   @updatedAt @map("UPDATED_AT")
+  DELETED_AT     DateTime?   @map("DELETED_AT") @db.Timestamp(6)
   EMPLOYEES      EMPLOYEES[]
   BRANCH         BRANCHES?   @relation(fields: [BRANCH_ID], references: [BRANCH_ID])
   DIVISION       DIVISIONS?  @relation(fields: [DIVISION_ID], references: [DIVISION_ID])
@@ -56,32 +62,37 @@ model ORG_UNITS {
 }
 
 model BRANCHES {
+  ID          String      @unique @map("ID") @db.Uuid
   BRANCH_ID   Int         @id @default(autoincrement()) @map("BRANCH_ID")
   BRANCH_CODE String      @unique @map("BRANCH_CODE")
   BRANCH_NAME String      @map("BRANCH_NAME")
   LOCATION    String?     @map("LOCATION")
   STATUS      ENUMSTATUS  @default(ENABLE) @map("STATUS")
   CREATED_AT  DateTime    @default(now()) @map("CREATED_AT")
-  UPDATED_AT  DateTime    @updatedAt @map("UPDATED_AT")
+  UPDATED_AT  DateTime?   @updatedAt @map("UPDATED_AT")
+  DELETED_AT  DateTime?   @map("DELETED_AT") @db.Timestamp(6)
   ORG_UNITS   ORG_UNITS[]
 
   @@map("BRANCHES")
 }
 
 model POSITIONS {
+  ID            String      @unique @map("ID") @db.Uuid
   POSITION_ID   Int         @id @default(autoincrement()) @map("POSITION_ID")
   POSITION_CODE String      @unique @map("POSITION_CODE")
   POSITION_NAME String      @map("POSITION_NAME")
   LEVEL         String      @map("LEVEL")
   STATUS        ENUMSTATUS  @default(ENABLE) @map("STATUS")
   CREATED_AT    DateTime    @default(now()) @map("CREATED_AT")
-  UPDATED_AT    DateTime    @updatedAt @map("UPDATED_AT")
+  UPDATED_AT    DateTime?   @updatedAt @map("UPDATED_AT")
+  DELETED_AT    DateTime?   @map("DELETED_AT") @db.Timestamp(6)
   EMPLOYEES     EMPLOYEES[]
 
   @@map("POSITIONS")
 }
 
 model EMPLOYEES {
+  ID            String             @unique @map("ID") @db.Uuid
   EMPLOYEE_ID   Int                @id @default(autoincrement()) @map("EMPLOYEE_ID")
   EMPLOYEE_CODE String             @unique @map("EMPLOYEE_CODE")
   FIRST_NAME    String             @map("FIRST_NAME")
@@ -90,11 +101,12 @@ model EMPLOYEES {
   EMAIL         String?            @map("EMAIL")
   BIRTH_DATE    DateTime?          @map("BIRTH_DATE") @db.Date
   UNIT_ID       Int?               @map("UNIT_ID")
+  POSITION_ID   Int?               @map("POSITION_ID")
   VIETTEL_ID    Int?               @map("VIETTEL_ID")
   STATUS        ENUMSTATUS         @default(ENABLE) @map("STATUS")
   CREATED_AT    DateTime           @default(now()) @map("CREATED_AT")
-  UPDATED_AT    DateTime           @updatedAt @map("UPDATED_AT")
-  POSITION_ID   Int?               @map("POSITION_ID")
+  UPDATED_AT    DateTime?          @updatedAt @map("UPDATED_AT")
+  DELETED_AT    DateTime?          @map("DELETED_AT") @db.Timestamp(6)
   ACCOUNTS      ACCOUNTS[]
   POSITION      POSITIONS?         @relation(fields: [POSITION_ID], references: [POSITION_ID])
   ORG_UNIT      ORG_UNITS?         @relation(fields: [UNIT_ID], references: [ORG_UNIT_ID])
@@ -105,17 +117,18 @@ model EMPLOYEES {
 }
 
 model ACCOUNTS {
+  ID            String          @unique @map("ID") @db.Uuid
   ACCOUNT_ID    Int             @id @default(autoincrement()) @map("ACCOUNT_ID")
   ACCOUNT_NAME  String          @unique(map: "ACCOUNTS_ACCOUNT_CODE_key")
   PASSWORD      String?         @map("PASSWORD")
   IS_LOGIN      Boolean         @default(false) @map("IS_LOGIN")
   LOGIN         Int             @default(0) @map("LOGIN")
-  STATUS        ENUMSTATUS      @default(ENABLE) @map("STATUS")
+  DESCRIPTION   String?         @map("DESCRIPTION") @db.VarChar(255)
   EMPLOYEE_ID   Int?            @map("EMPLOYEE_ID")
+  STATUS        ENUMSTATUS      @default(ENABLE) @map("STATUS")
   CREATED_AT    DateTime        @default(now()) @map("CREATED_AT")
-  UPDATED_AT    DateTime        @updatedAt @map("UPDATED_AT")
-  DESCRIPTION   String?         @db.VarChar(255)
-  DELETED_AT    DateTime?       @db.Timestamp(6)
+  UPDATED_AT    DateTime?       @updatedAt @map("UPDATED_AT")
+  DELETED_AT    DateTime?       @map("DELETED_AT") @db.Timestamp(6)
   EMPLOYEE      EMPLOYEES?      @relation(fields: [EMPLOYEE_ID], references: [EMPLOYEE_ID])
   ACCOUNT_ROLES ACCOUNT_ROLES[]
   OTP_TOKENS    OTP_TOKENS[]
@@ -124,12 +137,14 @@ model ACCOUNTS {
 }
 
 model ACCOUNT_ROLES {
+  ID         String    @unique @map("ID") @db.Uuid
   AR_ID      Int       @id @default(autoincrement()) @map("AR_ID")
   AR_CODE    String    @unique @map("AR_CODE")
   ROLE_ID    Int?      @map("ROLE_ID")
   ACCOUNT_ID Int?      @map("ACCOUNT_ID")
   CREATED_AT DateTime  @default(now()) @map("CREATED_AT")
-  UPDATED_AT DateTime  @updatedAt @map("UPDATED_AT")
+  UPDATED_AT DateTime? @updatedAt @map("UPDATED_AT")
+  DELETED_AT DateTime? @map("DELETED_AT") @db.Timestamp(6)
   ACCOUNT    ACCOUNTS? @relation(fields: [ACCOUNT_ID], references: [ACCOUNT_ID])
   ROLE       ROLES?    @relation(fields: [ROLE_ID], references: [ROLE_ID])
 
@@ -137,15 +152,17 @@ model ACCOUNT_ROLES {
 }
 
 model ROLES {
+  ID            String          @unique @map("ID") @db.Uuid
   ROLE_ID       Int             @id @default(autoincrement()) @map("ROLE_ID")
   ROLE_CODE     Int             @unique @map("ROLE_CODE")
   ROLE_NAME     String          @map("ROLE_NAME")
   DESCRIPTION   String?         @map("DESCRIPTION")
   CREATED_BY    Int?            @map("CREATED_BY")
+  UPDATED_BY    Int?            @map("UPDATED_BY")
   STATUS        ENUMSTATUS      @default(ENABLE) @map("STATUS")
-  UPDATED_BY    DateTime        @map("UPDATED_BY")
-  UPDATED_AT    DateTime        @updatedAt @map("UPDATED_AT")
   CREATED_AT    DateTime        @default(now()) @map("CREATED_AT")
+  UPDATED_AT    DateTime?       @updatedAt @map("UPDATED_AT")
+  DELETED_AT    DateTime?       @map("DELETED_AT") @db.Timestamp(6)
   ACCOUNT_ROLES ACCOUNT_ROLES[]
   PERMISSIONS   PERMISSIONS[]
 
@@ -153,6 +170,7 @@ model ROLES {
 }
 
 model PERMISSIONS {
+  ID         String     @unique @map("ID") @db.Uuid
   PER_ID     Int        @id @default(autoincrement()) @map("PER_ID")
   PER_CODE   Int        @unique @map("PER_CODE")
   PER_NAME   String     @map("PER_NAME")
@@ -162,13 +180,15 @@ model PERMISSIONS {
   ROLE_ID    Int?       @map("ROLE_ID")
   STATUS     ENUMSTATUS @default(ENABLE) @map("STATUS")
   CREATED_AT DateTime   @default(now()) @map("CREATED_AT")
-  UPDATED_AT DateTime   @updatedAt @map("UPDATED_AT")
+  UPDATED_AT DateTime?  @updatedAt @map("UPDATED_AT")
+  DELETED_AT DateTime?  @map("DELETED_AT") @db.Timestamp(6)
   ROLE       ROLES?     @relation(fields: [ROLE_ID], references: [ROLE_ID])
 
   @@map("PERMISSIONS")
 }
 
 model VLANS {
+  ID              String         @unique @map("ID") @db.Uuid
   VLAN_ID         Int            @id @default(autoincrement()) @map("VLAN_ID")
   VLAN_CODE       Int            @unique @map("VLAN_CODE")
   VLAN_NAME       String         @map("VLAN_NAME")
@@ -176,15 +196,17 @@ model VLANS {
   DEFAULT_GATEWAY String?        @map("DEFAULT_GATEWAY")
   SUBNET_MASK     String?        @map("SUBNET_MASK")
   IP_RANGE        String         @map("IP_RANGE")
-  CREATED_AT      DateTime       @default(now()) @map("CREATED_AT")
-  UPDATED_AT      DateTime       @updatedAt @map("UPDATED_AT")
   STATUS          NETWORK_STATUS @default(ACTIVE) @map("STATUS")
+  CREATED_AT      DateTime       @default(now()) @map("CREATED_AT")
+  UPDATED_AT      DateTime?      @updatedAt @map("UPDATED_AT")
+  DELETED_AT      DateTime?      @map("DELETED_AT") @db.Timestamp(6)
   IPS             IPS[]
 
   @@map("VLANS")
 }
 
 model IPS {
+  ID          String         @unique @map("ID") @db.Uuid
   IP_ID       Int            @id @default(autoincrement()) @map("IP_ID")
   HOST        String         @map("HOST")
   VLAN_ID     Int            @map("VLAN_ID")
@@ -192,7 +214,8 @@ model IPS {
   EMPLOYEE_ID Int?           @map("EMPLOYEE_ID")
   STATUS      NETWORK_STATUS @default(INACTIVE) @map("STATUS")
   CREATED_AT  DateTime       @default(now()) @map("CREATED_AT")
-  UPDATED_AT  DateTime       @updatedAt @map("UPDATED_AT")
+  UPDATED_AT  DateTime?      @updatedAt @map("UPDATED_AT")
+  DELETED_AT  DateTime?      @map("DELETED_AT") @db.Timestamp(6)
   EMPLOYEE    EMPLOYEES?     @relation(fields: [EMPLOYEE_ID], references: [EMPLOYEE_ID])
   VLAN        VLANS          @relation(fields: [VLAN_ID], references: [VLAN_ID])
 
@@ -200,24 +223,27 @@ model IPS {
 }
 
 model VIETTEL_EMPLOYEES {
+  ID            String      @unique @map("ID") @db.Uuid
   VIETTEL_ID    Int         @id @default(autoincrement()) @map("VIETTEL_ID")
   VIETTEL_CODE  String      @unique @map("VIETTEL_CODE")
   VIETTEL_EMAIL String      @unique @map("VIETTEL_EMAIL")
   STATUS        ENUMSTATUS  @default(ENABLE) @map("STATUS")
-  CREATE_AT     DateTime    @default(now()) @map("CREATE_AT")
-  UPDATE_AT     DateTime    @updatedAt @map("UPDATE_AT")
+  CREATED_AT    DateTime    @default(now()) @map("CREATED_AT")
+  UPDATED_AT    DateTime?   @updatedAt @map("UPDATED_AT")
+  DELETED_AT    DateTime?   @map("DELETED_AT") @db.Timestamp(6)
   EMPLOYEES     EMPLOYEES[]
 
   @@map("VIETTEL_EMPLOYEES")
 }
 
 model OTP_TOKENS {
-  ID         Int       @id @default(autoincrement()) @map("ID")
+  ID         String    @unique @map("ID") @db.Uuid
   EMAIL      String    @map("EMAIL")
   OTP_CODE   String    @map("OTP_CODE")
   OTP_TYPE   OTP_TYPE  @map("OTP_TYPE")
   EXPIRED_AT DateTime  @map("EXPIRED_AT")
   CREATED_AT DateTime  @default(now()) @map("CREATED_AT")
+  DELETED_AT DateTime? @map("DELETED_AT") @db.Timestamp(6)
   ACCOUNT_ID Int?      @map("ACCOUNT_ID")
   ACCOUNT    ACCOUNTS? @relation(fields: [ACCOUNT_ID], references: [ACCOUNT_ID])
 
@@ -237,7 +263,6 @@ enum ENUMSTATUS {
 }
 
 enum NETWORK_STATUS {
-  AVAILABLE
   ASSIGNED
   ACTIVE
   INACTIVE

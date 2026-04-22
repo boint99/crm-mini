@@ -5,7 +5,7 @@ import { accountsModel } from '../models/accounts.model.js'
 import { employeesModel } from '../models/employees.model.js'
 import { removeDomain, saltRoundsPassword } from '../utils/constants.js'
 import { signAccessToken } from '../utils/jwt.js'
-import _serializer from '../utils/_serializer.js'
+import Serializer from '../utils/Serializer.js'
 
 class AuthService {
   // ================= VALIDATE + NORMALIZE =================
@@ -113,7 +113,7 @@ class AuthService {
     }
 
     const accessToken = signAccessToken(tokenPayload)
-    const safeAccount = _serializer.sanitize(account, ['PASSWORD'])
+    const safeAccount = Serializer.sanitize(account, ['PASSWORD'])
 
     return { ...safeAccount, accessToken }
   }
