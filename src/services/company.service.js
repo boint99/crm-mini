@@ -1,90 +1,172 @@
-import { ALLOWED_STATUS } from '../utils/constants.js'
+import { ALLOWED_STATUS, CHECK_ENUM } from '../utils/constants.js'
 import { companyModel } from '../models/company.model.js'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '../utils/ApiError.js'
-import { CHECK_ENUM } from '../utils/constants.js'
+import { v7 as uuidv7 } from 'uuid'
 
 class CompanyService {
-  /**
-   * Create a new company
-   */
-  async create(data) {
-    // 1. Check required fields
-    if (!data.COMPANY_NAME || !data.COMPANY_NAME.trim()) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'The company name cannot be left blank!')
-    }
-    if (!data.COMPANY_CODE || !data.COMPANY_CODE.trim()) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'The company code cannot be left blank!')
+  // =========================
+  // check data
+  // =========================
+
+  static checkRequiredFields(data) {
+    if (!data) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Data is required!')
     }
 
-    // 2. Check unique COMPANY_CODE
-    const codeExists = await companyModel.findByCode(data.COMPANY_CODE.trim())
-    if (codeExists) {
-      throw new ApiError(StatusCodes.CONFLICT, 'This company code is already taken!')
+    if (!data.COMPANY_CODE?.trim()) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'The company code is required!')
     }
 
-    // 3. Check unique COMPANY_NAME
-    const isExisted = await companyModel.findByName(data.COMPANY_NAME.trim())
-    if (isExisted) {
-      throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken!')
+    if (!data.COMPANY_NAME?.trim()) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'The company name is required!')
     }
-
-    // 4. Check status enum (Using the shared helper)
-    CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
-
-    return await companyModel.create(data)
   }
 
-  /**
-   * Update company details
-   */
-  async update(COMPANY_ID, data) {
-    // 1. Verify existence
-    const checkId = await companyModel.findById(COMPANY_ID)
-    if (!checkId) {
-      throw new ApiError(StatusCodes.NOT_FOUND, 'Company not found!')
+  static checkEnumStatus(status) {
+    if (status !== undefined) {
+      CHECK_ENUM(
+        status,
+        ALLOWED_STATUS,
+        StatusCodes.BAD_REQUEST,
+        'Invalid status!}'
+      )
+    }
+  }
+
+  static async checkUniqueFields(data, excludeId = null) {
+    const checks = []
+
+    if (data.COMPANY_CODE) {
+      checks.push(
+        companyModel.findByCode(data.COMPANY_CODE).then((res) => {
+          if (res && res.ID !== excludeId) {
+            throw new ApiError(StatusCodes.CONFLICT, 'Company code already exists!')
+          }
+        })
+      )
     }
 
-    // 2. Logic check for Company Name
     if (data.COMPANY_NAME) {
-      const trimmedName = data.COMPANY_NAME.trim()
-      if (!trimmedName) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'The company name cannot be left blank!')
-      }
-
-      const isExisted = await companyModel.findByName(trimmedName)
-      // Nếu tên đã tồn tại và không phải là của chính nó (tránh trùng tên công ty khác)
-      if (isExisted && isExisted.COMPANY_ID !== COMPANY_ID) {
-        throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken by another company!')
-      }
-      data.COMPANY_NAME = trimmedName
+      checks.push(
+        companyModel.findByName(data.COMPANY_NAME).then((res) => {
+          if (res && res.ID !== excludeId) {
+            throw new ApiError(StatusCodes.CONFLICT, 'Company name already exists!')
+          }
+        })
+      )
     }
 
-    // 3. Check status enum
-    CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, `Invalid status. Allowed values: ${ALLOWED_STATUS.join(', ')}`)
-
-    return await companyModel.updateById(COMPANY_ID, data)
+    await Promise.all(checks)
   }
 
-  /**
-   * Delete a company
-   */
-  async delete(COMPANY_ID) {
-    const idToNumber = Number(COMPANY_ID)
+  // =========================
+  // NORMALIZE DATA
+  // =========================
 
-    if (isNaN(idToNumber) || idToNumber <= 0) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'COMPANY_ID is required!')
+  static normalizeCreateData(data) {
+    return {
+      COMPANY_CODE: data.COMPANY_CODE.trim(),
+      COMPANY_NAME: data.COMPANY_NAME.trim(),
+      STATUS: data.STATUS || 'ACTIVE'
+    }
+  }
+
+  static normalizeUpdateData(data) {
+    const updateData = {}
+
+    if (data.COMPANY_CODE !== undefined) {
+      const code = data.COMPANY_CODE.trim()
+      if (!code) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Company code cannot be empty!')
+      }
+      updateData.COMPANY_CODE = code
     }
 
-    const existingCompany = await companyModel.findById(idToNumber)
+    if (data.COMPANY_NAME !== undefined) {
+      const name = data.COMPANY_NAME.trim()
+      if (!name) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Company name cannot be empty!')
+      }
+      updateData.COMPANY_NAME = name
+    }
 
-    if (!existingCompany) {
+    if (data.STATUS !== undefined) {
+      updateData.STATUS = data.STATUS
+    }
+
+    return updateData
+  }
+
+  // =========================
+  // BUSINESS LOGIC
+  // =========================
+
+  async create(data) {
+    // 1. Check required
+    CompanyService.checkRequiredFields(data)
+
+    // 2. Normalize
+    const normalized = CompanyService.normalizeCreateData(data)
+
+    // 3. Check enum
+    CompanyService.checkEnumStatus(normalized.STATUS)
+
+    // 4. Check unique
+    await CompanyService.checkUniqueFields(normalized)
+
+    // 5. Create
+    const newCompany = {
+      ID: uuidv7(),
+      ...normalized
+    }
+
+    return await companyModel.create(newCompany)
+  }
+
+  async update(data) {
+    const { ID, ...payload } = data
+
+    const findCompany = await companyModel.findByUnique(ID, 'ID')
+    console.log('🚀 ~ CompanyService ~ update ~ findCompany:', findCompany)
+
+    const companyId = findCompany.COMPANY_ID || null
+
+    if (!findCompany || findCompany.DELETED_AT) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Company not found!')
     }
 
-    return await companyModel.deleteById(idToNumber)
+    // 2. Normalize update data
+    const updateData = await CompanyService.normalizeUpdateData(payload)
+
+    if (Object.keys(updateData).length === 0) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'No data to update!')
+    }
+
+    // 3. Check enum
+    CompanyService.checkEnumStatus(updateData.STATUS)
+
+    // 4. Check unique fields
+    await CompanyService.checkRequiredFields(updateData, companyId)
+
+    // 5. Update
+    return await companyModel.update(companyId, updateData)
+  }
+
+  async delete(ID) {
+    // 1. Check tồn tại
+    const findCompany = await companyModel.findByUnique(ID, 'ID')
+
+    if (!findCompany || findCompany.DELETED_AT) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Company not found!')
+    }
+
+    // 2. Soft delete
+    return await companyModel.update(findCompany.COMPANY_ID, {
+      DELETED_AT: new Date(),
+      STATUS: 'DISABLED'
+    })
   }
 }
 
-// Export an instance of the class
 export const companyService = new CompanyService()

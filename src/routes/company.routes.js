@@ -8,14 +8,14 @@ const Router = express.Router()
 Router.get('/lists', companyController.lists)
 
 // POST /api/company
-Router.post('/', companyValidate.create.bind(companyValidate), companyController.create)
+Router.post('/create', companyValidate.create.bind(companyValidate), companyController.create)
 
 // Update PUT /api/company/
-// Note: add COMPANY_ID
-Router.put('/', companyValidate.update.bind(companyValidate), companyController.update)
+// Note: add ID in body
+Router.put('/update', companyValidate.update.bind(companyValidate), companyController.update)
 
 // DELETE /api/company/
-// Note: add COMPANY_ID
+// Note: add delete in parameter
 Router.delete('/:id', companyValidate.delete.bind(companyValidate), companyController.delete)
 
 export const companyRoutes = Router

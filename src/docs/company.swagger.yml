@@ -16,7 +16,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/CompanyListResponse'
 
-  /api/company:
+  /api/company/create:
     post:
       summary: Create company
       description: Create a new company using request body data.
@@ -47,7 +47,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-
+  /api/company/update:
     put:
       summary: Update company
       description: Update company information. COMPANY_ID is required in request body.
@@ -97,7 +97,7 @@ paths:
           required: true
           description: COMPANY_ID of the company to delete
           schema:
-            type: integer
+            type: string
       responses:
         200:
           description: Company deleted successfully

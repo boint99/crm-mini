@@ -17,10 +17,11 @@ class companyValidate extends ValidateCores {
   }
 
   // Validate update company
-  static update(req, res, next) {
+  static async update(req, res, next) {
     try {
       const data = req.body
-      this.validateId(data.COMPANY_ID, 'Invalid Company ID.')
+
+      await  this.validateIdUuid(data.ID, 'Company ID is required!')
 
       if (data.COMPANY_NAME !== undefined) {
         this.validateStringLength(data.COMPANY_NAME, 5, 'COMPANY_NAME must be 5 characters or more!')
@@ -36,10 +37,10 @@ class companyValidate extends ValidateCores {
   }
 
   // Validate delete company
-  static delete(req, res, next) {
+  static async delete(req, res, next) {
     try {
       const { id } = req.params
-      this.validateId(id, 'COMPANY_ID is required!.')
+      await  this.validateIdUuid(id, 'Company ID is required!')
 
       next()
     } catch (error) {

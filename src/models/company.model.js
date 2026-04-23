@@ -13,16 +13,20 @@ class CompanyModel extends ModelCore {
     return await super.CREATE(data)
   }
 
+  async update(id, updateData, field = 'COMPANY_ID') {
+    return await super.UPDATE(id, updateData, field)
+  }
+
+  async findByUnique(fieldValue, fieldName = 'COMPANY_ID') {
+    return await super.FINDBYUNIQUE(fieldValue, fieldName)
+  }
+
   async findByName(name) {
     return await super.FINDBYFIELD(name, 'COMPANY_NAME')
   }
 
   async findByCode(code) {
     return await super.FINDBYFIELD(code, 'COMPANY_CODE')
-  }
-
-  async updateById(id, updateData) {
-    return await super.UPDATE(id, 'COMPANY_ID', updateData)
   }
 
   async findById(id) {
