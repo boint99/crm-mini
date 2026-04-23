@@ -1,19 +1,29 @@
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '../utils/ApiError.js'
 import ip from 'ip'
+import { validate, version } from 'uuid'
 
 class ValidateCores {
-  // Check Id
-  static validateId(id, message) {
-    if (!id || Number.isNaN(Number(id))) {
+  static validateIdUuid(id, message = 'Invalid ID (UUIDv7 required)') {
+    if (!id || typeof id !== 'string' || !validate(id) || version(id) !== 7) {
       throw new ApiError(StatusCodes.BAD_REQUEST, message)
     }
   }
+  // Check Id
+  static validateId(id, message) {
+    if (id) {
+      if (typeof id !== 'string') {
+        throw new ApiError(StatusCodes.BAD_REQUEST, message)
+      }
+    }
+  }
+
   static  validateCreate (id, message = 'Invalid') {
     if (!id || isNaN(id)) {
       throw new ApiError(StatusCodes.BAD_REQUEST, message)
     }
   }
+
   //Check the minimum level of the chain.
   static validateStringLength(value, min = 3, message) {
     if (value !== undefined && value.trim().length < min) {
