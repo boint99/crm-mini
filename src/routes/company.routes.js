@@ -5,7 +5,7 @@ import { companyController } from '../controllers/company.controller.js'
 const Router = express.Router()
 
 // GET - /api/company
-Router.get('/lists', companyController.lists)
+Router.get('/', companyController.lists)
 
 // POST /api/company
 Router.post('/create', companyValidate.create.bind(companyValidate), companyController.create)
