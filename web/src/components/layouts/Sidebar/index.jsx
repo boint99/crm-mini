@@ -1,43 +1,42 @@
 import { useState } from "react";
 import { NAV_GROUPS } from "@/utils/menuConfig";
-import logoCrm from "@/assets/images/logo-crm.png";
-import logoCrmSmall from "@/assets/images/logo-crm-small.png";
 import NavGroupItem from "@/components/navigate/NavGroupItem";
 import NavItem from "@/components/navigate/NavItem";
 import NavGroupCollapsed from "@/components/navigate/NavGroupCollapsed";
+import { Zap, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
-export default function Sidebar({ collapsed }) {
+export default function Sidebar({ collapsed, setCollapsed }) {
   const [openId, setOpenId] = useState(null);
 
   return (
     <aside
       className={[
-        "flex h-screen flex-shrink-0 flex-col border-r border-slate-200 bg-white overflow-y-auto transition-[width] duration-200",
-        collapsed ? "w-[60px]" : "w-64",
+        "sidebar flex h-screen flex-shrink-0 flex-col overflow-y-auto overflow-x-hidden",
+        collapsed ? "w-[68px]" : "w-[260px]",
       ].join(" ")}
     >
       {/* Logo */}
-      <div className="flex items-center justify-center py-5 px-3">
-        <div className="flex items-center justify-center py-5">
-        <img
-          src={collapsed ? logoCrmSmall : logoCrm}
-          alt="CRM Logo"
-          className={collapsed ? "h-9 w-auto" : "h-full w-auto"}
-        />
-    </div>
-
+      <div className={`flex items-center gap-3 px-5 py-5 ${collapsed ? "justify-center" : ""}`}>
+        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-500">
+          <Zap size={20} className="text-white" />
+        </div>
+        {!collapsed && (
+          <span className="text-lg font-bold text-white tracking-tight">
+            Mini CRM
+          </span>
+        )}
       </div>
 
       {/* Nav groups */}
-      <nav className="flex-1 px-2 pb-6 space-y-4">
+      <nav className="flex-1 px-3 pb-2 space-y-5 mt-2">
         {NAV_GROUPS.map((group) => (
           <div key={group.group}>
             {!collapsed && (
-              <p className="mb-1 px-3 text-[10px] font-bold uppercase tracking-widest text-primary sidebar-text">
+              <p className="sidebar-group-label">
                 {group.group}
               </p>
             )}
-            {collapsed && <div className="my-1 border-t border-slate-100" />}
+            {collapsed && <div className="my-2 border-t border-slate-700/50" />}
             <ul className="space-y-0.5">
               {group.items.map((item) =>
                 item.children ? (
@@ -61,6 +60,28 @@ export default function Sidebar({ collapsed }) {
           </div>
         ))}
       </nav>
+
+      {/* Toggle collapse button */}
+      <div className="px-3 py-4 border-t border-slate-700/40">
+        <button
+          type="button"
+          onClick={() => setCollapsed((v) => !v)}
+          title={collapsed ? "Mở rộng sidebar" : "Thu nhỏ sidebar"}
+          className={[
+            "sidebar-nav-item w-full",
+            collapsed ? "justify-center" : "",
+          ].join(" ")}
+        >
+          {collapsed ? (
+            <PanelLeftOpen size={18} className="flex-shrink-0" strokeWidth={1.8} />
+          ) : (
+            <>
+              <PanelLeftClose size={18} className="flex-shrink-0" strokeWidth={1.8} />
+              <span>Thu gọn</span>
+            </>
+          )}
+        </button>
+      </div>
     </aside>
   );
 }

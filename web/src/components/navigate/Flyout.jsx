@@ -25,10 +25,10 @@ function Flyout({ anchorEl, item, onClose }) {
     <div
       id="sidebar-flyout"
       style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999 }}
-      className="w-44 rounded-xl border border-slate-200 bg-white py-1.5 shadow-xl"
+      className="w-48 rounded-xl border border-slate-700 bg-slate-800 py-2 shadow-2xl"
       onMouseLeave={onClose}
     >
-      <p className="px-3 pb-1 pt-0.5 text-[10px] font-bold uppercase tracking-widest text-primary">
+      <p className="px-3 pb-1.5 pt-1 text-[10px] font-bold uppercase tracking-widest text-indigo-400">
         {item.label}
       </p>
       {item.children.map((child) => (
@@ -40,8 +40,8 @@ function Flyout({ anchorEl, item, onClose }) {
             [
               "flex items-center gap-2 mx-1.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors",
               isActive
-                ? "text-primary font-bold bg-blue-50"
-                : "text-slate-600 hover:bg-slate-100",
+                ? "text-white font-semibold bg-indigo-500/20"
+                : "text-slate-300 hover:bg-slate-700 hover:text-white",
             ].join(" ")
           }
         >
@@ -49,7 +49,7 @@ function Flyout({ anchorEl, item, onClose }) {
             <>
               <child.icon
                 size={13}
-                className={isActive ? "text-primary" : "text-slate-400"}
+                className={isActive ? "text-indigo-400" : "text-slate-500"}
                 strokeWidth={1.8}
               />
               {child.label}
