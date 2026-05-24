@@ -25,7 +25,6 @@ class OrganizationModel extends ModelCore {
     return await super.FINDBYUNIQUE(fieldValue, fieldName)
   }
 
-
   async deleteById(id) {
     return await super.DELETEBYID(id, 'orgUnitId')
   }

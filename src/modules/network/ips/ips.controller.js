@@ -6,11 +6,11 @@ class IpsController {
   //  get list
   async lists(req, res, next) {
     try {
-      const result = await ipsService.ipqueryBuilder(req.query).lists()
+      const result = await ipsService.lists(req.query)
       new SuccessResponse({
         res: res,
         data: result,
-        message: 'IP addresses fetched successfully.'
+        message: 'OK'
       })
     } catch (error) { next(error) }
   }
@@ -21,7 +21,7 @@ class IpsController {
       new CreatedResponse({
         res: res,
         data: result,
-        message: 'IP address created successfully.'
+        message: 'OK'
       })
     } catch (error) { next(error) }
   }
@@ -32,7 +32,7 @@ class IpsController {
       await ipsService.update(data)
       new SuccessResponse({
         res: res,
-        message: 'IP address updated successfully.'
+        message: 'OK'
       })
     } catch (error) { next(error) }
   }
@@ -45,7 +45,7 @@ class IpsController {
       await ipsService.delete(id)
       new SuccessResponse({
         res: res,
-        message: 'IP address deleted successfully.'
+        message: 'OK'
       })
     } catch (error) { next(error) }
   }

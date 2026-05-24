@@ -10,7 +10,7 @@ class EmployeesController {
       new SuccessResponse({
         res: res,
         data: result,
-        message: 'Employees fetched successfully.'
+        message: 'OK'
       })
     } catch (error) { next(error) }
   }
@@ -21,7 +21,7 @@ class EmployeesController {
       new CreatedResponse({
         res: res,
         data: result,
-        message: 'Employee created successfully.'
+        message: 'OK'
       })
     } catch (error) { next(error) }
   }
@@ -33,7 +33,7 @@ class EmployeesController {
       await employeesServices.update(data)
       new SuccessResponse({
         res: res,
-        message: 'Employee updated successfully.'
+        message: 'OK'
       })
     } catch (error) { next(error) }
   }
@@ -46,7 +46,7 @@ class EmployeesController {
       await employeesServices.delete(id)
       new SuccessResponse({
         res: res,
-        message: 'Employee deleted successfully.'
+        message: 'OK'
       })
     } catch (error) { next(error) }
   }

@@ -22,8 +22,8 @@ class CompanyModel extends ModelCore {
   }
 
 
-  async findByUnique(id) {
-    return await super.FINDBYUNIQUE(id, 'companyId')
+  async findByUnique(id, field = null) {
+    return await super.FINDBYUNIQUE(id, field)
   }
 
   async deleteById(id) {

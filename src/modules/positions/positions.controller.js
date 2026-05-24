@@ -1,5 +1,4 @@
 import { CreatedResponse, SuccessResponse } from '../../utils/SuccessResponse.js'
-import { positionsModel } from './postisions.model.js'
 import { positionsServices } from './positions.service.js'
 
 
@@ -7,11 +6,11 @@ class PositionsController {
   //  get list
   async lists(req, res, next) {
     try {
-      const result = await positionsModel.lists()
+      const result = await positionsServices.lists()
       new SuccessResponse({
         res: res,
         data: result,
-        message: 'Positions fetched successfully.'
+        message: 'OK'
       })
     } catch (error) { next(error) }
   }
@@ -22,7 +21,7 @@ class PositionsController {
       new CreatedResponse({
         res: res,
         data: result,
-        message: 'Position created successfully.'
+        message: 'OK'
       })
     } catch (error) { next(error) }
   }
@@ -34,7 +33,7 @@ class PositionsController {
       await positionsServices.update(data)
       new SuccessResponse({
         res: res,
-        message: 'Position updated successfully.'
+        message: 'OK'
       })
     } catch (error) { next(error) }
   }
@@ -47,7 +46,7 @@ class PositionsController {
       await positionsServices.delete(id)
       new SuccessResponse({
         res: res,
-        message: 'Position deleted successfully.'
+        message: 'OK'
       })
     } catch (error) { next(error) }
   }

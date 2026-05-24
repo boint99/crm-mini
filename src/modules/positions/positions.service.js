@@ -2,86 +2,101 @@ import { ALLOWED_STATUS, CHECK_ENUM } from '../../utils/constants.js'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '../../utils/ApiError.js'
 import { positionsModel } from './postisions.model.js'
+import { v7 as uuidv7 } from 'uuid'
 
 class PositionsServices {
+
+  async lists() {
+    return await positionsModel.lists()
+  }
+
   /**
    * Create a new position
    */
   async create(data) {
+    const { positionName, level, status } = data
     // 1. Check required fields
-    if (!data.POSITION_NAME || !data.POSITION_NAME.trim()) {
+    if (!positionName || !positionName.trim()) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'The name cannot be left blank!')
     }
 
-    // 3. Check existence
-    const isExisted = await positionsModel.findByName(data.POSITION_NAME.trim())
+    // 2. Check existence
+    const isExisted = await positionsModel.findByField(positionName.trim(), 'positionName')
 
     if (isExisted) {
       throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken!')
     }
 
-    // 4. Check status enum
-    CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
+    // 3. Check status enum
+    CHECK_ENUM(status, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
 
-    return await positionsModel.create(data)
+    const createData = {
+      id: uuidv7(),
+      positionName: positionName,
+      level: level,
+      status: status || 'ENABLE'
+    }
+    return await positionsModel.create(createData)
   }
 
   /**
    * Update Position details
    */
   async update(data) {
-    const { POSITION_ID, ...payload } = data
-    const idToNumber = Number(POSITION_ID)
-    if (isNaN(idToNumber) || idToNumber <= 0) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Position ID must be a valid number!')
-    }
+    const { id, ...payload } = data
 
     // 1. Verify existence
-    const checkId = await positionsModel.findById(idToNumber)
-    if (!checkId) {
-      throw new ApiError(StatusCodes.NOT_FOUND, `Position with ID ${POSITION_ID} is not found!`)
+    const existing = await positionsModel.findByUnique(id, 'id')
+    if (!existing || existing.deletedAt) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Position is not found!')
     }
 
     // 2. Logic check for Position Name
-    if (payload.POSITION_NAME) {
-      const trimmedName = payload.POSITION_NAME.trim()
+    if (payload.positionName) {
+      const trimmedName = payload.positionName.trim()
       if (!trimmedName) {
         throw new ApiError(StatusCodes.BAD_REQUEST, 'The Position name cannot be left blank!')
       }
 
-      const isExisted = await positionsModel.findByName(trimmedName)
-
-      if (isExisted && isExisted.POSITION_ID !== idToNumber) {
-        throw new ApiError(StatusCodes.CONFLICT, `This name is already taken by another Position with ID ${isExisted.POSITION_ID}!`)
+      const isExisted = await positionsModel.findByField(trimmedName, 'positionName')
+      if (isExisted && isExisted.id !== id) {
+        throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken!')
       }
-      payload.POSITION_NAME = trimmedName
+      payload.positionName = trimmedName
     }
 
-
-
     // 3. Check status enum
-    CHECK_ENUM(data.STATUS, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, `Invalid status. Allowed values: ${ALLOWED_STATUS.join(', ')}`)
+    if (payload.status !== undefined) {
+      CHECK_ENUM(payload.status, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, `Invalid status. Allowed values: ${ALLOWED_STATUS.join(', ')}`)
+    }
 
-    return await positionsModel.updateById(idToNumber, payload)
+    // 4. Normalize update data
+    const updateData = {}
+    if (payload.positionName !== undefined) updateData.positionName = payload.positionName
+    if (payload.level !== undefined) updateData.level = payload.level
+    if (payload.status !== undefined) updateData.status = payload.status
+
+    if (Object.keys(updateData).length === 0) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'No data to update!')
+    }
+
+    return await positionsModel.updateById(id, updateData)
   }
 
   /**
    * Delete a position
    */
   async delete(id) {
-    const idToNumber = Number(id)
+    const existing = await positionsModel.findByUnique(id, 'id')
 
-    if (isNaN(idToNumber) || idToNumber <= 0) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Position id is required!')
-    }
-
-    const existing = await positionsModel.findById(idToNumber)
-
-    if (!existing) {
+    if (!existing || existing.deletedAt) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Position is not found!')
     }
 
-    return await positionsModel.deleteById(idToNumber)
+    return await positionsModel.updateById(id, {
+      deletedAt: new Date(),
+      status: 'DISABLED'
+    })
   }
 }
 

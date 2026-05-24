@@ -35,7 +35,7 @@ class CompanyService {
 
     if (data.companyName) {
       checks.push(
-        companyModel.findByName(data.companyName).then((res) => {
+        companyModel.findByField(data.companyName, 'companyName').then((res) => {
           if (res && res.id !== excludeId) {
             throw new ApiError(StatusCodes.CONFLICT, 'Company name already exists!')
           }

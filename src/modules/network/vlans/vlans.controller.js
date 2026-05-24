@@ -1,17 +1,16 @@
 import { CreatedResponse, SuccessResponse } from '../../../utils/SuccessResponse.js'
 import { vlansService } from './vlans.service.js'
-import { vlansModel } from './vlans.model.js'
 
 
 class VlansController {
   //  get list
   async lists(req, res, next) {
     try {
-      const result = await vlansModel.lists()
+      const result = await vlansService.lists()
       new SuccessResponse({
         res: res,
         data: result,
-        message: 'Vlans fetched successfully.'
+        message: 'OK.'
       })
     } catch (error) { next(error) }
   }
@@ -22,7 +21,7 @@ class VlansController {
       new CreatedResponse({
         res: res,
         data: result,
-        message: 'VLAN created successfully.'
+        message: 'OK'
       })
     } catch (error) { next(error) }
   }
@@ -33,7 +32,7 @@ class VlansController {
       await vlansService.update(data)
       new SuccessResponse({
         res: res,
-        message: 'VLAN updated successfully.'
+        message: 'OK'
       })
     } catch (error) { next(error) }
   }
@@ -42,11 +41,12 @@ class VlansController {
   async delete(req, res, next) {
     try {
       const { id } = req.params
+      console.log('🚀 ~ VlansController ~ delete ~ id:', id)
 
       await vlansService.delete(id)
       new SuccessResponse({
         res: res,
-        message: 'VLAN deleted successfully.'
+        message: 'OK'
       })
     } catch (error) { next(error) }
   }

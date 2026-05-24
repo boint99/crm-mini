@@ -1,4 +1,3 @@
-
 import { ALLOWED_STATUS } from '../../utils/constants.js'
 import ValidateCore from '../../validates/index.js'
 
@@ -7,9 +6,9 @@ class PositionsValidate extends ValidateCore {
   static create(req, res, next) {
     try {
       const data = req.body
-      PositionsValidate.validateStringLength(data.POSITION_NAME, 3, 'POSITION_NAME is required!')
+      PositionsValidate.validateStringLength(data.positionName, 3, 'positionName is required!')
 
-      PositionsValidate.validateEnum(data.STATUS, ALLOWED_STATUS)
+      PositionsValidate.validateEnum(data.status, ALLOWED_STATUS)
       next()
     } catch (error) {
       next(error)
@@ -20,14 +19,14 @@ class PositionsValidate extends ValidateCore {
   static update(req, res, next) {
     try {
       const data = req.body
-      PositionsValidate.validateId(data.POSITION_ID, 'POSITION_ID is required!.')
+      PositionsValidate.validateIdUuid(data.id, 'Position ID (UUID) is required!.')
 
-      if (data.POSITION_NAME !== undefined) {
-        PositionsValidate.validateStringLength(data.POSITION_NAME, 3, 'POSITION_NAME must be 3 characters or more!')
+      if (data.positionName !== undefined) {
+        PositionsValidate.validateStringLength(data.positionName, 3, 'positionName must be 3 characters or more!')
       }
 
-      if (data.STATUS !== undefined) {
-        PositionsValidate.validateEnum(data.STATUS, ALLOWED_STATUS)
+      if (data.status !== undefined) {
+        PositionsValidate.validateEnum(data.status, ALLOWED_STATUS)
       }
 
       next()
@@ -40,7 +39,7 @@ class PositionsValidate extends ValidateCore {
   static delete(req, res, next) {
     try {
       const { id } = req.params
-      PositionsValidate.validateId(id, 'POSITION_ID is required!.')
+      PositionsValidate.validateIdUuid(id, 'Position ID (UUID) is required!.')
 
       next()
     } catch (error) {

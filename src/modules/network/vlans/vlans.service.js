@@ -1,18 +1,23 @@
 import ip from 'ip'
+import { v7 as uuidv7 } from 'uuid'
 import { StatusCodes } from 'http-status-codes'
+
 import { vlansModel } from './vlans.model.js'
+import { ipsModel } from '../ips/ips.model.js'
+
 import ApiError from '../../../utils/ApiError.js'
 import { ALLOWED_STATUS_NETWORK, CHECK_ENUM } from '../../../utils/constants.js'
 import ValidateCores from '../../../validates/index.js'
-import { ipsModel } from '../ips/ips.model.js'
 
 /**
- * Parse a CIDR string (e.g. "192.168.1.0/24") and return subnet info.
+ * Parse CIDR network
  */
 function parseNetwork(cidr) {
   const sub = ip.cidrSubnet(cidr)
+
   return {
-    subnetMask: sub.subnetMaskLength,
+    subnetMaskLength: sub.subnetMaskLength,
+    subnetMask: sub.subnetMask,
     firstAddress: sub.firstAddress,
     lastAddress: sub.lastAddress,
     ipRange: `${sub.firstAddress} - ${sub.lastAddress}`,
@@ -21,131 +26,248 @@ function parseNetwork(cidr) {
 }
 
 class VlansService {
+  async lists() {
+    return await vlansModel.lists()
+  }
+
+  /**
+   * CREATE
+   */
   async create(data) {
-    const { VLAN_NAME, NETWORK, DEFAULT_GATEWAY, STATUS } = data
+    const vlanId = Number(data.vlanId)
 
-    // 1. Required fields
-    if (!VLAN_NAME || !VLAN_NAME.trim()) throw new ApiError(StatusCodes.BAD_REQUEST, 'VLAN_NAME is required!')
-    if (!NETWORK || !NETWORK.trim()) throw new ApiError(StatusCodes.BAD_REQUEST, 'NETWORK (CIDR) is required!')
-    if (!DEFAULT_GATEWAY || !DEFAULT_GATEWAY.trim()) throw new ApiError(StatusCodes.BAD_REQUEST, 'DEFAULT_GATEWAY is required!')
+    const vlanName = data.vlanName.trim()
+    const network = data.network.trim()
+    const defaultGateway = data.defaultGateway.trim()
 
-    // 2. Validate CIDR format & gateway is valid IP
-    let netInfo
-    let subnet
-    try {
-      subnet = ValidateCores.parseSubnet(NETWORK.trim())
-      if (!subnet) {
-        throw new Error('Invalid subnet')
-      }
-      netInfo = parseNetwork(NETWORK.trim())
-    } catch {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'NETWORK must be a valid CIDR (e.g. 192.168.1.0/24)')
+    CHECK_ENUM(
+      data.status,
+      ALLOWED_STATUS_NETWORK,
+      StatusCodes.BAD_REQUEST,
+      'Invalid status!'
+    )
+
+    /**
+     * UNIQUE CHECKS
+     */
+    const existingVlanId = await vlansModel.findByUnique(vlanId, 'vlanId')
+
+    if (existingVlanId) {
+      throw new ApiError(
+        StatusCodes.CONFLICT,
+        'Vlan ID already exists!'
+      )
     }
 
-    ValidateCores.validateGatewayInSubnet(DEFAULT_GATEWAY, subnet)
+    const existingName = await vlansModel.findByField(vlanName, 'vlanName')
 
-
-
-    const existingName = await vlansModel.findByName(VLAN_NAME.trim())
-    if (existingName) throw new ApiError(StatusCodes.CONFLICT, 'Vlan name already exists!')
-
-    let networkFormat = `${netInfo.networkAddress}/${netInfo.subnetMask}`
-    const existingNetwork = await vlansModel.findByNetwork(networkFormat)
-    if (existingNetwork) throw new ApiError(StatusCodes.CONFLICT, 'Network already exists!')
-
-    // 4. Check status enum
-    CHECK_ENUM(STATUS, ALLOWED_STATUS_NETWORK, StatusCodes.BAD_REQUEST, 'Invalid status!')
-
-    // 5. Auto-calculate from CIDR using ip lib
-    const createData = {
-      VLAN_NAME: VLAN_NAME.trim(),
-      NETWORK: networkFormat,
-      DEFAULT_GATEWAY: DEFAULT_GATEWAY.trim(),
-      SUBNET_MASK: String(netInfo.subnetMask),
-      IP_RANGE: netInfo.ipRange,
-      STATUS: data.STATUS
+    if (existingName) {
+      throw new ApiError(StatusCodes.CONFLICT, 'Vlan name already exists!')
     }
 
-    return await vlansModel.create(createData)
+    /**
+     * NETWORK
+     */
+    const subnet = ValidateCores.parseSubnet(network)
+
+    const netInfo = parseNetwork(network)
+
+    const normalizedNetwork = `${netInfo.networkAddress}/${netInfo.subnetMaskLength}`
+
+    const existingNetwork = await vlansModel.findByField(normalizedNetwork, 'network')
+
+    if (existingNetwork) {
+      throw new ApiError(
+        StatusCodes.CONFLICT,
+        'Network already exists!'
+      )
+    }
+
+    /**
+     * GATEWAY
+     */
+    const existingGateway = await vlansModel.findByField(defaultGateway, 'defaultGateway')
+
+    if (existingGateway) {
+      throw new ApiError(
+        StatusCodes.CONFLICT,
+        'Default gateway already exists!'
+      )
+    }
+
+    ValidateCores.validateGatewayInSubnet(
+      defaultGateway,
+      subnet
+    )
+
+    /**
+     * CREATE
+     */
+    return await vlansModel.create({
+      id: uuidv7(),
+      vlanId,
+      vlanName,
+      network: normalizedNetwork,
+      defaultGateway,
+      subnetMask: netInfo.subnetMask,
+      ipRange: netInfo.ipRange,
+      status: data.status || 'ACTIVE'
+    })
   }
 
+  /**
+   * UPDATE
+   */
   async update(data) {
-    const { VLAN_ID, ...payload } = data
-    const idToNumber = Number(VLAN_ID)
-    if (isNaN(idToNumber) || idToNumber <= 0) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Vlan ID must be a valid number!')
+    const { id, vlanId, ...payload } = data
+
+    const existing = await vlansModel.findByUnique(id, 'id')
+
+    if (!existing) {
+      throw new ApiError(
+        StatusCodes.NOT_FOUND,
+        'VLAN not found!'
+      )
     }
 
-    // 1. Check exists
-    const existing = await vlansModel.findById(idToNumber)
-    if (!existing) throw new ApiError(StatusCodes.NOT_FOUND, 'Vlan not found!')
+    const updateData = {}
 
-    // 2. If VLAN_NAME changed, check unique
-    if (payload.VLAN_NAME !== undefined) {
-      const trimmedName = payload.VLAN_NAME.trim()
-      if (!trimmedName) throw new ApiError(StatusCodes.BAD_REQUEST, 'Vlan name cannot be empty!')
-      const nameExists = await vlansModel.findByName(trimmedName)
-      if (nameExists && nameExists.VLAN_ID !== idToNumber) {
-        throw new ApiError(StatusCodes.CONFLICT, 'Vlan name already taken by another Vlan!')
+    /**
+     * VLAN NAME
+     */
+    if (payload.vlanName !== undefined) {
+      const vlanName = payload.vlanName.trim()
+
+      const existingName = await vlansModel.findByField(vlanName, 'vlanName')
+
+      if (existingName && existingName.id !== id) {
+        throw new ApiError(
+          StatusCodes.CONFLICT,
+          'Vlan name already exists!'
+        )
       }
-      payload.VLAN_NAME = trimmedName
+
+      updateData.vlanName = vlanName
     }
 
-    // 3. If NETWORK changed, recalculate subnet info
-    if (payload.NETWORK !== undefined) {
-      const trimmedNetwork = payload.NETWORK.trim()
-      if (!trimmedNetwork) throw new ApiError(StatusCodes.BAD_REQUEST, 'Network cannot be empty!')
+    /**
+     * NETWORK
+     */
+    if (payload.network !== undefined) {
+      const network = payload.network.trim()
 
-      let netInfo
-      try {
-        netInfo = parseNetwork(trimmedNetwork)
-      } catch {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'Network must be a valid CIDR (e.g. 192.168.1.0/24)')
+      const netInfo = parseNetwork(network)
+
+      const normalizedNetwork =
+        `${netInfo.networkAddress}/${netInfo.subnetMaskLength}`
+
+      const existingNetwork =
+        await vlansModel.findByField(normalizedNetwork, 'network')
+
+      if (existingNetwork && existingNetwork.id !== id) {
+        throw new ApiError(
+          StatusCodes.CONFLICT,
+          'Network already exists!'
+        )
       }
 
-      const networkExists = await vlansModel.findByNetwork(String(netInfo.networkAddress))
-      if (networkExists && networkExists.VLAN_ID !== idToNumber) {
-        throw new ApiError(StatusCodes.CONFLICT, 'Network already taken by another Vlan!')
-      }
-
-      payload.NETWORK = trimmedNetwork
-      payload.SUBNET_MASK = String(netInfo.subnetMask)
-      payload.IP_RANGE = netInfo.ipRange
+      updateData.network = normalizedNetwork
+      updateData.subnetMask = netInfo.subnetMask
+      updateData.ipRange = netInfo.ipRange
     }
 
-    // 4. If DEFAULT_GATEWAY changed, check unique & valid IP
-    if (payload.DEFAULT_GATEWAY !== undefined) {
-      const trimmedGw = payload.DEFAULT_GATEWAY.trim()
-      if (!ip.isV4Format(trimmedGw)) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'Default gateway must be a valid IPv4 address')
+    /**
+     * DEFAULT GATEWAY
+     */
+    if (payload.defaultGateway !== undefined) {
+      const gateway = payload.defaultGateway.trim()
+
+      const existingGateway =
+        await vlansModel.findByField(gateway, 'defaultGateway')
+
+      if (existingGateway && existingGateway.id !== id) {
+        throw new ApiError(
+          StatusCodes.CONFLICT,
+          'Default gateway already exists!'
+        )
       }
-      const gwExists = await vlansModel.findByGateway(trimmedGw)
-      if (gwExists && gwExists.VLAN_ID !== idToNumber) {
-        throw new ApiError(StatusCodes.CONFLICT, 'Default gateway already taken by another Vlan!')
-      }
-      payload.DEFAULT_GATEWAY = trimmedGw
+
+      updateData.defaultGateway = gateway
     }
 
-    // 4b. Validate gateway is within network
-    const finalNetwork = payload.NETWORK || existing.NETWORK
-    const finalGateway = payload.DEFAULT_GATEWAY || existing.DEFAULT_GATEWAY
-    ValidateCores.validateGatewayInSubnet(finalGateway, finalNetwork)
+    /**
+     * GATEWAY + SUBNET VALIDATION
+     */
+    if (
+      updateData.network !== undefined ||
+      updateData.defaultGateway !== undefined
+    ) {
+      const finalNetwork =
+        updateData.network || existing.network
 
-    // 5. Check status enum
-    CHECK_ENUM(payload.STATUS, ALLOWED_STATUS_NETWORK, StatusCodes.BAD_REQUEST, 'Invalid status!')
+      const finalGateway =
+        updateData.defaultGateway ||
+        existing.defaultGateway
 
-    return await vlansModel.updateById(idToNumber, payload)
+      const subnet =
+        ValidateCores.parseSubnet(finalNetwork)
+
+      ValidateCores.validateGatewayInSubnet(
+        finalGateway,
+        subnet
+      )
+    }
+
+    /**
+     * STATUS
+     */
+    if (payload.status !== undefined) {
+      CHECK_ENUM(
+        payload.status,
+        ALLOWED_STATUS_NETWORK,
+        StatusCodes.BAD_REQUEST,
+        'Invalid status!'
+      )
+
+      updateData.status = payload.status
+    }
+
+    /**
+     * EMPTY UPDATE
+     */
+    if (Object.keys(updateData).length === 0) {
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        'No data to update!'
+      )
+    }
+
+    console.log('UPDATE DATA', updateData)
+    return await vlansModel.updateById(id, updateData)
   }
 
+  /**
+   * DELETE
+   */
   async delete(id) {
-    const vlanId = Number(id)
-    const existing = await vlansModel.findById(vlanId)
-    if (!existing) throw new ApiError(StatusCodes.NOT_FOUND, 'VLAN not found!')
+    console.log('🚀 ~ VlansService ~ delete ~ id:', id)
+    const existing = await vlansModel.findByUnique(id, 'id')
 
-    const linkedIp = await ipsModel.findByField(vlanId, 'VLAN_ID')
-    if (linkedIp) throw new ApiError(StatusCodes.CONFLICT, 'Cannot delete VLAN: it is still referenced by some IPs!')
+    if (!existing) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'VLAN not found!')
+    }
 
-    return await vlansModel.deleteById(vlanId)
+    const linkedIp = await ipsModel.findByField(existing.vlanId, 'vlanId')
+
+    if (linkedIp) {
+      throw new ApiError(
+        StatusCodes.CONFLICT,
+        'Cannot delete VLAN because some IPs are still using it!'
+      )
+    }
+
+    const payload = { deletedAt: new Date(), status: 'DISABLED' }
+    return await vlansModel.updateById(id, payload)
   }
 }
 

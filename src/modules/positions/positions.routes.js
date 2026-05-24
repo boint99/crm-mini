@@ -5,17 +5,17 @@ import PositionsValidate from './positons.validate.js'
 const Router = express.Router()
 
 // GET - /api/positions
-Router.get('/lists' , positionsController.lists)
+Router.get('/' , positionsController.lists)
 
 // POST /api/positions
-Router.post('/', PositionsValidate.create, positionsController.create)
+Router.post('/create', PositionsValidate.create, positionsController.create)
 
 // Update PUT /api/positions
 // Note: add POSITION_NAME
-Router.put('/', PositionsValidate.update, positionsController.update)
+Router.put('/update', PositionsValidate.update, positionsController.update)
 
 // DELETE /api/positions/:id
 // NOTE: id: POSITION_ID
-Router.delete('/:id', PositionsValidate.delete, positionsController.delete)
+Router.delete('/delete/:id', PositionsValidate.delete, positionsController.delete)
 
 export const positionsRoutes = Router

@@ -7,7 +7,7 @@ const Router = express.Router()
 
 // GET - /api/networks/ipaddress/all
 // Note: /api/networks/ipaddress?vlan_id=
-Router.get('/ipaddress/', ipsValidate.lists, ipsController.lists)
+Router.get('/ipaddress/', ipsController.lists)
 
 // POST /api/networks/ipaddress/create
 Router.post('/ipaddress/create', ipsValidate.create, ipsController.create)

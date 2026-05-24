@@ -35,7 +35,7 @@ class OrganizationService {
 
     if (data.unitName) {
       checks.push(
-        organizationModel.findByName(data.unitName).then((res) => {
+        organizationModel.findByField(data.unitName, 'unitName').then((res) => {
           if (res && res.id !== excludeId) {
             throw new ApiError(StatusCodes.CONFLICT, 'Unit name already exists!')
           }

@@ -5,60 +5,29 @@ class PositionsModel extends BaseModel {
     super('pOSITIONS', 'positionName')
   }
 
-  _mapToUpper(record) {
-    if (!record) return null
-    return {
-      POSITION_ID: record.positionId,
-      POSITION_NAME: record.positionName,
-      LEVEL: record.level,
-      STATUS: record.status,
-      id: record.id,
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
-      deletedAt: record.deletedAt
-    }
-  }
-
   async lists() {
-    const list = await super.LISTALL()
-    return list.map(item => this._mapToUpper(item))
+    return await super.LISTALL()
   }
 
   async create(data) {
-    const prismaData = {
-      positionName: data.POSITION_NAME,
-      level: data.LEVEL,
-      status: data.STATUS || 'ENABLE'
-    }
-    const record = await super.CREATE(prismaData)
-    return this._mapToUpper(record)
+    return await super.CREATE(data)
   }
 
-  async findByName(name) {
-    const record = await super.FINDBYFIELD(name, 'positionName')
-    return this._mapToUpper(record)
+  async findByField(value, field) {
+    return await super.FINDBYFIELD(value, field)
   }
 
   async updateById(id, updateData) {
-    const prismaData = {}
-    if (updateData.POSITION_NAME !== undefined) prismaData.positionName = updateData.POSITION_NAME
-    if (updateData.LEVEL !== undefined) prismaData.level = updateData.LEVEL
-    if (updateData.STATUS !== undefined) prismaData.status = updateData.STATUS
-
-    const record = await super.UPDATE(id, 'positionId', prismaData)
-    return this._mapToUpper(record)
+    return await super.UPDATE(id, 'id', updateData)
   }
 
-  async findById(id) {
-    const record = await super.FINDBYUNIQUE(id, 'positionId')
-    return this._mapToUpper(record)
+  async findByUnique(id, field = 'id') {
+    return await super.FINDBYUNIQUE(id, field)
   }
 
   async deleteById(id) {
-    const record = await super.DELETEBYID(id, 'positionId')
-    return this._mapToUpper(record)
+    return await super.DELETEBYID(id, 'id')
   }
 }
 
 export const positionsModel = new PositionsModel()
-

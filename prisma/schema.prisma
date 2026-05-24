@@ -76,6 +76,7 @@ model POSITIONS {
 model EMPLOYEES {
   id           String             @unique @map("ID") @db.Uuid
   employeeId   Int                @id @default(autoincrement()) @map("EMPLOYEE_ID")
+  employeeCode String             @unique @map("EMPLOYEE_CODE")
   firstName    String             @map("FIRST_NAME")
   lastName     String             @map("LAST_NAME")
   phone        String?            @map("PHONE")
@@ -85,6 +86,7 @@ model EMPLOYEES {
   positionId   Int?               @map("POSITION_ID")
   viettelId    Int?               @map("VIETTEL_ID")
   status       ENUMSTATUS         @default(ENABLE) @map("STATUS")
+  isAccount    Boolean            @default(false) @map("IS_ACCOUNT")
   createdAt    DateTime           @default(now()) @map("CREATED_AT") @db.Timestamp(6)
   updatedAt    DateTime?          @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
   deletedAt    DateTime?          @map("DELETED_AT") @db.Timestamp(6)
@@ -176,7 +178,7 @@ model PERMISSIONS {
 
 model VLANS {
   id             String         @unique @map("ID") @db.Uuid
-  vlanId         Int            @id @default(autoincrement()) @map("VLAN_ID")
+  vlanId         Int            @id @map("VLAN_ID")
   vlanName       String         @map("VLAN_NAME")
   network        String?        @map("NETWORK")
   defaultGateway String?        @map("DEFAULT_GATEWAY")

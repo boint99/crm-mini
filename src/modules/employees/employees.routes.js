@@ -10,14 +10,14 @@ const Router = express.Router()
 Router.get('/' , employeesController.lists)
 
 // POST /api/employees
-Router.post('/', EmployeesValidate.create, employeesController.create)
+Router.post('/create', EmployeesValidate.create, employeesController.create)
 
 // Update PUT /api/employees
 // Note: add EMPLOYEE_NAME
-Router.put('/', EmployeesValidate.update, employeesController.update)
+Router.put('/update', EmployeesValidate.update, employeesController.update)
 
 // DELETE /api/employees/:id
 // NOTE: id: EMPLOYEE_ID
-Router.delete('/:id', EmployeesValidate.delete, employeesController.delete)
+Router.delete('/delete/:id', EmployeesValidate.delete, employeesController.delete)
 
 export const employeesRoutes = Router

@@ -5,54 +5,42 @@ import { ALLOWED_STATUS_NETWORK } from '../../../utils/constants.js'
 import ip from 'ip'
 
 class IpsValidate {
-
   // ================= COMMON =================
   static validateCommon(data) {
-    const { HOST, VLAN_ID, DEVICE_TYPE, EMPLOYEE_ID, STATUS } = data
+    const { host, vlanId, deviceType, employeeId, status } = data
 
     // VLAN
-    ValidateCores.validateId(VLAN_ID, 'Vlan ID is required and must be a number!')
+    ValidateCores.validateId(vlanId, 'ID is required!')
+    if (!vlanId || isNaN(Number(vlanId))) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'ID is invalid!')
+    }
 
     // HOST (IP address)
-    ValidateCores.validateRequiredString(HOST, 'Host is required!')
-    const host = HOST.trim()
+    ValidateCores.validateRequiredString(host, 'Host is required!')
+    const hostTrim = host.trim()
 
-    if (!ip.isV4Format(host)) {
+    if (!ip.isV4Format(hostTrim)) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Host must be a valid IPv4 address!')
     }
 
     // DEVICE TYPE
-    if (DEVICE_TYPE) {
-      ValidateCores.validateStringLength(DEVICE_TYPE, 1, 'Device type must not be empty!')
+    if (deviceType) {
+      ValidateCores.validateStringLength(deviceType, 1, 'Device type must not be empty!')
     }
 
-
+    // EMPLOYEE ID
+    if (employeeId !== undefined && employeeId !== null) {
+      if (isNaN(Number(employeeId))) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Employee ID must be a number!')
+      }
+    }
 
     // STATUS
-    ValidateCores.validateEnum(STATUS, ALLOWED_STATUS_NETWORK)
+    ValidateCores.validateEnum(status, ALLOWED_STATUS_NETWORK)
 
-    return { host }
+    return { host: hostTrim }
   }
 
-  static async lists(req, res, next) {
-    try {
-      const { vlan_id } = req.query
-
-      if (vlan_id !== undefined) {
-        const id = Number(vlan_id)
-
-        if (isNaN(id) || id <= 0) {
-          throw new ApiError(StatusCodes.BAD_REQUEST, 'vlan_id is invalid!')
-        }
-
-        req.query.vlan_id = id
-      }
-
-      next()
-    } catch (err) {
-      next(err)
-    }
-  }
   // ================= CREATE =================
   static async create(req, res, next) {
     try {
@@ -66,12 +54,9 @@ class IpsValidate {
   // ================= UPDATE =================
   static async update(req, res, next) {
     try {
-      const { IP_ID } = req.body
-
-      ValidateCores.validateId(IP_ID, 'IP ID is required!')
-
+      const { id } = req.body
+      ValidateCores.validateIdUuid(id, 'Id is required!')
       IpsValidate.validateCommon(req.body)
-
       next()
     } catch (error) {
       next(error)
@@ -82,7 +67,7 @@ class IpsValidate {
   static async delete(req, res, next) {
     try {
       const { id } = req.params
-      ValidateCores.validateId(id, 'IP ID is required!')
+      ValidateCores.validateIdUuid(id, 'Id is required!')
       next()
     } catch (error) {
       next(error)
