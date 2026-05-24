@@ -9,7 +9,6 @@ datasource db {
 model COMPANY {
   id          String      @unique @map("ID") @db.Uuid
   companyId   Int         @id @default(autoincrement()) @map("COMPANY_ID")
-  companyCode String      @unique @map("COMPANY_CODE")
   companyName String      @map("COMPANY_NAME")
   status      ENUMSTATUS  @default(ENABLE) @map("STATUS")
   createdAt   DateTime    @default(now()) @map("CREATED_AT") @db.Timestamp(6)
@@ -23,7 +22,7 @@ model COMPANY {
 model ORG_UNITS {
   id           String      @unique @map("ID") @db.Uuid
   orgUnitId    Int         @id @default(autoincrement()) @map("ORG_UNIT_ID")
-  unitCode     String      @unique @map("UNIT_CODE")
+  orgUnitCode  String      @unique @map("ORG_UNIT_CODE")
   unitName     String      @map("UNIT_NAME")
   unitType     String?     @map("UNIT_TYPE")
   companyId    Int?        @map("COMPANY_ID")
@@ -63,7 +62,6 @@ model BRANCHES {
 model POSITIONS {
   id           String      @unique @map("ID") @db.Uuid
   positionId   Int         @id @default(autoincrement()) @map("POSITION_ID")
-  positionCode String      @unique @map("POSITION_CODE")
   positionName String      @map("POSITION_NAME")
   level        String      @map("LEVEL")
   status       ENUMSTATUS  @default(ENABLE) @map("STATUS")
@@ -78,7 +76,6 @@ model POSITIONS {
 model EMPLOYEES {
   id           String             @unique @map("ID") @db.Uuid
   employeeId   Int                @id @default(autoincrement()) @map("EMPLOYEE_ID")
-  employeeCode String             @unique @map("EMPLOYEE_CODE")
   firstName    String             @map("FIRST_NAME")
   lastName     String             @map("LAST_NAME")
   phone        String?            @map("PHONE")
@@ -127,7 +124,6 @@ model ACCOUNTS {
 model ACCOUNT_ROLES {
   id        String    @unique @map("ID") @db.Uuid
   arId      Int       @id @default(autoincrement()) @map("AR_ID")
-  arCode    String    @unique @map("AR_CODE")
   roleId    Int?      @map("ROLE_ID")
   accountId Int?      @map("ACCOUNT_ID")
   createdAt DateTime  @default(now()) @map("CREATED_AT") @db.Timestamp(6)
@@ -181,7 +177,6 @@ model PERMISSIONS {
 model VLANS {
   id             String         @unique @map("ID") @db.Uuid
   vlanId         Int            @id @default(autoincrement()) @map("VLAN_ID")
-  vlanCode       Int            @unique @map("VLAN_CODE")
   vlanName       String         @map("VLAN_NAME")
   network        String?        @map("NETWORK")
   defaultGateway String?        @map("DEFAULT_GATEWAY")
@@ -218,7 +213,6 @@ model IPS {
 model VIETTEL_EMPLOYEES {
   id           String      @unique @map("ID") @db.Uuid
   viettelId    Int         @id @default(autoincrement()) @map("VIETTEL_ID")
-  viettelCode  String      @unique @map("VIETTEL_CODE")
   viettelEmail String      @unique @map("VIETTEL_EMAIL")
   status       ENUMSTATUS  @default(ENABLE) @map("STATUS")
   createdAt    DateTime    @default(now()) @map("CREATED_AT") @db.Timestamp(6)
