@@ -10,10 +10,7 @@ class IpsValidate {
     const { host, vlanId, deviceType, employeeId, status } = data
 
     // VLAN
-    ValidateCores.validateId(vlanId, 'ID is required!')
-    if (!vlanId || isNaN(Number(vlanId))) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'ID is invalid!')
-    }
+    ValidateCores.validateIdUuid(vlanId, 'VLAN ID is required!')
 
     // HOST (IP address)
     ValidateCores.validateRequiredString(host, 'Host is required!')
@@ -44,6 +41,7 @@ class IpsValidate {
   // ================= CREATE =================
   static async create(req, res, next) {
     try {
+      console.log(req.body)
       IpsValidate.validateCommon(req.body)
       next()
     } catch (error) {

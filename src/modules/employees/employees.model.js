@@ -30,9 +30,10 @@ class EmployeesModel extends BaseModel {
       return await this.model.findFirst({
         where,
         include: {
-          position: { select: { positionId: true, positionName: true, level: true, status: true } },
+          position: { select: { id: true, positionId: true, positionName: true, level: true, status: true } },
           orgUnit: {
             select: {
+              id: true,
               orgUnitId: true,
               unitName: true,
               unitType: true,
@@ -40,12 +41,12 @@ class EmployeesModel extends BaseModel {
               companyId: true,
               parentUnitId: true,
               branchId: true,
-              parentUnit: { select: { orgUnitId: true, unitName: true, unitType: true } },
-              childUnits: { select: { orgUnitId: true, unitName: true, unitType: true, status: true } },
-              branch: { select: { branchId: true, branchName: true, location: true, status: true } }
+              parentUnit: { select: { id: true, orgUnitId: true, unitName: true, unitType: true } },
+              childUnits: { select: { id: true, orgUnitId: true, unitName: true, unitType: true, status: true } },
+              branch: { select: { id: true, branchId: true, branchName: true, location: true, status: true } }
             }
           },
-          viettel: { select: { viettelId: true, viettelEmail: true, status: true } },
+          viettel: { select: { id: true, viettelId: true, viettelEmail: true, status: true } },
           accounts: {
             select: {
               accountId: true,
@@ -100,16 +101,17 @@ class EmployeesModel extends BaseModel {
     return await super.LISTQUERY({
       where: Object.keys(where).length ? where : undefined,
       include: {
-        position: { select: { positionId: true, positionName: true, level: true } },
+        position: { select: { id: true, positionId: true, positionName: true, level: true } },
         orgUnit: {
           select: {
+            id: true,
             orgUnitId: true,
             unitName: true,
             unitType: true,
-            parentUnit: { select: { orgUnitId: true, unitName: true, unitType: true } }
+            parentUnit: { select: { id: true, orgUnitId: true, unitName: true, unitType: true } }
           }
         },
-        viettel: { select: { viettelId: true, viettelEmail: true } }
+        viettel: { select: { id: true, viettelId: true, viettelEmail: true } }
       },
       orderBy: { [this.defaultOrderBy]: 'asc' }
     })

@@ -1,18 +1,18 @@
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { useDispatch } from 'react-redux'
 import {
   createCompany,
   updateCompany,
-  deleteCompany,
-} from "@/redux/slice/companiesSilce";
-import { toast } from "react-toastify";
-import { dispatchWithToast } from "@/components/ui/dispatchWithToast";
+  deleteCompany
+} from '@/redux/slice/companiesSilce'
+import { toast } from 'react-toastify'
+import { dispatchWithToast } from '@/components/ui/dispatchWithToast'
 
 const defaultValues = {
-  COMPANY_NAME: "",
-  STATUS: "ENABLE",
-};
+  COMPANY_NAME: '',
+  STATUS: 'ENABLE'
+}
 
 function Field({ label, children }) {
   return (
@@ -20,86 +20,83 @@ function Field({ label, children }) {
       <span className="block text-sm font-medium text-gray-900">{label}</span>
       <span className="mt-1 block">{children}</span>
     </label>
-  );
+  )
 }
 
 const ACTION_LABEL = {
-  create: "Thêm mới",
-  edit: "Chỉnh sửa",
-  delete: "Xóa",
-};
+  create: 'Thêm mới',
+  edit: 'Chỉnh sửa',
+  delete: 'Xóa'
+}
 
 function AcctionModal({ open, onClose, action, item }) {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch()
 
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isValid },
-  } = useForm({ defaultValues, mode: "onTouched" });
+    formState: { errors, isValid }
+  } = useForm({ defaultValues, mode: 'onTouched' })
   useEffect(() => {
-    if (!open) return;
-    if ((action === "edit" || action === "delete") && item) {
+    if (!open) return
+    if ((action === 'edit' || action === 'delete') && item) {
       reset({
-        COMPANY_NAME: item.COMPANY_NAME ?? "",
-        COMPANY_CODE: item.COMPANY_CODE ?? "",
-        STATUS: item.STATUS ?? "ENABLE",
-      });
+        COMPANY_NAME: item.COMPANY_NAME ?? '',
+        STATUS: item.STATUS ?? 'ENABLE'
+      })
     } else {
-      reset(defaultValues);
+      reset(defaultValues)
     }
-  }, [open, action, item, reset]);
+  }, [open, action, item, reset])
 
   const onValid = async (data) => {
     try {
-      if (action === "create") {
+      if (action === 'create') {
         await dispatchWithToast({
           dispatch,
           action: createCompany,
           payload: {
             COMPANY_NAME: data.COMPANY_NAME.trim(),
-            COMPANY_CODE: data.COMPANY_CODE.trim(),
-            STATUS: data.STATUS,
+            STATUS: data.STATUS
           },
           messages: {
-            success: "Thêm mới thành công!",
-          },
-        });
-      } else if (action === "edit") {
+            success: 'Thêm mới thành công!'
+          }
+        })
+      } else if (action === 'edit') {
         await dispatchWithToast({
           dispatch,
           action: updateCompany,
           payload: {
             COMPANY_ID: item.COMPANY_ID,
             COMPANY_NAME: data.COMPANY_NAME.trim(),
-            COMPANY_CODE: data.COMPANY_CODE.trim(),
-            STATUS: data.STATUS,
+            STATUS: data.STATUS
           },
           messages: {
-            success: "Cập nhật thành công!",
-          },
-        });
-      } else if (action === "delete") {
+            success: 'Cập nhật thành công!'
+          }
+        })
+      } else if (action === 'delete') {
         await dispatchWithToast({
           dispatch,
           action: deleteCompany,
           payload: item.COMPANY_ID,
           messages: {
-            success: "Xóa thành công!",
-          },
-        });
+            success: 'Xóa thành công!'
+          }
+        })
       }
 
-      onClose?.();
+      onClose?.()
     } catch (error) {
-      toast.error(error || "Có lỗi xảy ra.");
+      toast.error(error || 'Có lỗi xảy ra.')
     }
-  };
+  }
 
-  if (!open) return null;
+  if (!open) return null
 
-  const isDelete = action === "delete";
+  const isDelete = action === 'delete'
 
   return (
     <div className="fixed inset-0 z-50">
@@ -119,11 +116,11 @@ function AcctionModal({ open, onClose, action, item }) {
               </h2>
               <p className="mt-1 text-sm text-gray-600">
                 {isDelete ? (
-                  "Bạn có chắc muốn xóa công ty này không?"
+                  'Bạn có chắc muốn xóa công ty này không?'
                 ) : (
                   <>
-                    {" "}
-                    Nhập thông tin theo bảng{" "}
+                    {' '}
+                    Nhập thông tin theo bảng{' '}
                     <span className="font-mono text-[12px]">COMPANY</span>.
                   </>
                 )}
@@ -144,17 +141,17 @@ function AcctionModal({ open, onClose, action, item }) {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Tên công ty *">
                 <input
-                  {...register("COMPANY_NAME", {
-                    required: "Vui lòng nhập tên công ty",
-                    validate: (v) => !!v.trim() || "Vui lòng nhập tên công ty",
+                  {...register('COMPANY_NAME', {
+                    required: 'Vui lòng nhập tên công ty',
+                    validate: (v) => !!v.trim() || 'Vui lòng nhập tên công ty'
                   })}
                   readOnly={isDelete}
                   className={[
-                    "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none text-gray-900",
+                    'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none text-gray-900',
                     isDelete
-                      ? "bg-gray-50 text-gray-500 cursor-not-allowed"
-                      : "focus:border-blue-500 focus:ring-2 focus:ring-blue-100",
-                  ].join(" ")}
+                      ? 'bg-gray-50 text-gray-500 cursor-not-allowed'
+                      : 'focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                  ].join(' ')}
                   placeholder="VD: Công ty ABC"
                 />
                 {errors.COMPANY_NAME && (
@@ -163,39 +160,19 @@ function AcctionModal({ open, onClose, action, item }) {
                   </p>
                 )}
               </Field>
-              <Field label="Tên viết tắt">
-                <input
-                  {...register("COMPANY_CODE", {
-                    required: "Vui lòng nhập tên viết tắt",
-                    validate: (v) => !!v.trim() || "Vui lòng nhập tên viết tắt",
-                  })}
-                  readOnly={isDelete}
-                  className={[
-                    "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none text-gray-900",
-                    isDelete
-                      ? "bg-gray-50 text-gray-500 cursor-not-allowed"
-                      : "focus:border-blue-500 focus:ring-2 focus:ring-blue-100",
-                  ].join(" ")}
-                  placeholder="VD: Công ty ABC"
-                />
-                {errors.COMPANY_CODE && (
-                  <p className="mt-1 text-xs text-rose-600">
-                    {errors.COMPANY_CODE.message}
-                  </p>
-                )}
-              </Field>
+
               <Field label="Trạng thái (STATUS) *">
                 <select
-                  {...register("STATUS", {
-                    required: "Vui lòng chọn trạng thái",
+                  {...register('STATUS', {
+                    required: 'Vui lòng chọn trạng thái'
                   })}
                   disabled={isDelete}
                   className={[
-                    "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none text-gray-900",
+                    'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none text-gray-900',
                     isDelete
-                      ? "bg-gray-50 text-gray-500 cursor-not-allowed"
-                      : "focus:border-blue-500 focus:ring-2 focus:ring-blue-100",
-                  ].join(" ")}
+                      ? 'bg-gray-50 text-gray-500 cursor-not-allowed'
+                      : 'focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                  ].join(' ')}
                 >
                   <option value="ENABLE">ENABLE (Hoạt động)</option>
                   <option value="DISABLED">DISABLED</option>
@@ -221,22 +198,22 @@ function AcctionModal({ open, onClose, action, item }) {
                 type="submit"
                 disabled={!isDelete && !isValid}
                 className={[
-                  "inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm",
+                  'inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm',
                   isDelete
-                    ? "bg-rose-600 hover:bg-rose-700 cursor-pointer"
+                    ? 'bg-rose-600 hover:bg-rose-700 cursor-pointer'
                     : isValid
-                      ? "bg-primary hover:opacity-95 cursor-pointer"
-                      : "bg-gray-300 cursor-not-allowed",
-                ].join(" ")}
+                      ? 'bg-primary hover:opacity-95 cursor-pointer'
+                      : 'bg-gray-300 cursor-not-allowed'
+                ].join(' ')}
               >
-                {isDelete ? "Xác nhận xóa" : "Lưu"}
+                {isDelete ? 'Xác nhận xóa' : 'Lưu'}
               </button>
             </div>
           </form>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default AcctionModal;
+export default AcctionModal

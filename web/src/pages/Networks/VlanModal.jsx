@@ -127,26 +127,26 @@ export default function VlanModal({ isOpen, onClose, onSubmit, mode, data }) {
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>VLAN Code</label>
+              <label className={labelClass}>VLAN ID</label>
               <input
                 type="number"
                 placeholder="VD: 10"
                 className={inputClass}
-                {...register("VLAN_CODE", { required: "Bắt buộc" })}
+                {...register("VLAN_ID", { required: "Bắt buộc" })}
               />
-              {errors.VLAN_CODE && (
+              {errors.VLAN_ID && (
                 <p className="mt-1 text-xs text-rose-500">
-                  {errors.VLAN_CODE.message}
+                  {errors.VLAN_ID.message}
                 </p>
               )}
             </div>
             <div>
-              <label className={labelClass}>Tên VLAN</label>
+              <label className={labelClass}>VLAN Name</label>
               <input
                 type="text"
                 placeholder="VD: MANAGEMENT"
                 className={inputClass}
-                {...register("VLAN_NAME", { required: "Bắt buộc" })}
+                {...register("VLAN_NAME", { required: "Băt Buộc" })}
               />
               {errors.VLAN_NAME && (
                 <p className="mt-1 text-xs text-rose-500">

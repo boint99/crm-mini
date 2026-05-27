@@ -131,8 +131,6 @@ class OrganizationService {
         throw new ApiError(StatusCodes.NOT_FOUND, 'Branch not found!')
       }
       branchId = findBranch.branchId
-    } else {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Branch ID is required!')
     }
 
     let parentUnitId = null

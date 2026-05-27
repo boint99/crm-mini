@@ -6,7 +6,14 @@ class OrganizationModel extends ModelCore {
   }
 
   async lists() {
-    return await super.LISTALL()
+    return await this.model.findMany({
+      where: { deletedAt: null },
+      include: {
+        company: { select: { id: true, companyName: true } },
+        branch: { select: { id: true, branchName: true } },
+        parentUnit: { select: { id: true, unitName: true } }
+      }
+    })
   }
 
   async create(data) {

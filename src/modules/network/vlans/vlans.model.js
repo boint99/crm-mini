@@ -9,6 +9,7 @@ class VlansModel extends BaseModel {
     return await super.LISTALL()
   }
 
+
   async create(data) {
     return await super.CREATE(data)
   }

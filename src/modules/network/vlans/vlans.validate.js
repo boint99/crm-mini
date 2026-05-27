@@ -10,7 +10,7 @@ class VlansValidate {
       const query = req.query
 
       // 1. Validate query params
-      const allowedFields = ['status', 'vlanId']
+      const allowedFields = ['status', 'vlanId', 'search', 'all']
       const invalidKeys = Object.keys(query).filter(
         key => !allowedFields.includes(key)
       )

@@ -102,7 +102,16 @@ export default function Networks() {
   const initializedRef = useRef(false);
 
   useEffect(() => {
-    dispatchAsync(getVlans());
+    const status = searchParams.get("status");
+    const vlanId = searchParams.get("vlanId");
+    const all = searchParams.get("all");
+
+    const params = {};
+    if (status) params.status = status;
+    if (vlanId) params.vlanId = vlanId;
+    if (all) params.all = all;
+
+    dispatchAsync(getVlans(params));
   }, []);
 
   // Close dropdown on click outside
@@ -120,7 +129,7 @@ export default function Networks() {
   useEffect(() => {
     if (vlans.length === 0 || initializedRef.current) return;
     initializedRef.current = true;
-    const idFromUrl = searchParams.get("vlan_id");
+    const idFromUrl = searchParams.get("vlanid");
     if (idFromUrl) {
       const match = vlans.find((v) => String(v.VLAN_ID) === idFromUrl);
       if (match) {
@@ -136,11 +145,15 @@ export default function Networks() {
   useEffect(() => {
     if (!initializedRef.current) return;
     if (selectedVlanId === null) {
-      setSearchParams({}, { replace: true });
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("vlanid");
+      setSearchParams(newParams, { replace: true });
       dispatchAsync(getIps({}));
     } else {
-      setSearchParams({ vlan_id: String(selectedVlanId) }, { replace: true });
-      dispatchAsync(getIps({ vlan_id: selectedVlanId }));
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("vlanid", String(selectedVlanId));
+      setSearchParams(newParams, { replace: true });
+      dispatchAsync(getIps({ vlanid: selectedVlanId }));
     }
   }, [selectedVlanId]);
 
@@ -245,6 +258,7 @@ export default function Networks() {
   };
 
   const handleIpSubmit = async (payload) => {
+    console.log("🚀 ~ handleIpSubmit ~ payload:", payload)
     if (ipMode === "delete") {
       await dispatchWithToast({
         dispatch,
@@ -270,7 +284,7 @@ export default function Networks() {
     setIpModalOpen(false);
     setSelectedIpData(null);
     if (selectedVlanId) {
-      dispatchAsync(getIps({ vlan_id: selectedVlanId }));
+      dispatchAsync(getIps({ vlanid: selectedVlanId }));
     }
   };
 
@@ -542,8 +556,8 @@ export default function Networks() {
             <div className="flex items-center gap-3">
               <h2 className="text-lg font-bold text-gray-900">
                 {selectedVlan
-                  ? `IP Addresses in VLAN ${selectedVlan.VLAN_CODE}`
-                  : "All IP Addresses"}
+                  ? `Danh sách IP trong VLAN ${selectedVlan.VLAN_CODE}`
+                  : "Danh sách IP trong tất cả các VLAN"}
               </h2>
             </div>
             <div className="flex items-center gap-3">
@@ -553,7 +567,7 @@ export default function Networks() {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 outline-none focus:border-primary"
               >
-                <option value="ALL">All Status</option>
+                <option value="ALL">Tất cả</option>
                 <option value="ACTIVE">Active</option>
                 <option value="INACTIVE">Inactive</option>
               </select>
@@ -563,7 +577,7 @@ export default function Networks() {
                 <Search className="h-4 w-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search IP or Device..."
+                  placeholder="Tìm kiếm IP hoặc thiết bị..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   className="w-48 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
@@ -586,7 +600,7 @@ export default function Networks() {
                 className="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Plus className="mr-1.5 h-4 w-4" />
-                Add IP
+                Thêm IP
               </button>
             </div>
           </div>
@@ -598,6 +612,9 @@ export default function Networks() {
                 <tr>
                   <th className="px-6 py-3 text-left text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
                     IP Address
+                  </th>
+                  <th className="px-6 py-3 text-left text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
+                    VLAN ID
                   </th>
                   <th className="px-6 py-3 text-left text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
                     Device Name
@@ -643,6 +660,11 @@ export default function Networks() {
                       <td className="px-6 py-3 whitespace-nowrap">
                         <span className="font-semibold text-primary">
                           {ip.HOST}
+                        </span>
+                      </td>
+                      <td className="px-6 py-3 whitespace-nowrap">
+                        <span className="font-semibold text-primary">
+                          {ip.VLAN_ID}
                         </span>
                       </td>
                       <td className="px-6 py-3 whitespace-nowrap text-gray-700">

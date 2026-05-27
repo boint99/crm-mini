@@ -1,3 +1,4 @@
+import { PRISMA } from '../../../configs/db.config.js'
 import BaseModel from '../../../model/index.js'
 
 class IpsModel extends BaseModel {
@@ -5,12 +6,30 @@ class IpsModel extends BaseModel {
     super('iPS', 'host')
   }
 
-  async lists() {
-    return await super.LISTALL()
+  async lists(query = {}) {
+    const { vlanId } = query
+
+    return await PRISMA.iPS.findMany({
+      where: {
+        vlanId: vlanId,
+        deletedAt: null
+      },
+      include: {
+        employee: true
+      }
+    })
   }
 
   async listQuery(options = {}) {
-    return await super.LISTQUERY(options)
+    return await PRISMA.iPS.findMany({
+      where: {
+        ...options,
+        deletedAt: null
+      },
+      include: {
+        employee: true
+      }
+    })
   }
 
   async create(data) {

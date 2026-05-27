@@ -19,7 +19,7 @@ class PositionsValidate extends ValidateCore {
   static update(req, res, next) {
     try {
       const data = req.body
-      PositionsValidate.validateIdUuid(data.id, 'Position ID (UUID) is required!.')
+      PositionsValidate.validateIdUuid(data.id, 'Position ID is required!.')
 
       if (data.positionName !== undefined) {
         PositionsValidate.validateStringLength(data.positionName, 3, 'positionName must be 3 characters or more!')
@@ -39,7 +39,7 @@ class PositionsValidate extends ValidateCore {
   static delete(req, res, next) {
     try {
       const { id } = req.params
-      PositionsValidate.validateIdUuid(id, 'Position ID (UUID) is required!.')
+      PositionsValidate.validateIdUuid(id, 'Position ID is required!.')
 
       next()
     } catch (error) {

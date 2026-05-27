@@ -118,7 +118,7 @@ export default function IpModal({
       <div className="p-6">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-semibold text-gray-900">
-            {mode === "edit" ? "Edit IP" : "Add IP"}
+            {mode === "edit" ? "Edit host" : "Add host"}
           </h3>
           <button
             onClick={onClose}

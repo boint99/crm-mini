@@ -8,8 +8,28 @@ import { employeesModel } from '../../employees/employees.model.js'
 import { v7 as uuidv7 } from 'uuid'
 
 class IpsService {
-  async lists() {
-    return await ipsModel.lists()
+  async lists(query) {
+    if (!query || !query.vlanid) {
+      return await ipsModel.lists()
+    }
+    else {
+      const { vlanid } = query
+
+      const findVlan = await vlansModel.findByUnique(vlanid, 'id')
+      if (!findVlan) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid VLAN ID!')
+      }
+      if (findVlan.isDeleted) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'VLAN ID is deleted!')
+      }
+
+      const queryData = {
+        vlanId: findVlan.vlanId,
+        deletedAt: null
+      }
+      return await ipsModel.listQuery(queryData)
+    }
+
   }
 
   async checkeHostForVlan(host, vlan) {
@@ -52,18 +72,20 @@ class IpsService {
   }
 
   async create(data) {
-    const { host, vlanId, deviceType, employeeId, status } = data
+    const { host, vlanId, deviceType, employeeCode, status } = data
 
     // 1. Validate HOST
     if (!host || !host.trim() || !ip.isV4Format(host)) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'host must be a valid IPv4!')
     }
 
-    // 2. Resolve VLAN
-    const vlanIdNum = Number(vlanId)
-    const findVlanId = await vlansModel.findByField(vlanIdNum, 'vlanId')
-    if (!findVlanId || !findVlanId.vlanId) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid vlanId!')
+    // 2. VLAN
+    const findVlanId = await vlansModel.findByUnique(vlanId, 'id')
+    if (!findVlanId) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid VLAN ID!')
+    }
+    if (findVlanId.isDeleted) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'VLAN ID is deleted!')
     }
 
     const hostTrim = host.trim()
@@ -75,7 +97,14 @@ class IpsService {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'IP already exists!')
     }
 
-    await this.checkEmployee(employeeId)
+    let employee
+    if (employeeCode) {
+      const emp = await employeesModel.findByField(employeeCode.trim(), 'employeeCode')
+      if (!emp) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Employee code not found!')
+      }
+      employee = emp
+    }
 
     // 4. Check status enum
     CHECK_ENUM(status, ALLOWED_STATUS_NETWORK, StatusCodes.BAD_REQUEST, 'Invalid status!')
@@ -84,9 +113,9 @@ class IpsService {
     return await ipsModel.create({
       id: uuidv7(),
       host: hostTrim,
-      vlanId: Number(vlanId),
+      vlanId: findVlanId.vlanId,
       deviceType: deviceType?.trim() || null,
-      employeeId: employeeId ? Number(employeeId) : null,
+      employeeId: employee?.employeeId || null,
       status: status || 'INACTIVE'
     })
   }
@@ -94,77 +123,157 @@ class IpsService {
   async update(data) {
     const { id, ...payload } = data
 
+    // 1. Find existing IP
     const existing = await ipsModel.findByUnique(id, 'id')
-    if (!existing) {
-      throw new ApiError(StatusCodes.NOT_FOUND, 'IP not found!')
+
+    if (!existing || existing.deletedAt) {
+      throw new ApiError(
+        StatusCodes.NOT_FOUND,
+        'IP not found!'
+      )
     }
 
     const updateData = {}
 
-    // 1. If host changed
+    // =========================================================
+    // 2. Update host
+    // =========================================================
     if (payload.host !== undefined) {
-      const trimmedHost = payload.host.trim()
-      if (!trimmedHost || !ip.isV4Format(trimmedHost)) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'host must be a valid IPv4!')
+      const trimmedHost = String(payload.host).trim()
+
+      if (!ip.isV4Format(trimmedHost)) {
+        throw new ApiError(
+          StatusCodes.BAD_REQUEST,
+          'Host must be a valid IPv4!'
+        )
       }
 
-      const existed = await ipsModel.findByField(trimmedHost, 'host')
-      if (existed && existed.id !== id) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'IP already exists!')
+      const existedHost = await ipsModel.findByField(
+        trimmedHost,
+        'host'
+      )
+
+      if (
+        existedHost &&
+      existedHost.id !== existing.id &&
+      !existedHost.deletedAt
+      ) {
+        throw new ApiError(
+          StatusCodes.BAD_REQUEST,
+          'IP already exists!'
+        )
       }
 
       updateData.host = trimmedHost
     }
 
-    // 2. If vlanId changed
+    // =========================================================
+    // 3. Update VLAN
+    // =========================================================
     if (payload.vlanId !== undefined) {
-      const vlanIdNum = Number(payload.vlanId)
-      if (isNaN(vlanIdNum) || vlanIdNum <= 0) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'vlanId must be a valid positive number!')
+      const vlan = await vlansModel.findByUnique(
+        payload.vlanId,
+        'id'
+      )
+
+      if (!vlan || vlan.deletedAt) {
+        throw new ApiError(
+          StatusCodes.BAD_REQUEST,
+          'Invalid VLAN!'
+        )
       }
-      const vlan = await vlansModel.findByUnique(vlanIdNum, 'vlanId')
-      if (!vlan) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid vlanId!')
-      }
-      updateData.vlanId = vlanIdNum
+
+      // lưu FK UUID
+      updateData.vlanId = vlan.vlanId
     }
 
-    // 3. If deviceType changed
+    // =========================================================
+    // 4. Update device type
+    // =========================================================
     if (payload.deviceType !== undefined) {
-      updateData.deviceType = payload.deviceType ? String(payload.deviceType).trim() : null
+      updateData.deviceType = payload.deviceType
+        ? String(payload.deviceType).trim()
+        : null
     }
 
-    // 4. If employeeId changed
-    if (payload.employeeId !== undefined) {
-      if (payload.employeeId === null) {
+    // =========================================================
+    // 5. Update employee
+    // =========================================================
+    if (payload.employeeCode !== undefined) {
+    // remove employee
+      if (
+        payload.employeeCode === null || payload.employeeCode === '') {
         updateData.employeeId = null
       } else {
-        await this.checkEmployee(payload.employeeId, existing.ipId)
-        updateData.employeeId = Number(payload.employeeId)
+        const employee = await employeesModel.findByField(
+          payload.employeeCode.trim(),
+          'employeeCode'
+        )
+
+        if (!employee || employee.deletedAt) {
+          throw new ApiError(
+            StatusCodes.BAD_REQUEST,
+            'Employee code not found!'
+          )
+        }
+
+        updateData.employeeId = employee.employeeId
       }
     }
 
-    // 5. Validate gateway/subnet constraint if host or vlanId changes
+    // =========================================================
+    // 6. Validate host with VLAN subnet
+    // =========================================================
     const finalVlanId = updateData.vlanId ?? existing.vlanId
-    const vlan = await vlansModel.findByUnique(Number(finalVlanId), 'vlanId')
-    if (!vlan) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid vlanId!')
+
+    const finalHost = updateData.host ?? existing.host
+
+    const finalVlan = await vlansModel.findByUnique(
+      finalVlanId,
+      'vlanId'
+    )
+
+    if (!finalVlan || finalVlan.deletedAt) {
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        'Invalid VLAN!'
+      )
     }
 
-    const finalHost = updateData.host || existing.host
-    await this.checkeHostForVlan(finalHost, vlan)
+    updateData.vlanId = finalVlan.vlanId
 
-    // 6. If status changed
+    // =========================================================
+    // 7. Update status
+    // =========================================================
     if (payload.status !== undefined) {
-      CHECK_ENUM(payload.status, ALLOWED_STATUS_NETWORK, StatusCodes.BAD_REQUEST, 'Invalid status!')
-      updateData.status = payload.status
+      CHECK_ENUM(
+        payload.status,
+        ALLOWED_STATUS_NETWORK,
+        StatusCodes.BAD_REQUEST,
+        'Invalid status!'
+      )
+
+      updateData.status =
+      payload.status.toUpperCase()
     }
 
+    // =========================================================
+    // 8. No update data
+    // =========================================================
     if (Object.keys(updateData).length === 0) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'No data to update!')
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        'No data to update!'
+      )
     }
 
-    return await ipsModel.updateById(existing.ipId, updateData)
+    // =========================================================
+    // 9. Update DB
+    // =========================================================
+    return await ipsModel.updateById(
+      existing.ipId,
+      updateData
+    )
   }
 
   async delete(id) {

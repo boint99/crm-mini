@@ -6,7 +6,7 @@ class VlansController {
   //  get list
   async lists(req, res, next) {
     try {
-      const result = await vlansService.lists()
+      const result = await vlansService.lists(req.query)
       new SuccessResponse({
         res: res,
         data: result,

@@ -6,7 +6,7 @@ import { ipsValidate } from './ips.validate.js'
 const Router = express.Router()
 
 // GET - /api/networks/ipaddress/all
-// Note: /api/networks/ipaddress?vlan_id=
+// Note: /api/networks/ipaddress?vlanid=
 Router.get('/ipaddress/', ipsController.lists)
 
 // POST /api/networks/ipaddress/create

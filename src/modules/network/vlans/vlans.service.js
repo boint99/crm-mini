@@ -250,8 +250,8 @@ class VlansService {
    * DELETE
    */
   async delete(id) {
-    console.log('🚀 ~ VlansService ~ delete ~ id:', id)
-    const existing = await vlansModel.findByUnique(id, 'id')
+    const existing = await vlansModel.findByUnique(id)
+    console.log('🚀 ~ VlansService ~ delete ~ existing:', existing)
 
     if (!existing) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'VLAN not found!')
