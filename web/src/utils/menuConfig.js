@@ -11,6 +11,10 @@ import {
   CheckSquare,
   Shield,
   Group,
+  Building2,
+  MapPinned,
+  GitBranch,
+  FolderTree,
 } from "lucide-react";
 
 export const NAV_GROUPS = [
@@ -23,15 +27,15 @@ export const NAV_GROUPS = [
   {
     group: "HOME",
     items: [
-      { id: "tasklist",  label: "Task List",  icon: CheckSquare,    path: "/tasklist" },
-      { id: "chat",      label: "Chat",       icon: MessageCircle,  path: "/chat" },
-      { id: "files",     label: "Files",      icon: Folder,         path: "/files" },
-       { id: "group",     label: "Group Mail",      icon: Group,         path: "/group" },
+      { id: "tasklist", label: "Task List", icon: CheckSquare, path: "/tasklist" },
+      { id: "chat", label: "Chat", icon: MessageCircle, path: "/chat" },
+      { id: "files", label: "Files", icon: Folder, path: "/files" },
+      { id: "group", label: "Group Mail", icon: Group, path: "/group" },
       {
         id: "mail", label: "Mail", icon: Mail,
         children: [
-          { id: "mail-inbox",  label: "Inbox",  icon: Mail,         path: "/mail/inbox" },
-          { id: "mail-sent",   label: "Sent",   icon: Mail,         path: "/mail/sent" },
+          { id: "mail-inbox", label: "Inbox", icon: Mail, path: "/mail/inbox" },
+          { id: "mail-sent", label: "Sent", icon: Mail, path: "/mail/sent" },
         ],
       },
     ],
@@ -43,19 +47,54 @@ export const NAV_GROUPS = [
     ],
   },
   {
-    group: "ORGANIZATION",
+    group: "Organizations",
+items: [
+  {
+    id: "organizations",
+    label: "Organization",
+    icon: FolderTree,
+    path: "/organizations/organization",
+  },
+
+  {
+    id: "employees",
+    label: "Employees",
+    icon: Users,
+    path: "/organizations/employees",
+  },
+
+  {
+    id: "positions",
+    label: "Positions",
+    icon: BriefcaseBusiness,
+    path: "/organizations/positions",
+  },
+
+  {
+    id: "divisions",
+    label: "Divisions",
+    icon: GitBranch,
+    path: "/organizations/divisions",
+  },
+
+  {
+    id: "branches",
+    label: "Branches",
+    icon: MapPinned,
+    path: "/organizations/branches",
+  },
+
+  {
+    id: "companies",
+    label: "Companies",
+    icon: Building2,
+    path: "/organizations/companies",
+  },
+]
+  },
+  {
+    group: "Outsource",
     items: [
-      {
-        id: "organization", label: "Organization", icon: Building,
-        children: [
-          { id: "employees",  label: "Employees", icon: Users,path: "/organization/employees" },
-          { id: "positions",  label: "Positions", icon: BriefcaseBusiness, path: "/organization/positions" },
-          { id: "divisions",  label: "Divisions", icon: Network, path: "/organization/divisions" },
-          { id: "org-units",  label: "Org Units", icon: Network, path: "/organization/org-units" },
-          { id: "branches",   label: "Branches",  icon: Building, path: "/organization/branches" },
-          { id: "companies",  label: "Companies", icon: Building, path: "/organization/companies" },
-        ],
-      },
       { id: "viettel",   label: "Viettel OS",   icon: BriefcaseBusiness, path: "/viettel-employees" },
     ],
   },

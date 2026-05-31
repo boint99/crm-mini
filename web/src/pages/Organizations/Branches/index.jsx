@@ -1,91 +1,90 @@
 import LoadingItem from "@/components/ui/LoadingItem";
 import { dispatchWithToast } from "@/components/ui/dispatchWithToast";
 import { useAppDispatch } from "@/hook/useAppDispatch";
+import BranchModel from "@/pages/Organizations/Branches/Action/BranchModel";
 import {
-  createDivision,
-  deleteDivision,
-  getDivisions,
-  selectDivisions,
+  createBranch,
+  deleteBranch,
+  getBranches,
+  selectBranches,
   selectLoading,
-  updateDivision,
-} from "@/redux/slice/divisionsSlice";
+  updateBranch,
+} from "@/redux/slice/branchesSlice";
 import { formatDateTime, CUSTOM_MESSAGES } from "@/utils/contants";
-import { headerTableDivision } from "@/utils/headerTable";
-import { FolderTree, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Building2, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import DivisionModel from "@/pages/Organization/Divisions/actions/DivisionModel";
+import { headerTableBranch } from "@/utils/headerTable";
 
-const divisionColumns = Object.entries(headerTableDivision);
+const branchColumns = Object.entries(headerTableBranch);
 
-function Divisions() {
+function Branches() {
   const [openModal, setOpenModal] = useState(false);
   const [query, setQuery] = useState("");
-  const [selectedDivision, setSelectedDivision] = useState(null);
-  const [action, setAction] = useState("create");
+  const [mode, setMode] = useState("create");
+  const [selectedBranch, setSelectedBranch] = useState(null);
 
   const dispatchAsync = useAppDispatch();
   const dispatch = useDispatch();
-  const divisions = useSelector(selectDivisions);
+  const branches = useSelector(selectBranches);
   const loading = useSelector(selectLoading);
 
   useEffect(() => {
-    dispatchAsync(getDivisions());
+    dispatchAsync(getBranches());
   }, []);
 
   const filteredRows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return divisions;
-    return divisions.filter((division) => {
+    if (!q) return branches;
+    return branches.filter((branch) => {
       const hay = [
-        division.DIVISION_ID,
-        division.DIVISION_CODE,
-        division.DIVISION_NAME,
-        division.STATUS,
+        branch.BRANCH_ID,
+        branch.BRANCH_NAME,
+        branch.BRANCH_CODE,
+        branch.LOCATION,
+        branch.STATUS,
       ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
       return hay.includes(q);
     });
-  }, [divisions, query]);
+  }, [branches, query]);
 
-  const totalDivisions = divisions.length;
-  const activeDivisions = divisions.filter((d) => d.STATUS === "ENABLE").length;
+  const totalBranches = branches.length;
+  const activeBranches = branches.filter(
+    (branch) => branch.STATUS === "ENABLE",
+  ).length;
 
-  const handleAction = (act, division = null) => {
-    switch (act) {
-      case "edit":
-        setAction("edit");
-        setSelectedDivision(division);
-        setOpenModal(true);
-        break;
-      case "create":
-        setAction("create");
-        setSelectedDivision(null);
-        setOpenModal(true);
-        break;
-      case "delete":
-        setAction("delete");
-        setSelectedDivision(division);
-        setOpenModal(true);
-        break;
-      default:
-        break;
-    }
+  const openCreateModal = () => {
+    setMode("create");
+    setSelectedBranch(null);
+    setOpenModal(true);
+  };
+
+  const openEditModal = (branch) => {
+    setMode("edit");
+    setSelectedBranch(branch);
+    setOpenModal(true);
+  };
+
+  const openDeleteModal = (branch) => {
+    setMode("delete");
+    setSelectedBranch(branch);
+    setOpenModal(true);
   };
 
   const handleCloseModal = () => {
     setOpenModal(false);
-    setSelectedDivision(null);
-    setAction("create");
+    setSelectedBranch(null);
+    setMode("create");
   };
 
   const handleSubmit = async (payload) => {
-    if (action === "delete") {
+    if (mode === "delete") {
       await dispatchWithToast({
         dispatch,
-        action: deleteDivision,
+        action: deleteBranch,
         payload,
         messages: CUSTOM_MESSAGES.delete,
       });
@@ -93,10 +92,10 @@ function Divisions() {
       return;
     }
 
-    if (action === "edit") {
+    if (mode === "edit") {
       await dispatchWithToast({
         dispatch,
-        action: updateDivision,
+        action: updateBranch,
         payload,
         messages: CUSTOM_MESSAGES.update,
       });
@@ -106,7 +105,7 @@ function Divisions() {
 
     await dispatchWithToast({
       dispatch,
-      action: createDivision,
+      action: createBranch,
       payload,
       messages: CUSTOM_MESSAGES.create,
     });
@@ -118,7 +117,7 @@ function Divisions() {
       return (
         <tbody>
           <tr>
-            <td colSpan={divisionColumns.length + 1}>
+            <td colSpan={branchColumns.length + 1}>
               <LoadingItem />
             </td>
           </tr>
@@ -130,10 +129,12 @@ function Divisions() {
       return (
         <tbody>
           <tr>
-            <td colSpan={divisionColumns.length + 1}>
+            <td colSpan={branchColumns.length + 1}>
               <div className="flex h-40 flex-col items-center justify-center gap-2 text-gray-400">
-                <FolderTree className="h-10 w-10" />
-                <p className="text-sm font-medium">Không có dữ liệu khối</p>
+                <Building2 className="h-10 w-10" />
+                <p className="text-sm font-medium">
+                  Không có dữ liệu chi nhánh
+                </p>
               </div>
             </td>
           </tr>
@@ -143,9 +144,9 @@ function Divisions() {
 
     return (
       <tbody className="divide-y divide-gray-200 bg-white">
-        {filteredRows.map((division, rowIndex) => (
-          <tr key={division.DIVISION_ID} className="hover:bg-gray-50">
-            {divisionColumns.map(([key]) => {
+        {filteredRows.map((branch, rowIndex) => (
+          <tr key={branch.BRANCH_ID} className="hover:bg-gray-50">
+            {branchColumns.map(([key]) => {
               const cellClass = "px-4 py-3 text-gray-700 whitespace-nowrap";
 
               if (key === "INDEX") {
@@ -164,12 +165,12 @@ function Divisions() {
                   <td key={key} className="px-4 py-3 whitespace-nowrap">
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        division.STATUS === "ENABLE"
+                        branch.STATUS === "ENABLE"
                           ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
                           : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
                       }`}
                     >
-                      {division.STATUS === "ENABLE"
+                      {branch.STATUS === "ENABLE"
                         ? "Hoạt động"
                         : "Ngưng hoạt động"}
                     </span>
@@ -180,14 +181,14 @@ function Divisions() {
               if (key === "CREATED_AT" || key === "UPDATED_AT") {
                 return (
                   <td key={key} className={cellClass}>
-                    {division[key] ? formatDateTime(division[key]) : "-"}
+                    {branch[key] ? formatDateTime(branch[key]) : "-"}
                   </td>
                 );
               }
 
               return (
                 <td key={key} className={cellClass}>
-                  {division[key] || "-"}
+                  {branch[key] || "-"}
                 </td>
               );
             })}
@@ -195,19 +196,19 @@ function Divisions() {
               <div className="flex items-center justify-end gap-1">
                 <button
                   type="button"
-                  onClick={() => handleAction("edit", division)}
+                  onClick={() => openEditModal(branch)}
                   className="rounded-md p-2 text-indigo-600 transition hover:bg-indigo-50 cursor-pointer"
                   title="Chỉnh sửa"
-                  aria-label={`Chỉnh sửa ${division.DIVISION_NAME}`}
+                  aria-label={`Chỉnh sửa ${branch.BRANCH_NAME}`}
                 >
                   <Pencil className="h-4 w-4" />
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleAction("delete", division)}
+                  onClick={() => openDeleteModal(branch)}
                   className="rounded-md p-2 text-rose-600 transition hover:bg-rose-50 cursor-pointer"
                   title="Xóa"
-                  aria-label={`Xóa ${division.DIVISION_NAME}`}
+                  aria-label={`Xóa ${branch.BRANCH_NAME}`}
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -223,14 +224,16 @@ function Divisions() {
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900">Quản lý khối</h2>
+          <h2 className="text-2xl font-semibold text-gray-900">
+            Quản lý chi nhánh
+          </h2>
           <p className="mt-1 text-sm text-gray-500">
-            Dữ liệu hiển thị tất cả khối.
+            Dữ liệu hiển thị tất cả chi nhánh.
           </p>
         </div>
         <button
           type="button"
-          onClick={() => handleAction("create")}
+          onClick={openCreateModal}
           className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 cursor-pointer"
         >
           <Plus className="mr-2 h-4 w-4" />
@@ -240,15 +243,15 @@ function Divisions() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Tổng khối</p>
+          <p className="text-sm font-medium text-slate-500">Tổng chi nhánh</p>
           <p className="mt-3 text-3xl font-semibold text-slate-900">
-            {totalDivisions}
+            {totalBranches}
           </p>
         </div>
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
           <p className="text-sm font-medium text-emerald-700">Đang hoạt động</p>
           <p className="mt-3 text-3xl font-semibold text-emerald-900">
-            {activeDivisions}
+            {activeBranches}
           </p>
         </div>
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm sm:col-span-2 xl:col-span-1">
@@ -262,13 +265,15 @@ function Divisions() {
       <div className="mt-6 rounded-lg border border-gray-200 bg-white shadow-sm">
         <div className="border-b border-gray-200 px-4 py-3 sm:px-6 flex items-center justify-between gap-4">
           <div>
-            <p className="text-lg font-medium text-gray-900">Danh sách khối</p>
+            <p className="text-lg font-medium text-gray-900">
+              Danh sách chi nhánh
+            </p>
           </div>
           <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2">
             <Search className="h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Tìm theo mã, tên khối..."
+              placeholder="Tìm theo tên, địa điểm..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="w-64 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
@@ -279,7 +284,7 @@ function Divisions() {
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
-                {divisionColumns.map(([key, label]) => (
+                {branchColumns.map(([key, label]) => (
                   <th
                     key={key}
                     className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap"
@@ -297,15 +302,15 @@ function Divisions() {
         </div>
       </div>
 
-      <DivisionModel
+      <BranchModel
         open={openModal}
         onClose={handleCloseModal}
         onSubmit={handleSubmit}
-        mode={action}
-        initialValues={selectedDivision}
+        mode={mode}
+        initialValues={selectedBranch}
       />
     </div>
   );
 }
 
-export default Divisions;
+export default Branches;

@@ -1,82 +1,89 @@
 import LoadingItem from "@/components/ui/LoadingItem";
 import { dispatchWithToast } from "@/components/ui/dispatchWithToast";
 import { useAppDispatch } from "@/hook/useAppDispatch";
-import BranchModel from "@/pages/Organization/Branches/Action/BranchModel";
+import AddEmployeeModal from "@/pages/Organizations/Employees/Action/EmployeeModel";
 import {
-  createBranch,
-  deleteBranch,
-  getBranches,
-  selectBranches,
+  createEmployee,
+  deleteEmployee,
+  getEmployees,
+  selectEmployees,
   selectLoading,
-  updateBranch,
-} from "@/redux/slice/branchesSlice";
-import { formatDateTime, CUSTOM_MESSAGES } from "@/utils/contants";
-import { Building2, Pencil, Plus, Search, Trash2 } from "lucide-react";
+  updateEmployee,
+} from "@/redux/slice/employeesSlice";
+import { formatDateTime } from "@/utils/contants";
+import { CUSTOM_MESSAGES } from "@/utils/contants";
+import { Pencil, Plus, Search, Trash2, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { headerTableBranch } from "@/utils/headerTable";
+import { headerTableEmployees } from "@/utils/headerTable";
 
-const branchColumns = Object.entries(headerTableBranch);
+const employeeColumns = Object.entries(headerTableEmployees);
 
-function Branches() {
-  const [openModal, setOpenModal] = useState(false);
+function Employees() {
+  const [openAdd, setOpenAdd] = useState(false);
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState("create");
-  const [selectedBranch, setSelectedBranch] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
 
   const dispatchAsync = useAppDispatch();
   const dispatch = useDispatch();
-  const branches = useSelector(selectBranches);
+  const employees = useSelector(selectEmployees);
   const loading = useSelector(selectLoading);
 
   useEffect(() => {
-    dispatchAsync(getBranches());
+    dispatchAsync(getEmployees());
   }, []);
 
   const filteredRows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return branches;
-    return branches.filter((branch) => {
+    if (!q) return employees;
+    return employees.filter((employee) => {
       const hay = [
-        branch.BRANCH_ID,
-        branch.BRANCH_NAME,
-        branch.BRANCH_CODE,
-        branch.LOCATION,
-        branch.STATUS,
+        employee.EMPLOYEE_ID,
+        employee.EMPLOYEE_CODE,
+        employee.FIRST_NAME,
+        employee.LAST_NAME,
+        employee.EMAIL,
+        employee.PHONE,
+        employee.ORG_UNIT?.UNIT_NAME,
+        employee.ORG_UNIT?.PARENT_UNIT?.UNIT_NAME,
+        employee.POSITION?.POSITION_NAME,
+        employee.VIETTEL?.VIETTEL_CODE,
+        employee.STATUS,
       ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
       return hay.includes(q);
     });
-  }, [branches, query]);
+  }, [employees, query]);
 
-  const totalBranches = branches.length;
-  const activeBranches = branches.filter(
-    (branch) => branch.STATUS === "ENABLE",
+  const totalEmployees = employees.length;
+  const activeEmployees = employees.filter(
+    (employee) => employee.STATUS === "ENABLE",
   ).length;
 
   const openCreateModal = () => {
     setMode("create");
-    setSelectedBranch(null);
-    setOpenModal(true);
+    setSelectedEmployee(null);
+    setOpenAdd(true);
   };
 
-  const openEditModal = (branch) => {
+  const openEditModal = (employee) => {
     setMode("edit");
-    setSelectedBranch(branch);
-    setOpenModal(true);
+    setSelectedEmployee(employee);
+    setOpenAdd(true);
   };
 
-  const openDeleteModal = (branch) => {
+  const openDeleteModal = (employee) => {
     setMode("delete");
-    setSelectedBranch(branch);
-    setOpenModal(true);
+    setSelectedEmployee(employee);
+    setOpenAdd(true);
   };
 
   const handleCloseModal = () => {
-    setOpenModal(false);
-    setSelectedBranch(null);
+    setOpenAdd(false);
+    setSelectedEmployee(null);
     setMode("create");
   };
 
@@ -84,7 +91,7 @@ function Branches() {
     if (mode === "delete") {
       await dispatchWithToast({
         dispatch,
-        action: deleteBranch,
+        action: deleteEmployee,
         payload,
         messages: CUSTOM_MESSAGES.delete,
       });
@@ -95,7 +102,7 @@ function Branches() {
     if (mode === "edit") {
       await dispatchWithToast({
         dispatch,
-        action: updateBranch,
+        action: updateEmployee,
         payload,
         messages: CUSTOM_MESSAGES.update,
       });
@@ -105,7 +112,7 @@ function Branches() {
 
     await dispatchWithToast({
       dispatch,
-      action: createBranch,
+      action: createEmployee,
       payload,
       messages: CUSTOM_MESSAGES.create,
     });
@@ -117,7 +124,7 @@ function Branches() {
       return (
         <tbody>
           <tr>
-            <td colSpan={branchColumns.length + 1}>
+            <td colSpan={employeeColumns.length + 1}>
               <LoadingItem />
             </td>
           </tr>
@@ -129,11 +136,11 @@ function Branches() {
       return (
         <tbody>
           <tr>
-            <td colSpan={branchColumns.length + 1}>
+            <td colSpan={employeeColumns.length + 1}>
               <div className="flex h-40 flex-col items-center justify-center gap-2 text-gray-400">
-                <Building2 className="h-10 w-10" />
+                <Users className="h-10 w-10" />
                 <p className="text-sm font-medium">
-                  Không có dữ liệu chi nhánh
+                  Không có dữ liệu nhân viên
                 </p>
               </div>
             </td>
@@ -144,9 +151,9 @@ function Branches() {
 
     return (
       <tbody className="divide-y divide-gray-200 bg-white">
-        {filteredRows.map((branch, rowIndex) => (
-          <tr key={branch.BRANCH_ID} className="hover:bg-gray-50">
-            {branchColumns.map(([key]) => {
+        {filteredRows.map((employee, rowIndex) => (
+          <tr key={employee.EMPLOYEE_ID} className="hover:bg-gray-50">
+            {employeeColumns.map(([key]) => {
               const cellClass = "px-4 py-3 text-gray-700 whitespace-nowrap";
 
               if (key === "INDEX") {
@@ -160,17 +167,96 @@ function Branches() {
                 );
               }
 
+              if (key === "EMPLOYEE_CODE") {
+                return (
+                  <td
+                    key={key}
+                    className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap"
+                  >
+                    {employee.EMPLOYEE_CODE}
+                  </td>
+                );
+              }
+
+              if (key === "NAME") {
+                return (
+                  <td key={key} className={cellClass}>
+                    {employee.FIRST_NAME || "-"} {employee.LAST_NAME || ""}
+                  </td>
+                );
+              }
+
+              if (key === "EMAIL") {
+                return (
+                  <td key={key} className={cellClass}>
+                    {employee.EMAIL || "-"}
+                  </td>
+                );
+              }
+
+              if (key === "BIRTHDAY") {
+                return (
+                  <td key={key} className={cellClass}>
+                    {employee.BIRTH_DATE
+                      ? formatDateTime(employee.BIRTH_DATE).split(" ")[0]
+                      : "-"}
+                  </td>
+                );
+              }
+
+              if (key === "UNIT") {
+                const parentName = employee.ORG_UNIT?.PARENT_UNIT?.UNIT_NAME;
+                const unitName = employee.ORG_UNIT?.UNIT_NAME;
+                const hierarchy =
+                  parentName && unitName
+                    ? `${parentName} > ${unitName}`
+                    : unitName;
+                return (
+                  <td key={key} className={cellClass}>
+                    {hierarchy || employee.UNIT_ID || "-"}
+                  </td>
+                );
+              }
+
+              if (key === "UNIT_PARENT") {
+                return (
+                  <td key={key} className={cellClass}>
+                    {employee.ORG_UNIT?.PARENT_UNIT?.UNIT_NAME || "-"}
+                  </td>
+                );
+              }
+
+              if (key === "POSITION") {
+                return (
+                  <td key={key} className={cellClass}>
+                    {employee.POSITION?.POSITION_NAME ||
+                      employee.POSITION_ID ||
+                      "-"}
+                  </td>
+                );
+              }
+
+              if (key === "VIETTEL") {
+                return (
+                  <td key={key} className={cellClass}>
+                    {employee.VIETTEL?.VIETTEL_CODE ||
+                      employee.VIETTEL_ID ||
+                      "-"}
+                  </td>
+                );
+              }
+
               if (key === "STATUS") {
                 return (
                   <td key={key} className="px-4 py-3 whitespace-nowrap">
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        branch.STATUS === "ENABLE"
+                        employee.STATUS === "ENABLE"
                           ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
                           : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
                       }`}
                     >
-                      {branch.STATUS === "ENABLE"
+                      {employee.STATUS === "ENABLE"
                         ? "Hoạt động"
                         : "Ngưng hoạt động"}
                     </span>
@@ -181,14 +267,14 @@ function Branches() {
               if (key === "CREATED_AT" || key === "UPDATED_AT") {
                 return (
                   <td key={key} className={cellClass}>
-                    {branch[key] ? formatDateTime(branch[key]) : "-"}
+                    {employee[key] ? formatDateTime(employee[key]) : "-"}
                   </td>
                 );
               }
 
               return (
                 <td key={key} className={cellClass}>
-                  {branch[key] || "-"}
+                  {employee[key] || "-"}
                 </td>
               );
             })}
@@ -196,19 +282,19 @@ function Branches() {
               <div className="flex items-center justify-end gap-1">
                 <button
                   type="button"
-                  onClick={() => openEditModal(branch)}
+                  onClick={() => openEditModal(employee)}
                   className="rounded-md p-2 text-indigo-600 transition hover:bg-indigo-50 cursor-pointer"
                   title="Chỉnh sửa"
-                  aria-label={`Chỉnh sửa ${branch.BRANCH_NAME}`}
+                  aria-label={`Chỉnh sửa ${employee.EMPLOYEE_CODE}`}
                 >
                   <Pencil className="h-4 w-4" />
                 </button>
                 <button
                   type="button"
-                  onClick={() => openDeleteModal(branch)}
+                  onClick={() => openDeleteModal(employee)}
                   className="rounded-md p-2 text-rose-600 transition hover:bg-rose-50 cursor-pointer"
                   title="Xóa"
-                  aria-label={`Xóa ${branch.BRANCH_NAME}`}
+                  aria-label={`Xóa ${employee.EMPLOYEE_CODE}`}
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -225,10 +311,10 @@ function Branches() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-gray-900">
-            Quản lý chi nhánh
+            Quản lý nhân viên
           </h2>
           <p className="mt-1 text-sm text-gray-500">
-            Dữ liệu hiển thị tất cả chi nhánh.
+            Dữ liệu hiển thị tất cả nhân viên.
           </p>
         </div>
         <button
@@ -243,15 +329,15 @@ function Branches() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Tổng chi nhánh</p>
+          <p className="text-sm font-medium text-slate-500">Tổng nhân viên</p>
           <p className="mt-3 text-3xl font-semibold text-slate-900">
-            {totalBranches}
+            {totalEmployees}
           </p>
         </div>
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
           <p className="text-sm font-medium text-emerald-700">Đang hoạt động</p>
           <p className="mt-3 text-3xl font-semibold text-emerald-900">
-            {activeBranches}
+            {activeEmployees}
           </p>
         </div>
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm sm:col-span-2 xl:col-span-1">
@@ -266,17 +352,17 @@ function Branches() {
         <div className="border-b border-gray-200 px-4 py-3 sm:px-6 flex items-center justify-between gap-4">
           <div>
             <p className="text-lg font-medium text-gray-900">
-              Danh sách chi nhánh
+              Danh sách nhân viên
             </p>
           </div>
           <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2">
             <Search className="h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Tìm theo tên, địa điểm..."
+              placeholder="Tìm theo mã, tên, email, điện thoại..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-64 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
+              className="w-72 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
             />
           </div>
         </div>
@@ -284,7 +370,7 @@ function Branches() {
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
-                {branchColumns.map(([key, label]) => (
+                {employeeColumns.map(([key, label]) => (
                   <th
                     key={key}
                     className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap"
@@ -302,15 +388,15 @@ function Branches() {
         </div>
       </div>
 
-      <BranchModel
-        open={openModal}
+      <AddEmployeeModal
+        open={openAdd}
         onClose={handleCloseModal}
         onSubmit={handleSubmit}
         mode={mode}
-        initialValues={selectedBranch}
+        initialValues={selectedEmployee}
       />
     </div>
   );
 }
 
-export default Branches;
+export default Employees;

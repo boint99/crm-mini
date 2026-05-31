@@ -2,73 +2,72 @@ import LoadingItem from "@/components/ui/LoadingItem";
 import { dispatchWithToast } from "@/components/ui/dispatchWithToast";
 import { useAppDispatch } from "@/hook/useAppDispatch";
 import {
-  createPosition,
-  deletePosition,
-  getPositions,
-  selectPositions,
+  createDivision,
+  deleteDivision,
+  getDivisions,
+  selectDivisions,
   selectLoading,
-  updatePosition,
-} from "@/redux/slice/positionsSlice";
+  updateDivision,
+} from "@/redux/slice/divisionsSlice";
 import { formatDateTime, CUSTOM_MESSAGES } from "@/utils/contants";
-import { headerTablePositions } from "@/utils/headerTable";
-import { Award, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { headerTableDivision } from "@/utils/headerTable";
+import { FolderTree, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import PositionModel from "@/pages/Organization/Positions/Action/PositionModel";
+import DivisionModel from "@/pages/Organizations/Divisions/actions/DivisionModel";
 
-const positionColumns = Object.entries(headerTablePositions);
+const divisionColumns = Object.entries(headerTableDivision);
 
-function Positions() {
+function Divisions() {
   const [openModal, setOpenModal] = useState(false);
   const [query, setQuery] = useState("");
-  const [selectedPosition, setSelectedPosition] = useState(null);
+  const [selectedDivision, setSelectedDivision] = useState(null);
   const [action, setAction] = useState("create");
 
   const dispatchAsync = useAppDispatch();
   const dispatch = useDispatch();
-  const positions = useSelector(selectPositions);
+  const divisions = useSelector(selectDivisions);
   const loading = useSelector(selectLoading);
 
   useEffect(() => {
-    dispatchAsync(getPositions());
+    dispatchAsync(getDivisions());
   }, []);
 
   const filteredRows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return positions;
-    return positions.filter((position) => {
+    if (!q) return divisions;
+    return divisions.filter((division) => {
       const hay = [
-        position.POSITION_ID,
-        position.POSITION_CODE,
-        position.POSITION_NAME,
-        position.LEVEL,
-        position.STATUS,
+        division.DIVISION_ID,
+        division.DIVISION_CODE,
+        division.DIVISION_NAME,
+        division.STATUS,
       ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
       return hay.includes(q);
     });
-  }, [positions, query]);
+  }, [divisions, query]);
 
-  const totalPositions = positions.length;
-  const activePositions = positions.filter((p) => p.STATUS === "ENABLE").length;
+  const totalDivisions = divisions.length;
+  const activeDivisions = divisions.filter((d) => d.STATUS === "ENABLE").length;
 
-  const handleAction = (action, position = null) => {
-    switch (action) {
+  const handleAction = (act, division = null) => {
+    switch (act) {
       case "edit":
         setAction("edit");
-        setSelectedPosition(position);
+        setSelectedDivision(division);
         setOpenModal(true);
         break;
       case "create":
         setAction("create");
-        setSelectedPosition(null);
+        setSelectedDivision(null);
         setOpenModal(true);
         break;
       case "delete":
         setAction("delete");
-        setSelectedPosition(position);
+        setSelectedDivision(division);
         setOpenModal(true);
         break;
       default:
@@ -78,7 +77,7 @@ function Positions() {
 
   const handleCloseModal = () => {
     setOpenModal(false);
-    setSelectedPosition(null);
+    setSelectedDivision(null);
     setAction("create");
   };
 
@@ -86,7 +85,7 @@ function Positions() {
     if (action === "delete") {
       await dispatchWithToast({
         dispatch,
-        action: deletePosition,
+        action: deleteDivision,
         payload,
         messages: CUSTOM_MESSAGES.delete,
       });
@@ -97,7 +96,7 @@ function Positions() {
     if (action === "edit") {
       await dispatchWithToast({
         dispatch,
-        action: updatePosition,
+        action: updateDivision,
         payload,
         messages: CUSTOM_MESSAGES.update,
       });
@@ -107,7 +106,7 @@ function Positions() {
 
     await dispatchWithToast({
       dispatch,
-      action: createPosition,
+      action: createDivision,
       payload,
       messages: CUSTOM_MESSAGES.create,
     });
@@ -119,7 +118,7 @@ function Positions() {
       return (
         <tbody>
           <tr>
-            <td colSpan={positionColumns.length + 1}>
+            <td colSpan={divisionColumns.length + 1}>
               <LoadingItem />
             </td>
           </tr>
@@ -131,10 +130,10 @@ function Positions() {
       return (
         <tbody>
           <tr>
-            <td colSpan={positionColumns.length + 1}>
+            <td colSpan={divisionColumns.length + 1}>
               <div className="flex h-40 flex-col items-center justify-center gap-2 text-gray-400">
-                <Award className="h-10 w-10" />
-                <p className="text-sm font-medium">Không có dữ liệu chức vụ</p>
+                <FolderTree className="h-10 w-10" />
+                <p className="text-sm font-medium">Không có dữ liệu khối</p>
               </div>
             </td>
           </tr>
@@ -144,9 +143,9 @@ function Positions() {
 
     return (
       <tbody className="divide-y divide-gray-200 bg-white">
-        {filteredRows.map((position, rowIndex) => (
-          <tr key={position.POSITION_ID} className="hover:bg-gray-50">
-            {positionColumns.map(([key]) => {
+        {filteredRows.map((division, rowIndex) => (
+          <tr key={division.DIVISION_ID} className="hover:bg-gray-50">
+            {divisionColumns.map(([key]) => {
               const cellClass = "px-4 py-3 text-gray-700 whitespace-nowrap";
 
               if (key === "INDEX") {
@@ -165,12 +164,12 @@ function Positions() {
                   <td key={key} className="px-4 py-3 whitespace-nowrap">
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        position.STATUS === "ENABLE"
+                        division.STATUS === "ENABLE"
                           ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
                           : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
                       }`}
                     >
-                      {position.STATUS === "ENABLE"
+                      {division.STATUS === "ENABLE"
                         ? "Hoạt động"
                         : "Ngưng hoạt động"}
                     </span>
@@ -181,14 +180,14 @@ function Positions() {
               if (key === "CREATED_AT" || key === "UPDATED_AT") {
                 return (
                   <td key={key} className={cellClass}>
-                    {position[key] ? formatDateTime(position[key]) : "-"}
+                    {division[key] ? formatDateTime(division[key]) : "-"}
                   </td>
                 );
               }
 
               return (
                 <td key={key} className={cellClass}>
-                  {position[key] || "-"}
+                  {division[key] || "-"}
                 </td>
               );
             })}
@@ -196,19 +195,19 @@ function Positions() {
               <div className="flex items-center justify-end gap-1">
                 <button
                   type="button"
-                  onClick={() => handleAction("edit", position)}
+                  onClick={() => handleAction("edit", division)}
                   className="rounded-md p-2 text-indigo-600 transition hover:bg-indigo-50 cursor-pointer"
                   title="Chỉnh sửa"
-                  aria-label={`Chỉnh sửa ${position.POSITION_NAME}`}
+                  aria-label={`Chỉnh sửa ${division.DIVISION_NAME}`}
                 >
                   <Pencil className="h-4 w-4" />
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleAction("delete", position)}
+                  onClick={() => handleAction("delete", division)}
                   className="rounded-md p-2 text-rose-600 transition hover:bg-rose-50 cursor-pointer"
                   title="Xóa"
-                  aria-label={`Xóa ${position.POSITION_NAME}`}
+                  aria-label={`Xóa ${division.DIVISION_NAME}`}
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -224,11 +223,9 @@ function Positions() {
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900">
-            Quản lý chức vụ
-          </h2>
+          <h2 className="text-2xl font-semibold text-gray-900">Quản lý khối</h2>
           <p className="mt-1 text-sm text-gray-500">
-            Dữ liệu hiển thị tất cả chức vụ.
+            Dữ liệu hiển thị tất cả khối.
           </p>
         </div>
         <button
@@ -243,15 +240,15 @@ function Positions() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Tổng chức vụ</p>
+          <p className="text-sm font-medium text-slate-500">Tổng khối</p>
           <p className="mt-3 text-3xl font-semibold text-slate-900">
-            {totalPositions}
+            {totalDivisions}
           </p>
         </div>
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
           <p className="text-sm font-medium text-emerald-700">Đang hoạt động</p>
           <p className="mt-3 text-3xl font-semibold text-emerald-900">
-            {activePositions}
+            {activeDivisions}
           </p>
         </div>
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm sm:col-span-2 xl:col-span-1">
@@ -265,15 +262,13 @@ function Positions() {
       <div className="mt-6 rounded-lg border border-gray-200 bg-white shadow-sm">
         <div className="border-b border-gray-200 px-4 py-3 sm:px-6 flex items-center justify-between gap-4">
           <div>
-            <p className="text-lg font-medium text-gray-900">
-              Danh sách chức vụ
-            </p>
+            <p className="text-lg font-medium text-gray-900">Danh sách khối</p>
           </div>
           <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2">
             <Search className="h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Tìm theo mã, tên, cấp bậc..."
+              placeholder="Tìm theo mã, tên khối..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="w-64 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
@@ -284,7 +279,7 @@ function Positions() {
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
-                {positionColumns.map(([key, label]) => (
+                {divisionColumns.map(([key, label]) => (
                   <th
                     key={key}
                     className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap"
@@ -302,15 +297,15 @@ function Positions() {
         </div>
       </div>
 
-      <PositionModel
+      <DivisionModel
         open={openModal}
         onClose={handleCloseModal}
         onSubmit={handleSubmit}
         mode={action}
-        initialValues={selectedPosition}
+        initialValues={selectedDivision}
       />
     </div>
   );
 }
 
-export default Positions;
+export default Divisions;

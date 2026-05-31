@@ -99,7 +99,7 @@ const TreeNode = ({
   )
 }
 
-const OrgUnit = () => {
+const Organization = () => {
   const [treeData, setTreeData] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedNode, setSelectedNode] = useState(null)
@@ -498,4 +498,4 @@ const OrgUnit = () => {
   )
 }
 
-export default OrgUnit
+export default Organization

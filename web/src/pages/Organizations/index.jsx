@@ -1,8 +1,8 @@
 import { Outlet } from "react-router-dom"
 
-const Organization = () => {
+const Organizations = () => {
     return (
         <Outlet />
     )
 }
-export default Organization
+export default Organizations

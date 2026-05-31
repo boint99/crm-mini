@@ -4,20 +4,20 @@ import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 import Loading from "@/components/ui/Loading";
 
-const Dashboard = lazy(() => import("@/pages/Dashboard"));
-const Employees = lazy(() => import("@/pages/Organization/Employees"));
-const Organization = lazy(() => import("@/pages/Organization"));
-const Companies = lazy(() => import("@/pages/Organization/Companies"));
-const Divisions = lazy(() => import("@/pages/Organization/Divisions"));
-const Positions = lazy(() => import("@/pages/Organization/Positions"));
-const Branches = lazy(() => import("@/pages/Organization/Branches"));
-const OrgUnit = lazy(() => import("@/pages/Organization/OrgUnit"));
-const Networks = lazy(() => import("@/pages/Networks"));
-const Accounts = lazy(() => import("@/pages/Accounts"));
-const Viettel = lazy(() => import("@/pages/Viettel"));
+const Dashboard = lazy(() => import("@/pages/dashboard"));
+const Employees = lazy(() => import("@/pages/Organizations/Employees"));
+const Organizations = lazy(() => import("@/pages/Organizations"));
+const Organization = lazy(() => import("@/pages/Organizations/Organization"));
+const Companies = lazy(() => import("@/pages/Organizations/Companies"));
+const Divisions = lazy(() => import("@/pages/Organizations/Divisions"));
+const Positions = lazy(() => import("@/pages/Organizations/Positions"));
+const Branches = lazy(() => import("@/pages/Organizations/Branches"));
+const Networks = lazy(() => import("@/pages/networks"));
+const Accounts = lazy(() => import("@/pages/accounts"));
+const Viettel = lazy(() => import("@/pages/viettel"));
 
-const Login = lazy(() => import("@/pages/Auth/Login"));
-const Register = lazy(() => import("@/pages/Auth/Register"));
+const Login = lazy(() => import("@/pages/auth/login"));
+const Register = lazy(() => import("@/pages/auth/register"));
 
 // Wrapper dùng chung
 const WithSpinner = ({ children }) => (
@@ -38,10 +38,10 @@ const routes = [
         ),
       },
       {
-        path: "organization",
+        path: "organizations",
         element: (
           <WithSpinner>
-            <Organization />
+            <Organizations />
           </WithSpinner>
         ),
         children: [
@@ -86,10 +86,10 @@ const routes = [
             ),
           },
           {
-            path: "org-units",
+            path: "organization",
             element: (
               <WithSpinner>
-                <OrgUnit />
+                <Organization />
               </WithSpinner>
             ),
           },
