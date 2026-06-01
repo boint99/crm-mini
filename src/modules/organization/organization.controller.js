@@ -5,7 +5,7 @@ import Serializer from '../../utils/Serializer.js'
 class OrganizationController {
   async lists(req, res, next) {
     try {
-      const result = await organizationService.lists()
+      const result = await organizationService.lists(req.query)
 
       const sanitizedResult = await Serializer.sanitize(result, ['orgUnitId', 'deletedAt'])
       new SuccessResponse({

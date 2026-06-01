@@ -95,8 +95,38 @@ class OrganizationService {
     return updateData
   }
 
-  async lists() {
-    return await organizationModel.lists()
+  async lists(option) {
+    const { branchid, companyid } = option || {}
+    let query = {}
+
+    if (companyid) {
+      const findCompany = await companyModel.findByUnique(companyid, 'id')
+      if (!findCompany || findCompany.deletedAt) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'Company not found!')
+      }
+      if (findCompany.status !== 'ENABLE') {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Company is not ENABLE!')
+      }
+      if (findCompany.id !== companyid) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Company is not match!')
+      }
+      query.companyId = findCompany.companyId || null
+    }
+    if (branchid) {
+      const findBranch = await branchesModel.findByUnique(branchid, 'id')
+      if (!findBranch || findBranch.deletedAt) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'Branch not found!')
+      }
+      if (findBranch.status !== 'ENABLE') {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Branch is not ENABLE!')
+      }
+      if (findBranch.id !== branchid) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Branch is not match!')
+      }
+      query.branchId = findBranch.branchId || null
+    }
+
+    return await organizationModel.listsTest(query)
   }
 
   async create(data) {

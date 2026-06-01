@@ -115,12 +115,12 @@ function Companies() {
               <tbody className="divide-y divide-gray-200 bg-white">
                 {companiesItems?.map((company, rowIndex) => {
                   return (
-                    <tr key={company.COMPANY_ID} className="hover:bg-gray-50">
+                    <tr key={company.id} className="hover:bg-gray-50">
                       {companyColumns.map(([key]) => {
                         const cellClass =
                           "px-4 py-2 text-gray-700 whitespace-nowrap";
 
-                        if (key === "INDEX") {
+                        if (key === "index") {
                           return (
                             <td
                               key={key}
@@ -131,7 +131,7 @@ function Companies() {
                           );
                         }
 
-                        if (key === "STATUS") {
+                        if (key === "status") {
                           return (
                             <td
                               key={key}
@@ -139,19 +139,19 @@ function Companies() {
                             >
                               <span
                                 className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                                  company.STATUS === "ENABLE"
+                                  company.status === "ENABLE"
                                     ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
                                     : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
                                 }`}
                               >
-                                {company.STATUS === "ENABLE"
+                                {company.status === "ENABLE"
                                   ? "Hoạt động"
                                   : "Ngừng hoạt động"}
                               </span>
                             </td>
                           );
                         }
-                        if (key === "CREATED_AT" || key === "UPDATED_AT") {
+                        if (key === "createdAt" || key === "updatedAt") {
                           return (
                             <td key={key} className={cellClass}>
                               {formatDateTime(company[key])}

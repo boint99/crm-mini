@@ -105,7 +105,7 @@ const positionsSlice = createSlice({
       // UPDATE
       .addCase(updatePosition.fulfilled, (state, action) => {
         const index = state.items.findIndex(
-          (item) => item.POSITION_ID === action.payload.POSITION_ID
+          (item) => item.id === action.payload.id
         );
         if (index !== -1) {
           state.items[index] = {
@@ -123,7 +123,7 @@ const positionsSlice = createSlice({
       // DELETE
       .addCase(deletePosition.fulfilled, (state, action) => {
           state.items = state.items.filter(
-          (item) => Number(item.POSITION_ID) !== Number(action.payload)
+          (item) => Number(item.id) !== Number(action.payload)
         );
         state.message = CUSTOM_MESSAGES.delete.success;
       })

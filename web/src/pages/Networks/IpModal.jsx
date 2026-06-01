@@ -28,17 +28,17 @@ export default function IpModal({
     if (isOpen) {
       if (mode === "edit" && data) {
         reset({
-          HOST: data.HOST,
-          DEVICE_TYPE: data.DEVICE_TYPE || "",
-          EMPLOYEE_CODE: data.EMPLOYEE?.EMPLOYEE_CODE || "",
-          STATUS: data.STATUS || "ACTIVE",
+          host: data.host,
+          deviceType: data.deviceType || "",
+          employeeCode: data.employee?.employeeCode || "",
+          status: data.status || "ACTIVE",
         });
       } else if (mode === "create") {
         reset({
-          HOST: "",
-          DEVICE_TYPE: "",
-          EMPLOYEE_CODE: "",
-          STATUS: "ACTIVE",
+          host: "",
+          deviceType: "",
+          employeeCode: "",
+          status: "ACTIVE",
         });
       }
     }
@@ -46,16 +46,16 @@ export default function IpModal({
 
   const handleFormSubmit = (formData) => {
     if (mode === "delete") {
-      onSubmit(data.IP_ID);
+      onSubmit(data.id);
       return;
     }
     const payload = {
       ...formData,
-      VLAN_ID: vlanId,
-      EMPLOYEE_CODE: formData.EMPLOYEE_CODE?.trim() || null,
+      vlanId: vlanId,
+      employeeCode: formData.employeeCode?.trim() || null,
     };
     if (mode === "edit") {
-      payload.IP_ID = data.IP_ID;
+      payload.id = data.id;
     }
     onSubmit(payload);
   };
@@ -134,11 +134,11 @@ export default function IpModal({
               type="text"
               placeholder="VD: 192.168.10.5"
               className={inputClass}
-              {...register("HOST", { required: "Required" })}
+              {...register("host", { required: "Required" })}
             />
-            {errors.HOST && (
+            {errors.host && (
               <p className="mt-1 text-xs text-rose-500">
-                {errors.HOST.message}
+                {errors.host.message}
               </p>
             )}
           </div>
@@ -149,7 +149,7 @@ export default function IpModal({
               type="text"
               placeholder="Eg: Desktop, Laptop, Printer..."
               className={inputClass}
-              {...register("DEVICE_TYPE")}
+              {...register("deviceType")}
             />
           </div>
 
@@ -159,12 +159,12 @@ export default function IpModal({
               type="text"
               placeholder="Eg: EMP001"
               className={inputClass}
-              {...register("EMPLOYEE_CODE")}
+              {...register("employeeCode")}
             />
           </div>
           <div>
             <label className={labelClass}>Status</label>
-            <select className={inputClass} {...register("STATUS")}>
+            <select className={inputClass} {...register("status")}>
               {STATUS_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}

@@ -5,7 +5,6 @@ import {
   Network,
   BriefcaseBusiness,
   KeyRound,
-  Building,
   MessageCircle,
   Folder,
   CheckSquare,
@@ -68,13 +67,6 @@ items: [
     label: "Positions",
     icon: BriefcaseBusiness,
     path: "/organizations/positions",
-  },
-
-  {
-    id: "divisions",
-    label: "Divisions",
-    icon: GitBranch,
-    path: "/organizations/divisions",
   },
 
   {

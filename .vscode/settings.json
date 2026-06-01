@@ -27,5 +27,8 @@
       "username": "postgres",
       "password": ""
     }
-  ]
+  ],
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+  }
 }

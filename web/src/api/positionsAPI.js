@@ -1,56 +1,24 @@
 import { ROOT_DOMAIN } from '@/utils/contants'
 import axios from 'axios'
 
-// Map backend to frontend Position keys
-export const mapPositionToFE = (pos) => {
-  if (!pos) return null
-  return {
-    POSITION_ID: pos.id, // map UUID to POSITION_ID
-    POSITION_NAME: pos.positionName,
-    LEVEL: pos.level,
-    STATUS: pos.status,
-    CREATED_AT: pos.createdAt,
-    UPDATED_AT: pos.updatedAt
-  }
-}
 
 export const positionsAPI = {
   // GET list
   getLists: async () => {
     const res = await axios.get(`${ROOT_DOMAIN}/positions`)
-    return {
-      ...res.data,
-      data: (res.data.data || []).map(mapPositionToFE)
-    }
+    return res.data
   },
 
   // CREATE
   create: async (payload) => {
-    const bePayload = {
-      positionName: payload.POSITION_NAME,
-      level: payload.LEVEL,
-      status: payload.STATUS
-    }
-    const res = await axios.post(`${ROOT_DOMAIN}/positions/create`, bePayload)
-    return {
-      ...res.data,
-      data: mapPositionToFE(res.data.data)
-    }
+    const res = await axios.post(`${ROOT_DOMAIN}/positions/create`, payload)
+    return res.data
   },
 
   // UPDATE
   update: async (payload) => {
-    const bePayload = {
-      id: payload.POSITION_ID,
-      positionName: payload.POSITION_NAME,
-      level: payload.LEVEL,
-      status: payload.STATUS
-    }
-    const res = await axios.put(`${ROOT_DOMAIN}/positions/update`, bePayload)
-    return {
-      ...res.data,
-      data: mapPositionToFE(res.data.data)
-    }
+    const res = await axios.put(`${ROOT_DOMAIN}/positions/update`, payload)
+    return res.data
   },
 
   // DELETE

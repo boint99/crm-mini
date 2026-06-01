@@ -90,7 +90,7 @@ const vlansSlice = createSlice({
       })
       .addCase(updateVlan.fulfilled, (state, action) => {
         const idx = state.items.findIndex(
-          (v) => v.VLAN_ID === action.payload.VLAN_ID
+          (v) => v.id === action.payload.id
         );
         if (idx !== -1) state.items[idx] = { ...state.items[idx], ...action.payload };
       })
@@ -98,7 +98,7 @@ const vlansSlice = createSlice({
         state.error = action.payload;
       })
       .addCase(deleteVlan.fulfilled, (state, action) => {
-        state.items = state.items.filter((v) => v.VLAN_ID !== action.payload);
+        state.items = state.items.filter((v) => v.id !== action.payload);
       })
       .addCase(deleteVlan.rejected, (state, action) => {
         state.error = action.payload;

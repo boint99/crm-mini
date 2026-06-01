@@ -1,264 +1,215 @@
+import { customStyles } from "@/utils/contants";
 import { X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import Modal from "react-modal";
 
-const emptyViettel = {
-  VIETTEL_ID: null,
-  VIETTEL_CODE: "",
-  VIETTEL_EMAIL: "",
-  EMPLOYEE_ID: "",
-  STATUS: "ENABLE",
-};
-
-const normalizeViettel = (item) => {
-  if (!item) return emptyViettel;
-
-  return {
-    VIETTEL_ID: item.VIETTEL_ID ?? null,
-    VIETTEL_CODE: item.VIETTEL_CODE ?? "",
-    VIETTEL_EMAIL: item.VIETTEL_EMAIL ?? "",
-    EMPLOYEE_ID: item.EMPLOYEE_ID ?? "",
-    STATUS: item.STATUS ?? "ENABLE",
-  };
-};
-
-function Field({ label, children }) {
-  return (
-    <label className="block">
-      <span className="block text-sm font-medium text-gray-900">{label}</span>
-      <span className="mt-1 block">{children}</span>
-    </label>
-  );
-}
-
-function ViettelModel({
+export default function ViettelModel({
   open,
+  isOpen = open,
   onClose,
   onSubmit,
   mode = "create",
-  initialValues = null,
+  initialValues,
+  data = initialValues,
 }) {
-  const [values, setValues] = useState(emptyViettel);
-  const [touched, setTouched] = useState({});
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm();
+
   const isEdit = mode === "edit";
-  const isDelete = mode === "delete";
 
   useEffect(() => {
-    if (!open) return;
-
-    setValues(normalizeViettel(initialValues));
-    setTouched({});
-  }, [initialValues, open]);
-
-  const errors = useMemo(() => {
-    if (isDelete) return {};
-
-    const next = {};
-    if (!values.VIETTEL_CODE.trim())
-      next.VIETTEL_CODE = "Vui lòng nhập mã Viettel";
-    if (values.VIETTEL_CODE.trim() && values.VIETTEL_CODE.trim().length !== 6) {
-      next.VIETTEL_CODE = "Mã Viettel phải đúng 6 ký tự";
+    if (isOpen) {
+      if (mode === "edit" && data) {
+        reset({
+          VIETTEL_CODE: data.VIETTEL_CODE || "",
+          VIETTEL_EMAIL: data.VIETTEL_EMAIL || "",
+          EMPLOYEE_ID: data.EMPLOYEE_ID || "",
+          STATUS: data.STATUS || "ENABLE",
+        });
+      } else if (mode === "create") {
+        reset({
+          VIETTEL_CODE: "",
+          VIETTEL_EMAIL: "",
+          EMPLOYEE_ID: "",
+          STATUS: "ENABLE",
+        });
+      }
     }
-    if (!values.STATUS) next.STATUS = "Vui lòng chọn trạng thái";
-    if (values.VIETTEL_EMAIL && !/^\S+@\S+\.\S+$/.test(values.VIETTEL_EMAIL))
-      next.VIETTEL_EMAIL = "Email không hợp lệ";
-    return next;
-  }, [isDelete, values]);
+  }, [isOpen, mode, data, reset]);
 
-  const canSubmit = Object.keys(errors).length === 0;
-
-  if (!open) return null;
-
-  const setField = (key) => (e) => {
-    const val = e?.target?.value;
-    setValues((prev) => ({ ...prev, [key]: val }));
-  };
-
-  const markTouched = (key) => () =>
-    setTouched((prev) => ({ ...prev, [key]: true }));
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (isDelete) {
-      onSubmit?.(Number(values.VIETTEL_ID));
+  const handleFormSubmit = (formData) => {
+    if (mode === "delete") {
+      onSubmit?.(Number(data?.VIETTEL_ID));
       return;
     }
 
-    setTouched({
-      VIETTEL_CODE: true,
-      VIETTEL_EMAIL: true,
-      STATUS: true,
-    });
-    if (!canSubmit) return;
-
     const payload = {
-      ...(isEdit && values.VIETTEL_ID
-        ? { VIETTEL_ID: Number(values.VIETTEL_ID) }
-        : {}),
-      VIETTEL_CODE: values.VIETTEL_CODE.trim(),
-      VIETTEL_EMAIL: values.VIETTEL_EMAIL?.trim() || null,
-      EMPLOYEE_ID: values.EMPLOYEE_ID ? Number(values.EMPLOYEE_ID) : null,
-      STATUS: values.STATUS,
+      VIETTEL_CODE: formData.VIETTEL_CODE.trim(),
+      VIETTEL_EMAIL: formData.VIETTEL_EMAIL?.trim() || null,
+      EMPLOYEE_ID: formData.EMPLOYEE_ID ? Number(formData.EMPLOYEE_ID) : null,
+      STATUS: formData.STATUS,
     };
+
+    if (isEdit && data?.VIETTEL_ID) {
+      payload.VIETTEL_ID = Number(data.VIETTEL_ID);
+    }
 
     onSubmit?.(payload);
   };
 
-  return (
-    <div className="fixed inset-0 z-50">
-      <div
-        className="absolute inset-0 bg-gray-900/40"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+  if (mode === "delete") {
+    return (
+      <Modal
+        isOpen={isOpen}
+        onRequestClose={onClose}
+        style={customStyles}
+        ariaHideApp={false}
+      >
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Xác nhận xóa nhân viên Viettel
+            </h3>
+            <button
+              onClick={onClose}
+              className="p-1 rounded-md hover:bg-gray-100 cursor-pointer"
+            >
+              <X className="h-5 w-5 text-gray-400" />
+            </button>
+          </div>
+          <p className="text-sm text-gray-600 mb-6">
+            Bạn có chắc muốn xóa nhân viên Viettel với mã{" "}
+            <span className="font-semibold">{data?.VIETTEL_CODE}</span>? Thao tác này
+            không thể hoàn tác.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
+            >
+              Hủy
+            </button>
+            <button
+              onClick={() => handleFormSubmit()}
+              className="px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-lg hover:bg-rose-700 cursor-pointer"
+            >
+              Xóa
+            </button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
 
-      <div className="absolute inset-0 flex items-center justify-center p-4">
-        <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl border border-gray-200">
-          <div className="flex items-start justify-between gap-4 border-b border-gray-200 px-5 py-4">
+  const inputClass =
+    "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed";
+  const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={onClose}
+      style={customStyles}
+      ariaHideApp={false}
+    >
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-lg font-semibold text-gray-900">
+            {isEdit ? "Chỉnh sửa nhân viên Viettel" : "Thêm nhân viên Viettel mới"}
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-md hover:bg-gray-100 cursor-pointer"
+          >
+            <X className="h-5 w-5 text-gray-400" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                {isDelete
-                  ? "Xóa nhân viên Viettel"
-                  : isEdit
-                    ? "Cập nhật nhân viên Viettel"
-                    : "Thêm nhân viên Viettel"}
-              </h2>
-              <p className="mt-1 text-sm text-gray-600">
-                {isDelete ? (
-                  "Bạn có chắc muốn xóa nhân viên Viettel này không?"
-                ) : (
-                  <>
-                    Nhập thông tin theo dữ liệu được cung cấp. Các trường có dấu
-                    * là bắt buộc.
-                  </>
-                )}
-              </p>
+              <label className={labelClass}>Mã Viettel (VIETTEL_CODE) *</label>
+              <input
+                type="text"
+                placeholder="VD: VT0001"
+                disabled={isEdit}
+                className={inputClass}
+                {...register("VIETTEL_CODE", {
+                  required: "Bắt buộc",
+                  validate: (v) =>
+                    v.trim().length === 6 || "Mã Viettel phải đúng 6 ký tự",
+                })}
+              />
+              {errors.VIETTEL_CODE && (
+                <p className="mt-1 text-xs text-rose-500">
+                  {errors.VIETTEL_CODE.message}
+                </p>
+              )}
             </div>
+
+            <div>
+              <label className={labelClass}>Trạng thái (STATUS) *</label>
+              <select className={inputClass} {...register("STATUS")}>
+                <option value="ENABLE">ENABLE (Hoạt động)</option>
+                <option value="DISABLED">DISABLED</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className={labelClass}>Email Viettel (VIETTEL_EMAIL)</label>
+            <input
+              type="text"
+              placeholder="VD: user@viettel.com.vn"
+              className={inputClass}
+              {...register("VIETTEL_EMAIL", {
+                pattern: {
+                  value: /^\S+@\S+\.\S+$/,
+                  message: "Email không hợp lệ",
+                },
+              })}
+            />
+            {errors.VIETTEL_EMAIL && (
+              <p className="mt-1 text-xs text-rose-500">
+                {errors.VIETTEL_EMAIL.message}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className={labelClass}>Mã nhân viên (EMPLOYEE_ID)</label>
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="VD: 1"
+              className={inputClass}
+              {...register("EMPLOYEE_ID")}
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md p-2 text-gray-500 hover:bg-gray-50 hover:text-gray-700 cursor-pointer"
-              aria-label="Đóng"
-              title="Đóng"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
             >
-              <X className="h-4 w-4" />
+              Hủy
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+            >
+              {isEdit ? "Cập nhật" : "Tạo mới"}
             </button>
           </div>
-
-          <form onSubmit={handleSubmit} className="px-5 py-4">
-            {isDelete ? (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
-                <p className="font-semibold">Thông tin sẽ bị xóa:</p>
-                <div className="mt-3 space-y-2">
-                  <p>
-                    <span className="font-medium">Mã Viettel:</span>{" "}
-                    {values.VIETTEL_CODE || "-"}
-                  </p>
-                  <p>
-                    <span className="font-medium">Email:</span>{" "}
-                    {values.VIETTEL_EMAIL || "-"}
-                  </p>
-                  <p>
-                    <span className="font-medium">Trạng thái:</span>{" "}
-                    {values.STATUS || "-"}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Mã Viettel (VIETTEL_CODE) *">
-                  <input
-                    value={values.VIETTEL_CODE}
-                    onChange={setField("VIETTEL_CODE")}
-                    onBlur={markTouched("VIETTEL_CODE")}
-                    disabled={isEdit}
-                    className={[
-                      "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none text-gray-900",
-                      isEdit
-                        ? "bg-gray-50 text-gray-500 cursor-not-allowed"
-                        : "focus:border-blue-500 focus:ring-2 focus:ring-blue-100",
-                    ].join(" ")}
-                    placeholder="VD: VT0001"
-                  />
-                  {touched.VIETTEL_CODE && errors.VIETTEL_CODE ? (
-                    <p className="mt-1 text-xs text-rose-600">
-                      {errors.VIETTEL_CODE}
-                    </p>
-                  ) : null}
-                </Field>
-
-                <Field label="Trạng thái (STATUS) *">
-                  <select
-                    value={values.STATUS}
-                    onChange={setField("STATUS")}
-                    onBlur={markTouched("STATUS")}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
-                  >
-                    <option value="ENABLE">ENABLE (Hoạt động)</option>
-                    <option value="DISABLED">DISABLED</option>
-                  </select>
-                  {touched.STATUS && errors.STATUS ? (
-                    <p className="mt-1 text-xs text-rose-600">
-                      {errors.STATUS}
-                    </p>
-                  ) : null}
-                </Field>
-
-                <Field label="Email Viettel (VIETTEL_EMAIL)">
-                  <input
-                    value={values.VIETTEL_EMAIL}
-                    onChange={setField("VIETTEL_EMAIL")}
-                    onBlur={markTouched("VIETTEL_EMAIL")}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
-                    placeholder="VD: user@viettel.com.vn"
-                  />
-                  {touched.VIETTEL_EMAIL && errors.VIETTEL_EMAIL ? (
-                    <p className="mt-1 text-xs text-rose-600">
-                      {errors.VIETTEL_EMAIL}
-                    </p>
-                  ) : null}
-                </Field>
-
-                <Field label="Mã nhân viên (EMPLOYEE_ID)">
-                  <input
-                    inputMode="numeric"
-                    value={values.EMPLOYEE_ID}
-                    onChange={setField("EMPLOYEE_ID")}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
-                    placeholder="VD: 1"
-                  />
-                </Field>
-              </div>
-            )}
-
-            <div className="mt-6 flex items-center justify-end gap-2 border-t border-gray-200 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50 cursor-pointer"
-              >
-                Hủy
-              </button>
-              <button
-                type="submit"
-                disabled={!isDelete && !canSubmit}
-                className={[
-                  "inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm",
-                  isDelete
-                    ? "bg-rose-600 hover:bg-rose-700"
-                    : canSubmit
-                      ? "bg-primary hover:opacity-95 cursor-pointer"
-                      : "bg-gray-300 cursor-not-allowed",
-                ].join(" ")}
-              >
-                {isDelete ? "Xác nhận xóa" : isEdit ? "Cập nhật" : "Lưu"}
-              </button>
-            </div>
-          </form>
-        </div>
+        </form>
       </div>
-    </div>
+    </Modal>
   );
 }
-
-export default ViettelModel;

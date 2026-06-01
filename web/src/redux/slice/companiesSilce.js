@@ -87,7 +87,7 @@ const companiesSlice = createSlice({
       // UPDATE
       .addCase(updateCompany.fulfilled, (state, action) => {
         const index = state.items.findIndex(
-          (item) => item.COMPANY_ID === action.payload.COMPANY_ID
+          (item) => item.id === action.payload.id
         );
         if (index !== -1) {
           state.items[index] = action.payload;
@@ -97,7 +97,7 @@ const companiesSlice = createSlice({
       // DELETE
       .addCase(deleteCompany.fulfilled, (state, action) => {
           state.items = state.items.filter(
-          (item) => Number(item.COMPANY_ID) !== Number(action.payload)
+          (item) => Number(item.id) !== Number(action.payload)
         );
       });
   },

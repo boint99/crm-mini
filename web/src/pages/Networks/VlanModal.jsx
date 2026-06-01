@@ -21,19 +21,19 @@ export default function VlanModal({ isOpen, onClose, onSubmit, mode, data }) {
     if (isOpen) {
       if (mode === "edit" && data) {
         reset({
-          VLAN_CODE: data.VLAN_CODE,
-          VLAN_NAME: data.VLAN_NAME,
-          NETWORK: data.NETWORK,
-          DEFAULT_GATEWAY: data.DEFAULT_GATEWAY,
-          STATUS: data.STATUS || "ACTIVE",
+          vlanId: data.vlanId,
+          vlanName: data.vlanName,
+          network: data.network,
+          defaultGateway: data.defaultGateway,
+          status: data.status || "ACTIVE",
         });
       } else if (mode === "create") {
         reset({
-          VLAN_CODE: "",
-          VLAN_NAME: "",
-          NETWORK: "",
-          DEFAULT_GATEWAY: "",
-          STATUS: "ACTIVE",
+          vlanId: "",
+          vlanName: "",
+          network: "",
+          defaultGateway: "",
+          status: "ACTIVE",
         });
       }
     }
@@ -41,17 +41,17 @@ export default function VlanModal({ isOpen, onClose, onSubmit, mode, data }) {
 
   const handleFormSubmit = (formData) => {
     if (mode === "delete") {
-      onSubmit(data.VLAN_ID);
+      onSubmit(data.id);
       return;
     }
     const payload =
       mode === "edit"
         ? {
             ...formData,
-            VLAN_ID: data.VLAN_ID,
-            VLAN_CODE: Number(formData.VLAN_CODE),
+            id: data.id,
+            vlanId: Number(formData.vlanId),
           }
-        : { ...formData, VLAN_CODE: Number(formData.VLAN_CODE) };
+        : { ...formData, vlanId: Number(formData.vlanId) };
     onSubmit(payload);
   };
 
@@ -77,8 +77,8 @@ export default function VlanModal({ isOpen, onClose, onSubmit, mode, data }) {
           </div>
           <p className="text-sm text-gray-600 mb-6">
             Bạn có chắc muốn xóa{" "}
-            <span className="font-semibold">VLAN {data?.VLAN_CODE}</span> —{" "}
-            <span className="font-medium">{data?.VLAN_NAME}</span>? Thao tác này
+            <span className="font-semibold">VLAN {data?.vlanId}</span> —{" "}
+            <span className="font-medium">{data?.vlanName}</span>? Thao tác này
             không thể hoàn tác.
           </p>
           <div className="flex justify-end gap-3">
@@ -132,11 +132,11 @@ export default function VlanModal({ isOpen, onClose, onSubmit, mode, data }) {
                 type="number"
                 placeholder="VD: 10"
                 className={inputClass}
-                {...register("VLAN_ID", { required: "Bắt buộc" })}
+                {...register("vlanId", { required: "Bắt buộc" })}
               />
-              {errors.VLAN_ID && (
+              {errors.vlanId && (
                 <p className="mt-1 text-xs text-rose-500">
-                  {errors.VLAN_ID.message}
+                  {errors.vlanId.message}
                 </p>
               )}
             </div>
@@ -146,11 +146,11 @@ export default function VlanModal({ isOpen, onClose, onSubmit, mode, data }) {
                 type="text"
                 placeholder="VD: MANAGEMENT"
                 className={inputClass}
-                {...register("VLAN_NAME", { required: "Băt Buộc" })}
+                {...register("vlanName", { required: "Bắt buộc" })}
               />
-              {errors.VLAN_NAME && (
+              {errors.vlanName && (
                 <p className="mt-1 text-xs text-rose-500">
-                  {errors.VLAN_NAME.message}
+                  {errors.vlanName.message}
                 </p>
               )}
             </div>
@@ -162,11 +162,11 @@ export default function VlanModal({ isOpen, onClose, onSubmit, mode, data }) {
               type="text"
               placeholder="VD: 192.168.10.0/24"
               className={inputClass}
-              {...register("NETWORK", { required: "Bắt buộc" })}
+              {...register("network", { required: "Bắt buộc" })}
             />
-            {errors.NETWORK && (
+            {errors.network && (
               <p className="mt-1 text-xs text-rose-500">
-                {errors.NETWORK.message}
+                {errors.network.message}
               </p>
             )}
           </div>
@@ -177,18 +177,18 @@ export default function VlanModal({ isOpen, onClose, onSubmit, mode, data }) {
               type="text"
               placeholder="VD: 192.168.10.1"
               className={inputClass}
-              {...register("DEFAULT_GATEWAY", { required: "Bắt buộc" })}
+              {...register("defaultGateway", { required: "Bắt buộc" })}
             />
-            {errors.DEFAULT_GATEWAY && (
+            {errors.defaultGateway && (
               <p className="mt-1 text-xs text-rose-500">
-                {errors.DEFAULT_GATEWAY.message}
+                {errors.defaultGateway.message}
               </p>
             )}
           </div>
 
           <div>
             <label className={labelClass}>Trạng thái</label>
-            <select className={inputClass} {...register("STATUS")}>
+            <select className={inputClass} {...register("status")}>
               {STATUS_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}

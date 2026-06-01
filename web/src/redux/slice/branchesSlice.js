@@ -105,7 +105,7 @@ const branchesSlice = createSlice({
       // UPDATE
       .addCase(updateBranch.fulfilled, (state, action) => {
         const index = state.items.findIndex(
-          (item) => item.BRANCH_ID === action.payload.BRANCH_ID
+          (item) => item.id === action.payload.id
         );
         if (index !== -1) {
           state.items[index] = {
@@ -123,7 +123,7 @@ const branchesSlice = createSlice({
       // DELETE
       .addCase(deleteBranch.fulfilled, (state, action) => {
           state.items = state.items.filter(
-          (item) => Number(item.BRANCH_ID) !== Number(action.payload)
+          (item) => Number(item.id) !== Number(action.payload)
         );
         state.message = CUSTOM_MESSAGES.delete.success;
       })

@@ -131,9 +131,9 @@ export default function Networks() {
     initializedRef.current = true;
     const idFromUrl = searchParams.get("vlanid");
     if (idFromUrl) {
-      const match = vlans.find((v) => String(v.VLAN_ID) === idFromUrl);
+      const match = vlans.find((v) => String(v.id) === idFromUrl);
       if (match) {
-        setSelectedVlanId(match.VLAN_ID);
+        setSelectedVlanId(match.id);
         return; // sync effect handles fetch
       }
     }
@@ -158,7 +158,7 @@ export default function Networks() {
   }, [selectedVlanId]);
 
   const selectedVlan = useMemo(
-    () => vlans.find((v) => v.VLAN_ID === selectedVlanId),
+    () => vlans.find((v) => v.id === selectedVlanId),
     [vlans, selectedVlanId],
   );
 
@@ -166,18 +166,18 @@ export default function Networks() {
   const filteredIps = useMemo(() => {
     let list = [...ips];
     if (statusFilter !== "ALL") {
-      list = list.filter((ip) => ip.STATUS === statusFilter);
+      list = list.filter((ip) => ip.status === statusFilter);
     }
     if (query.trim()) {
       const q = query.trim().toLowerCase();
       list = list.filter((ip) => {
         const hay = [
-          ip.HOST,
-          ip.DEVICE_TYPE,
-          ip.EMPLOYEE?.EMPLOYEE_CODE,
-          ip.EMPLOYEE?.FIRST_NAME,
-          ip.EMPLOYEE?.LAST_NAME,
-          ip.STATUS,
+          ip.host,
+          ip.deviceType,
+          ip.employee?.employeeCode,
+          ip.employee?.firstName,
+          ip.employee?.lastName,
+          ip.status,
         ]
           .filter(Boolean)
           .join(" ")
@@ -217,8 +217,8 @@ export default function Networks() {
         payload,
         messages: CUSTOM_MESSAGES.delete,
       });
-      const remaining = vlans.filter((v) => v.VLAN_ID !== payload);
-      setSelectedVlanId(remaining.length > 0 ? remaining[0].VLAN_ID : null);
+      const remaining = vlans.filter((v) => v.id !== payload);
+      setSelectedVlanId(remaining.length > 0 ? remaining[0].id : null);
     } else if (vlanMode === "edit") {
       await dispatchWithToast({
         dispatch,
@@ -258,7 +258,6 @@ export default function Networks() {
   };
 
   const handleIpSubmit = async (payload) => {
-    console.log("🚀 ~ handleIpSubmit ~ payload:", payload)
     if (ipMode === "delete") {
       await dispatchWithToast({
         dispatch,
@@ -285,6 +284,8 @@ export default function Networks() {
     setSelectedIpData(null);
     if (selectedVlanId) {
       dispatchAsync(getIps({ vlanid: selectedVlanId }));
+    } else {
+      dispatchAsync(getIps({}));
     }
   };
 
@@ -308,14 +309,14 @@ export default function Networks() {
     };
 
     const rows = filteredIps.map((ip) => [
-      escapeCSV(ip.HOST),
-      escapeCSV(ip.DEVICE_TYPE),
-      escapeCSV(ip.EMPLOYEE?.EMPLOYEE_CODE),
+      escapeCSV(ip.host),
+      escapeCSV(ip.deviceType),
+      escapeCSV(ip.employee?.employeeCode),
       escapeCSV(
-        `${ip.EMPLOYEE?.FIRST_NAME || ""} ${ip.EMPLOYEE?.LAST_NAME || ""}`.trim(),
+        `${ip.employee?.firstName || ""} ${ip.employee?.lastName || ""}`.trim(),
       ),
-      escapeCSV(ip.TYPE),
-      escapeCSV(ip.STATUS),
+      escapeCSV(ip.type),
+      escapeCSV(ip.status),
     ]);
 
     const csvContent = [headers, ...rows]
@@ -375,12 +376,12 @@ export default function Networks() {
               {selectedVlan ? (
                 <>
                   <h2 className="text-lg font-bold text-gray-900">
-                    VLAN {selectedVlan.VLAN_CODE}
+                    VLAN {selectedVlan.vlanId}
                   </h2>
                   <span className="text-sm text-gray-500">
-                    {selectedVlan.VLAN_NAME}
+                    {selectedVlan.vlanName}
                   </span>
-                  <StatusBadge status={selectedVlan.STATUS} />
+                  <StatusBadge status={selectedVlan.status} />
                 </>
               ) : (
                 <h2 className="text-lg font-bold text-gray-900">All VLANs</h2>
@@ -395,7 +396,7 @@ export default function Networks() {
                 >
                   <Network className="h-3.5 w-3.5" />
                   {selectedVlan
-                    ? `VLAN ${selectedVlan.VLAN_CODE}`
+                    ? `VLAN ${selectedVlan.vlanId}`
                     : "All VLANs"}
                   <ChevronDown
                     className={`h-3.5 w-3.5 transition-transform ${vlanDropdownOpen ? "rotate-180" : ""}`}
@@ -441,35 +442,35 @@ export default function Networks() {
                       </button>
                       {vlans.map((vlan) => (
                         <button
-                          key={vlan.VLAN_ID}
+                          key={vlan.id}
                           onClick={() => {
-                            setSelectedVlanId(vlan.VLAN_ID);
+                            setSelectedVlanId(vlan.id);
                             setVlanDropdownOpen(false);
                           }}
                           className={`w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-50 cursor-pointer transition-colors ${
-                            vlan.VLAN_ID === selectedVlanId ? "bg-blue-50" : ""
+                            vlan.id === selectedVlanId ? "bg-blue-50" : ""
                           }`}
                         >
                           <div
                             className={`h-4 w-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
-                              vlan.VLAN_ID === selectedVlanId
+                              vlan.id === selectedVlanId
                                 ? "border-primary"
                                 : "border-gray-300"
                             }`}
                           >
-                            {vlan.VLAN_ID === selectedVlanId && (
+                            {vlan.id === selectedVlanId && (
                               <div className="h-2 w-2 rounded-full bg-primary" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-gray-900">
-                              VLAN {vlan.VLAN_CODE}
+                              VLAN {vlan.vlanId}
                               <span className="ml-1.5 text-[11px] font-normal text-gray-400">
-                                {vlan.VLAN_NAME}
+                                {vlan.vlanName}
                               </span>
                             </p>
                             <p className="text-[11px] text-gray-400">
-                              {vlan.NETWORK || "—"}
+                              {vlan.network || "—"}
                             </p>
                           </div>
                         </button>
@@ -506,17 +507,17 @@ export default function Networks() {
             </div>
           </div>
           {selectedVlan &&
-            (selectedVlan.NETWORK ||
-              selectedVlan.DEFAULT_GATEWAY ||
-              selectedVlan.SUBNET_MASK ||
-              selectedVlan.IP_RANGE) && (
+            (selectedVlan.network ||
+              selectedVlan.defaultGateway ||
+              selectedVlan.subnetMask ||
+              selectedVlan.ipRange) && (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="rounded-lg bg-gray-50 p-3">
                   <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
                     Network
                   </p>
                   <p className="mt-1 text-sm font-semibold text-gray-800">
-                    {selectedVlan.NETWORK || "—"}
+                    {selectedVlan.network || "—"}
                   </p>
                 </div>
                 <div className="rounded-lg bg-gray-50 p-3">
@@ -524,7 +525,7 @@ export default function Networks() {
                     Gateway
                   </p>
                   <p className="mt-1 text-sm font-semibold text-gray-800">
-                    {selectedVlan.DEFAULT_GATEWAY || "—"}
+                    {selectedVlan.defaultGateway || "—"}
                   </p>
                 </div>
                 <div className="rounded-lg bg-gray-50 p-3">
@@ -532,7 +533,7 @@ export default function Networks() {
                     Subnet Mask
                   </p>
                   <p className="mt-1 text-sm font-semibold text-gray-800">
-                    /{selectedVlan.SUBNET_MASK || "—"}
+                    /{selectedVlan.subnetMask || "—"}
                   </p>
                 </div>
                 <div className="rounded-lg bg-gray-50 p-3">
@@ -540,7 +541,7 @@ export default function Networks() {
                     IP Range
                   </p>
                   <p className="mt-1 text-sm font-semibold text-gray-800">
-                    {selectedVlan.IP_RANGE || "—"}
+                    {selectedVlan.ipRange || "—"}
                   </p>
                 </div>
               </div>
@@ -555,9 +556,7 @@ export default function Networks() {
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-6 py-4">
             <div className="flex items-center gap-3">
               <h2 className="text-lg font-bold text-gray-900">
-                {selectedVlan
-                  ? `Danh sách IP trong VLAN ${selectedVlan.VLAN_CODE}`
-                  : "Danh sách IP trong tất cả các VLAN"}
+                Danh sách IP address
               </h2>
             </div>
             <div className="flex items-center gap-3">
@@ -631,21 +630,23 @@ export default function Networks() {
                   <th className="px-6 py-3 text-left text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-right text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
-                    Actions
-                  </th>
+                  {selectedVlanId && (
+                    <th className="px-6 py-3 text-right text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
+                      Actions
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
                 {ipsLoading ? (
                   <tr>
-                    <td colSpan={7}>
+                    <td colSpan={selectedVlanId ? 8 : 7}>
                       <LoadingItem />
                     </td>
                   </tr>
                 ) : filteredIps.length === 0 ? (
                   <tr>
-                    <td colSpan={7}>
+                    <td colSpan={selectedVlanId ? 8 : 7}>
                       <div className="flex flex-col items-center justify-center py-12 text-gray-400">
                         <Network className="h-8 w-8 mb-2" />
                         <p className="text-sm">
@@ -656,57 +657,59 @@ export default function Networks() {
                   </tr>
                 ) : (
                   filteredIps.map((ip) => (
-                    <tr key={ip.IP_ID} className="hover:bg-gray-50">
+                    <tr key={ip.id} className="hover:bg-gray-50">
                       <td className="px-6 py-3 whitespace-nowrap">
                         <span className="font-semibold text-primary">
-                          {ip.HOST}
+                          {ip.host}
                         </span>
                       </td>
                       <td className="px-6 py-3 whitespace-nowrap">
                         <span className="font-semibold text-primary">
-                          {ip.VLAN_ID}
+                          {ip.vlanId}
                         </span>
                       </td>
                       <td className="px-6 py-3 whitespace-nowrap text-gray-700">
-                        {ip.DEVICE_TYPE || "—"}
+                        {ip.deviceType || "—"}
                       </td>
                       <td className="px-6 py-3 whitespace-nowrap">
-                        {ip.EMPLOYEE?.EMPLOYEE_CODE ? (
+                        {ip.employee?.employeeCode ? (
                           <span className="inline-flex items-center rounded px-2 py-0.5 text-[11px] font-mono font-semibold bg-gray-100 text-gray-700">
-                            {ip.EMPLOYEE.EMPLOYEE_CODE}
+                            {ip.employee.employeeCode}
                           </span>
                         ) : (
                           <span className="text-gray-400">—</span>
                         )}
                       </td>
                       <td className="px-6 py-3 whitespace-nowrap text-gray-500">
-                        {ip.EMPLOYEE?.FIRST_NAME || "—"}{" "}
-                        {ip.EMPLOYEE?.LAST_NAME || ""}
+                        {ip.employee?.firstName || "—"}{" "}
+                        {ip.employee?.lastName || ""}
                       </td>
                       <td className="px-6 py-3 whitespace-nowrap">
-                        <DeviceTypeBadge type={ip.DEVICE_TYPE} />
+                        <DeviceTypeBadge type={ip.deviceType} />
                       </td>
                       <td className="px-6 py-3 whitespace-nowrap">
-                        <StatusBadge status={ip.STATUS} />
+                        <StatusBadge status={ip.status} />
                       </td>
-                      <td className="px-6 py-3 whitespace-nowrap text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => openEditIp(ip)}
-                            className="rounded-md p-2 text-indigo-600 hover:bg-indigo-50 cursor-pointer"
-                            title="Edit"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => openDeleteIp(ip)}
-                            className="rounded-md p-2 text-rose-600 hover:bg-rose-50 cursor-pointer"
-                            title="Delete"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
+                      {selectedVlanId && (
+                        <td className="px-6 py-3 whitespace-nowrap text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => openEditIp(ip)}
+                              className="rounded-md p-2 text-indigo-600 hover:bg-indigo-50 cursor-pointer"
+                              title="Edit"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => openDeleteIp(ip)}
+                              className="rounded-md p-2 text-rose-600 hover:bg-rose-50 cursor-pointer"
+                              title="Delete"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))
                 )}

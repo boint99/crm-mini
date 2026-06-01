@@ -38,11 +38,11 @@ function Positions() {
     if (!q) return positions;
     return positions.filter((position) => {
       const hay = [
-        position.POSITION_ID,
-        position.POSITION_CODE,
-        position.POSITION_NAME,
-        position.LEVEL,
-        position.STATUS,
+        position.id,
+        position.positionCode,
+        position.positionName,
+        position.level,
+        position.status,
       ]
         .filter(Boolean)
         .join(" ")
@@ -52,7 +52,7 @@ function Positions() {
   }, [positions, query]);
 
   const totalPositions = positions.length;
-  const activePositions = positions.filter((p) => p.STATUS === "ENABLE").length;
+  const activePositions = positions.filter((p) => p.status === "ENABLE").length;
 
   const handleAction = (action, position = null) => {
     switch (action) {
@@ -145,11 +145,11 @@ function Positions() {
     return (
       <tbody className="divide-y divide-gray-200 bg-white">
         {filteredRows.map((position, rowIndex) => (
-          <tr key={position.POSITION_ID} className="hover:bg-gray-50">
+          <tr key={position.id} className="hover:bg-gray-50">
             {positionColumns.map(([key]) => {
               const cellClass = "px-4 py-3 text-gray-700 whitespace-nowrap";
 
-              if (key === "INDEX") {
+              if (key === "index") {
                 return (
                   <td
                     key={key}
@@ -165,12 +165,12 @@ function Positions() {
                   <td key={key} className="px-4 py-3 whitespace-nowrap">
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        position.STATUS === "ENABLE"
+                        position.status === "ENABLE"
                           ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
                           : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
                       }`}
                     >
-                      {position.STATUS === "ENABLE"
+                      {position.status === "ENABLE"
                         ? "Hoạt động"
                         : "Ngưng hoạt động"}
                     </span>
@@ -178,7 +178,7 @@ function Positions() {
                 );
               }
 
-              if (key === "CREATED_AT" || key === "UPDATED_AT") {
+              if (key === "createdAt" || key === "updatedAt") {
                 return (
                   <td key={key} className={cellClass}>
                     {position[key] ? formatDateTime(position[key]) : "-"}
@@ -199,7 +199,7 @@ function Positions() {
                   onClick={() => handleAction("edit", position)}
                   className="rounded-md p-2 text-indigo-600 transition hover:bg-indigo-50 cursor-pointer"
                   title="Chỉnh sửa"
-                  aria-label={`Chỉnh sửa ${position.POSITION_NAME}`}
+                  aria-label={`Chỉnh sửa ${position.positionName}`}
                 >
                   <Pencil className="h-4 w-4" />
                 </button>
@@ -208,7 +208,7 @@ function Positions() {
                   onClick={() => handleAction("delete", position)}
                   className="rounded-md p-2 text-rose-600 transition hover:bg-rose-50 cursor-pointer"
                   title="Xóa"
-                  aria-label={`Xóa ${position.POSITION_NAME}`}
+                  aria-label={`Xóa ${position.positionName}`}
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>

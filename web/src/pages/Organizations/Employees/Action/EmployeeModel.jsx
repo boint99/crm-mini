@@ -1,367 +1,314 @@
+import { customStyles } from "@/utils/contants";
 import { X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import Modal from "react-modal";
 
-const emptyEmployee = {
-  EMPLOYEE_ID: null,
-  EMPLOYEE_CODE: "",
-  FIRST_NAME: "",
-  LAST_NAME: "",
-  PHONE: "",
-  EMAIL: "",
-  BIRTH_DATE: "",
-  ORG_UNIT_ID: "",
-  VIETTEL_CODE: "",
-  POSITION_ID: "",
-  STATUS: "ENABLE",
+const modalStyles = {
+  ...customStyles,
+  content: {
+    ...customStyles.content,
+    maxWidth: "672px",
+  },
 };
 
-const normalizeEmployee = (employee) => {
-  if (!employee) return emptyEmployee;
-
-  return {
-    EMPLOYEE_ID: employee.EMPLOYEE_ID ?? null,
-    EMPLOYEE_CODE: employee.EMPLOYEE_CODE ?? "",
-    FIRST_NAME: employee.FIRST_NAME ?? "",
-    LAST_NAME: employee.LAST_NAME ?? "",
-    PHONE: employee.PHONE ?? "",
-    EMAIL: employee.EMAIL ?? "",
-    BIRTH_DATE: employee.BIRTH_DATE
-      ? String(employee.BIRTH_DATE).slice(0, 10)
-      : "",
-    ORG_UNIT_ID: employee.ORG_UNIT?.ORG_UNIT_ID ?? employee.UNIT_ID ?? "",
-    VIETTEL_CODE: employee.VIETTEL?.VIETTEL_CODE ?? "",
-    POSITION_ID: employee.POSITION?.POSITION_ID ?? employee.POSITION_ID ?? "",
-    STATUS: employee.STATUS ?? "ENABLE",
-  };
-};
-
-function Field({ label, children }) {
-  return (
-    <label className="block">
-      <span className="block text-sm font-medium text-gray-900">{label}</span>
-      <span className="mt-1 block">{children}</span>
-    </label>
-  );
-}
-
-function EmployeeModel({
+export default function EmployeeModel({
   open,
+  isOpen = open,
   onClose,
   onSubmit,
   mode = "create",
-  initialValues = null,
+  initialValues,
+  data = initialValues,
 }) {
-  const [values, setValues] = useState(emptyEmployee);
-  const [touched, setTouched] = useState({});
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm();
+
   const isEdit = mode === "edit";
-  const isDelete = mode === "delete";
 
   useEffect(() => {
-    if (!open) return;
-
-    setValues(normalizeEmployee(initialValues));
-    setTouched({});
-  }, [initialValues, open]);
-
-  const errors = useMemo(() => {
-    if (isDelete) return {};
-
-    const next = {};
-    if (!values.EMPLOYEE_CODE.trim())
-      next.EMPLOYEE_CODE = "Vui lòng nhập mã nhân viên";
-    if (
-      values.EMPLOYEE_CODE.trim() &&
-      values.EMPLOYEE_CODE.trim().length !== 6
-    ) {
-      next.EMPLOYEE_CODE = "Mã nhân viên phải đúng 6 ký tự";
+    if (isOpen) {
+      if (mode === "edit" && data) {
+        reset({
+          employeeCode: data.employeeCode || "",
+          firstName: data.firstName || "",
+          lastName: data.lastName || "",
+          phone: data.phone || "",
+          email: data.email || "",
+          birthDate: data.birthDate ? String(data.birthDate).slice(0, 10) : "",
+          unitId: data.unitId || "",
+          viettelCode: data.viettelCode || "",
+          positionId: data.positionId || "",
+          status: data.status || "ENABLE",
+        });
+      } else if (mode === "create") {
+        reset({
+          employeeCode: "",
+          firstName: "",
+          lastName: "",
+          phone: "",
+          email: "",
+          birthDate: "",
+          unitId: "",
+          viettelCode: "",
+          positionId: "",
+          status: "ENABLE",
+        });
+      }
     }
-    if (!values.FIRST_NAME.trim()) next.FIRST_NAME = "Vui lòng nhập họ";
-    if (!values.LAST_NAME.trim()) next.LAST_NAME = "Vui lòng nhập tên";
-    if (!values.STATUS) next.STATUS = "Vui lòng chọn trạng thái";
-    if (values.EMAIL && !/^\S+@\S+\.\S+$/.test(values.EMAIL))
-      next.EMAIL = "Email không hợp lệ";
-    return next;
-  }, [isDelete, values]);
+  }, [isOpen, mode, data, reset]);
 
-  const canSubmit = Object.keys(errors).length === 0;
-
-  if (!open) return null;
-
-  const setField = (key) => (e) => {
-    const val = e?.target?.value;
-    setValues((prev) => ({ ...prev, [key]: val }));
-  };
-
-  const markTouched = (key) => () =>
-    setTouched((prev) => ({ ...prev, [key]: true }));
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (isDelete) {
-      onSubmit?.(Number(values.EMPLOYEE_ID));
+  const handleFormSubmit = (formData) => {
+    if (mode === "delete") {
+      onSubmit?.(data?.id || data?.employeeId);
       return;
     }
 
-    setTouched({
-      EMPLOYEE_CODE: true,
-      FIRST_NAME: true,
-      LAST_NAME: true,
-      EMAIL: true,
-      STATUS: true,
-    });
-    if (!canSubmit) return;
-
     const payload = {
-      ...(isEdit && values.EMPLOYEE_ID
-        ? { EMPLOYEE_ID: Number(values.EMPLOYEE_ID) }
-        : {}),
-      FIRST_NAME: values.FIRST_NAME.trim(),
-      LAST_NAME: values.LAST_NAME.trim(),
-      ORG_UNIT_ID: values.ORG_UNIT_ID ? Number(values.ORG_UNIT_ID) : null,
-      ...(values.VIETTEL_CODE?.trim()
-        ? { VIETTEL_CODE: values.VIETTEL_CODE.trim() }
-        : {}),
-      POSITION_ID: values.POSITION_ID ? Number(values.POSITION_ID) : null,
-      BIRTH_DATE: values.BIRTH_DATE || null,
-      STATUS: values.STATUS,
-      PHONE: values.PHONE?.trim() || null,
-      EMAIL: values.EMAIL?.trim() || null,
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
+      unitId: formData.unitId ? Number(formData.unitId) : null,
+      positionId: formData.positionId ? Number(formData.positionId) : null,
+      birthDate: formData.birthDate || null,
+      status: formData.status,
+      phone: formData.phone?.trim() || null,
+      email: formData.email?.trim() || null,
     };
 
-    if (!isEdit) {
-      payload.EMPLOYEE_CODE = values.EMPLOYEE_CODE.trim();
+    if (formData.viettelCode?.trim()) {
+      payload.viettelCode = formData.viettelCode.trim();
+    }
+
+    if (isEdit && data) {
+      if (data.id) payload.id = data.id;
+      if (data.employeeId) payload.employeeId = Number(data.employeeId);
+    } else {
+      payload.employeeCode = formData.employeeCode.trim();
     }
 
     onSubmit?.(payload);
   };
 
-  return (
-    <div className="fixed inset-0 z-50">
-      <div
-        className="absolute inset-0 bg-gray-900/40"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+  if (mode === "delete") {
+    return (
+      <Modal
+        isOpen={isOpen}
+        onRequestClose={onClose}
+        style={customStyles}
+        ariaHideApp={false}
+      >
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Xác nhận xóa nhân viên
+            </h3>
+            <button
+              onClick={onClose}
+              className="p-1 rounded-md hover:bg-gray-100 cursor-pointer"
+            >
+              <X className="h-5 w-5 text-gray-400" />
+            </button>
+          </div>
+          <p className="text-sm text-gray-600 mb-6">
+            Bạn có chắc muốn xóa nhân viên{" "}
+            <span className="font-semibold">
+              {[data?.firstName, data?.lastName].filter(Boolean).join(" ")}
+            </span>{" "}
+            ({data?.employeeCode})? Thao tác này không thể hoàn tác.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
+            >
+              Hủy
+            </button>
+            <button
+              onClick={() => handleFormSubmit()}
+              className="px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-lg hover:bg-rose-700 cursor-pointer"
+            >
+              Xóa
+            </button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
 
-      <div className="absolute inset-0 flex items-center justify-center p-4">
-        <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl border border-gray-200">
-          <div className="flex items-start justify-between gap-4 border-b border-gray-200 px-5 py-4">
+  const inputClass =
+    "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed";
+  const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={onClose}
+      style={modalStyles}
+      ariaHideApp={false}
+    >
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-lg font-semibold text-gray-900">
+            {isEdit ? "Chỉnh sửa nhân viên" : "Thêm nhân viên mới"}
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-md hover:bg-gray-100 cursor-pointer"
+          >
+            <X className="h-5 w-5 text-gray-400" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                {isDelete
-                  ? "Xóa nhân viên"
-                  : isEdit
-                    ? "Cập nhật nhân viên"
-                    : "Thêm nhân viên"}
-              </h2>
-              <p className="mt-1 text-sm text-gray-600">
-                {isDelete ? (
-                  "Bạn có chắc muốn xóa nhân viên này không?"
-                ) : (
-                  <>
-                    Nhập thông tin theo dữ liệu được cung cấp. Các trường có dấu
-                    * là bắt buộc.
-                  </>
-                )}
-              </p>
+              <label className={labelClass}>Mã nhân viên (MaNV) *</label>
+              <input
+                type="text"
+                placeholder="VD: EMP123"
+                disabled={isEdit}
+                className={inputClass}
+                {...register("employeeCode", {
+                  required: "Bắt buộc",
+                  validate: (v) =>
+                    v.trim().length === 6 || "Mã nhân viên phải đúng 6 ký tự",
+                })}
+              />
+              {errors.employeeCode && (
+                <p className="mt-1 text-xs text-rose-500">
+                  {errors.employeeCode.message}
+                </p>
+              )}
             </div>
+
+            <div>
+              <label className={labelClass}>Trạng thái (STATUS) *</label>
+              <select className={inputClass} {...register("status")}>
+                <option value="ENABLE">ENABLE (Hoạt động)</option>
+                <option value="DISABLED">DISABLED</option>
+              </select>
+            </div>
+
+            <div>
+              <label className={labelClass}>Họ (First Name) *</label>
+              <input
+                type="text"
+                placeholder="VD: Nguyễn"
+                className={inputClass}
+                {...register("firstName", { required: "Bắt buộc" })}
+              />
+              {errors.firstName && (
+                <p className="mt-1 text-xs text-rose-500">
+                  {errors.firstName.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className={labelClass}>Tên (Last Name) *</label>
+              <input
+                type="text"
+                placeholder="VD: Văn A"
+                className={inputClass}
+                {...register("lastName", { required: "Bắt buộc" })}
+              />
+              {errors.lastName && (
+                <p className="mt-1 text-xs text-rose-500">
+                  {errors.lastName.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className={labelClass}>Ngày sinh (Birth Date)</label>
+              <input type="date" className={inputClass} {...register("birthDate")} />
+            </div>
+
+            <div>
+              <label className={labelClass}>Số điện thoại (Phone)</label>
+              <input
+                type="text"
+                placeholder="VD: 0901234567"
+                className={inputClass}
+                {...register("phone")}
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>Email (Email)</label>
+              <input
+                type="text"
+                placeholder="VD: a.nguyen@company.com"
+                className={inputClass}
+                {...register("email", {
+                  pattern: {
+                    value: /^\S+@\S+\.\S+$/,
+                    message: "Email không hợp lệ",
+                  },
+                })}
+              />
+              {errors.email && (
+                <p className="mt-1 text-xs text-rose-500">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className={labelClass}>Đơn vị (Unit)</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="VD: 1"
+                className={inputClass}
+                {...register("unitId")}
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>Mã Viettel</label>
+              <input
+                type="text"
+                placeholder="VD: VT001"
+                className={inputClass}
+                {...register("viettelCode")}
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>Chức vụ (Position)</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="VD: 3"
+                className={inputClass}
+                {...register("positionId")}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md p-2 text-gray-500 hover:bg-gray-50 hover:text-gray-700 cursor-pointer"
-              aria-label="Đóng"
-              title="Đóng"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
             >
-              <X className="h-4 w-4" />
+              Hủy
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+            >
+              {isEdit ? "Cập nhật" : "Tạo nhân viên"}
             </button>
           </div>
-
-          <form onSubmit={handleSubmit} className="px-5 py-4">
-            {isDelete ? (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
-                <p className="font-semibold">Thông tin sẽ bị xóa:</p>
-                <div className="mt-3 space-y-2">
-                  <p>
-                    <span className="font-medium">Mã nhân viên:</span>{" "}
-                    {values.EMPLOYEE_CODE || "-"}
-                  </p>
-                  <p>
-                    <span className="font-medium">Họ tên:</span>{" "}
-                    {[values.FIRST_NAME, values.LAST_NAME]
-                      .filter(Boolean)
-                      .join(" ") || "-"}
-                  </p>
-                  <p>
-                    <span className="font-medium">Email:</span>{" "}
-                    {values.EMAIL || "-"}
-                  </p>
-                  <p>
-                    <span className="font-medium">Trạng thái:</span>{" "}
-                    {values.STATUS || "-"}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Mã nhân viên (MaNV) *">
-                  <input
-                    value={values.EMPLOYEE_CODE}
-                    onChange={setField("EMPLOYEE_CODE")}
-                    onBlur={markTouched("EMPLOYEE_CODE")}
-                    disabled={isEdit}
-                    className={[
-                      "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none text-gray-900",
-                      isEdit
-                        ? "bg-gray-50 text-gray-500 cursor-not-allowed"
-                        : "focus:border-blue-500 focus:ring-2 focus:ring-blue-100",
-                    ].join(" ")}
-                    placeholder="VD: EMP123"
-                  />
-                  {touched.EMPLOYEE_CODE && errors.EMPLOYEE_CODE ? (
-                    <p className="mt-1 text-xs text-rose-600">
-                      {errors.EMPLOYEE_CODE}
-                    </p>
-                  ) : null}
-                </Field>
-
-                <Field label="Trạng thái (STATUS) *">
-                  <select
-                    value={values.STATUS}
-                    onChange={setField("STATUS")}
-                    onBlur={markTouched("STATUS")}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
-                  >
-                    <option value="ENABLE">ENABLE (Hoạt động)</option>
-                    <option value="DISABLED">DISABLED</option>
-                  </select>
-                  {touched.STATUS && errors.STATUS ? (
-                    <p className="mt-1 text-xs text-rose-600">
-                      {errors.STATUS}
-                    </p>
-                  ) : null}
-                </Field>
-
-                <Field label="Họ (First Name) *">
-                  <input
-                    value={values.FIRST_NAME}
-                    onChange={setField("FIRST_NAME")}
-                    onBlur={markTouched("FIRST_NAME")}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
-                    placeholder="VD: Nguyễn"
-                  />
-                  {touched.FIRST_NAME && errors.FIRST_NAME ? (
-                    <p className="mt-1 text-xs text-rose-600">
-                      {errors.FIRST_NAME}
-                    </p>
-                  ) : null}
-                </Field>
-
-                <Field label="Tên (Last Name) *">
-                  <input
-                    value={values.LAST_NAME}
-                    onChange={setField("LAST_NAME")}
-                    onBlur={markTouched("LAST_NAME")}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
-                    placeholder="VD: Văn A"
-                  />
-                  {touched.LAST_NAME && errors.LAST_NAME ? (
-                    <p className="mt-1 text-xs text-rose-600">
-                      {errors.LAST_NAME}
-                    </p>
-                  ) : null}
-                </Field>
-
-                <Field label="Ngày sinh (Birth Date)">
-                  <input
-                    type="date"
-                    value={values.BIRTH_DATE}
-                    onChange={setField("BIRTH_DATE")}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
-                  />
-                </Field>
-
-                <Field label="Số điện thoại (Phone)">
-                  <input
-                    value={values.PHONE}
-                    onChange={setField("PHONE")}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
-                    placeholder="VD: 0901234567"
-                  />
-                </Field>
-
-                <Field label="Email (Email)">
-                  <input
-                    value={values.EMAIL}
-                    onChange={setField("EMAIL")}
-                    onBlur={markTouched("EMAIL")}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
-                    placeholder="VD: a.nguyen@company.com"
-                  />
-                  {touched.EMAIL && errors.EMAIL ? (
-                    <p className="mt-1 text-xs text-rose-600">{errors.EMAIL}</p>
-                  ) : null}
-                </Field>
-
-                <Field label="Đơn vị (Unit)">
-                  <input
-                    inputMode="numeric"
-                    value={values.ORG_UNIT_ID}
-                    onChange={setField("ORG_UNIT_ID")}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
-                    placeholder="VD: 1"
-                  />
-                </Field>
-
-                <Field label="Mã Viettel">
-                  <input
-                    value={values.VIETTEL_CODE}
-                    onChange={setField("VIETTEL_CODE")}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
-                    placeholder="VD: VT001"
-                  />
-                </Field>
-
-                <Field label="Chức vụ (Position)">
-                  <input
-                    inputMode="numeric"
-                    value={values.POSITION_ID}
-                    onChange={setField("POSITION_ID")}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900"
-                    placeholder="VD: 3"
-                  />
-                </Field>
-              </div>
-            )}
-
-            <div className="mt-6 flex items-center justify-end gap-2 border-t border-gray-200 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50 cursor-pointer"
-              >
-                Hủy
-              </button>
-              <button
-                type="submit"
-                disabled={!isDelete && !canSubmit}
-                className={[
-                  "inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm",
-                  isDelete
-                    ? "bg-rose-600 hover:bg-rose-700"
-                    : canSubmit
-                      ? "bg-primary hover:opacity-95 cursor-pointer"
-                      : "bg-gray-300 cursor-not-allowed",
-                ].join(" ")}
-              >
-                {isDelete ? "Xác nhận xóa" : isEdit ? "Cập nhật" : "Lưu"}
-              </button>
-            </div>
-          </form>
-        </div>
+        </form>
       </div>
-    </div>
+    </Modal>
   );
 }
-
-export default EmployeeModel;

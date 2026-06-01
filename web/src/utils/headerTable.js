@@ -1,82 +1,74 @@
 export const headerTableCompany = {
-  INDEX: 'STT',
-  COMPANY_NAME: 'Tên công ty',
-  STATUS: 'Trạng thái',
-  CREATED_AT: 'Ngày tạo',
-  UPDATED_AT: 'Ngày cập nhật'
-}
-
-export const headerTableDivision = {
-  INDEX: 'STT',
-  DIVISION_CODE: 'Mã khối',
-  DIVISION_NAME: 'Tên khối',
-  STATUS: 'Trạng thái',
-  CREATED_AT: 'Ngày tạo',
-  UPDATED_AT: 'Ngày cập nhật'
+  index: 'STT',
+  companyName: 'Tên công ty',
+  status: 'Trạng thái',
+  createdAt: 'Ngày tạo',
+  updatedAt: 'Ngày cập nhật'
 }
 
 export const headerTablePositions = {
-  INDEX: 'STT',
-  POSITION_NAME: 'Tên chức vụ',
-  LEVEL: 'Cấp bậc',
-  STATUS: 'Trạng thái',
-  CREATED_AT: 'Ngày tạo',
-  UPDATED_AT: 'Ngày cập nhật'
+  index: 'STT',
+  // positionCode: 'ID',
+  positionName: 'Tên chức vụ',
+  level: 'Cấp bậc',
+  status: 'Trạng thái',
+  createdAt: 'Ngày tạo',
+  updatedAt: 'Ngày cập nhật'
 }
 
 export const headerTableEmployees = {
-  INDEX: 'STT',
-  EMPLOYEE_CODE: 'Mã nhân viên',
-  NAME: 'Tên nhân viên',
-  EMAIL: 'Email',
-  BIRTHDAY: 'Ngày sinh',
-  UNIT: 'Phòng ban/Bộ Phận',
-  POSITION: 'Chức vụ',
-  VIETTEL: 'Mã Viettel',
-  STATUS: 'Trạng thái',
-  CREATED_AT: 'Ngày tạo',
-  UPDATED_AT: 'Ngày cập nhật'
+  index: 'STT',
+  employeeCode: 'Mã NV',
+  name: 'Tên nhân viên',
+  email: 'Email',
+  birthday: 'Ngày sinh',
+  unit: 'Phòng ban/Bộ Phận',
+  position: 'Chức vụ',
+  viettel: 'Mã Viettel',
+  status: 'Trạng thái',
+  createdAt: 'Ngày tạo',
+  updatedAt: 'Ngày cập nhật'
 }
 
 export const headerTableEmployeesViettel = {
-  INDEX: 'STT',
-  EMPLOYEE_CODE: 'NaNV',
-  VIETTEL_EMAIL: 'Email',
-  STATUS: 'Trạng thái',
-  CREATED_AT: 'Ngày tạo',
-  UPDATED_AT: 'Ngày cập nhật'
+  index: 'STT',
+  employeeCode: 'Mã NV',
+  viettelEmail: 'Email',
+  status: 'Trạng thái',
+  createdAt: 'Ngày tạo',
+  updatedAt: 'Ngày cập nhật'
 }
 
 export const headerTableOrgUnits = {
-  INDEX: 'STT',
-  UNIT_CODE: 'Mã đơn vị',
-  UNIT_NAME: 'Tên đơn vị',
-  UNIT_TYPE: 'Loại đơn vị',
-  DIVISION_ID: 'Phòng ban',
-  PARENT_UNIT: 'Đơn vị cha',
-  STATUS: 'Trạng thái',
-  CREATED_AT: 'Ngày tạo',
-  UPDATED_AT: 'Ngày cập nhật'
+  index: 'STT',
+  unitCode: 'Id',
+  unitName: 'Tên đơn vị',
+  unitType: 'Loại đơn vị',
+  divisionId: 'Phòng ban',
+  parentUnit: 'Đơn vị cha',
+  status: 'Trạng thái',
+  createdAt: 'Ngày tạo',
+  updatedAt: 'Ngày cập nhật'
 }
 
 export const headerTableBranch = {
-  INDEX: 'STT',
-  BRANCH_CODE: 'Mã chi nhánh',
-  BRANCH_NAME: 'Tên chi nhánh',
-  LOCATION: 'Địa điểm',
-  STATUS: 'Trạng thái',
-  CREATED_AT: 'Ngày tạo',
-  UPDATED_AT: 'Ngày cập nhật'
+  index: 'STT',
+  branchCode: 'ID',
+  branchName: 'Tên chi nhánh',
+  location: 'Địa điểm',
+  status: 'Trạng thái',
+  createdAt: 'Ngày tạo',
+  updatedAt: 'Ngày cập nhật'
 }
 
 export const headerTableAccounts = {
-  INDEX: 'STT',
-  ACCOUNT_NAME: 'Tài khoản',
-  EMPLOYEE: 'MaNV',
-  IS_LOGIN: 'Đang đăng nhập',
-  LOGIN: 'Số lần đăng nhập',
-  STATUS: 'Trạng thái',
-  DESCRIPTION: 'Mô tả',
-  CREATED_AT: 'Ngày tạo',
-  UPDATED_AT: 'Ngày cập nhật'
+  index: 'STT',
+  accountName: 'Tài khoản',
+  employee: 'Mã NV',
+  isLogin: 'Đang đăng nhập',
+  login: 'Số lần đăng nhập',
+  status: 'Trạng thái',
+  description: 'Mô tả',
+  createdAt: 'Ngày tạo',
+  updatedAt: 'Ngày cập nhật'
 }

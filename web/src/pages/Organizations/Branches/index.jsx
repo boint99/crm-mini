@@ -38,11 +38,11 @@ function Branches() {
     if (!q) return branches;
     return branches.filter((branch) => {
       const hay = [
-        branch.BRANCH_ID,
-        branch.BRANCH_NAME,
-        branch.BRANCH_CODE,
-        branch.LOCATION,
-        branch.STATUS,
+        branch.branchId,
+        branch.branchName,
+        branch.branchCode,
+        branch.location,
+        branch.status,
       ]
         .filter(Boolean)
         .join(" ")
@@ -53,7 +53,7 @@ function Branches() {
 
   const totalBranches = branches.length;
   const activeBranches = branches.filter(
-    (branch) => branch.STATUS === "ENABLE",
+    (branch) => branch.status === "ENABLE",
   ).length;
 
   const openCreateModal = () => {
@@ -145,11 +145,11 @@ function Branches() {
     return (
       <tbody className="divide-y divide-gray-200 bg-white">
         {filteredRows.map((branch, rowIndex) => (
-          <tr key={branch.BRANCH_ID} className="hover:bg-gray-50">
+          <tr key={branch.id} className="hover:bg-gray-50">
             {branchColumns.map(([key]) => {
               const cellClass = "px-4 py-3 text-gray-700 whitespace-nowrap";
 
-              if (key === "INDEX") {
+              if (key === "index") {
                 return (
                   <td
                     key={key}
@@ -160,17 +160,17 @@ function Branches() {
                 );
               }
 
-              if (key === "STATUS") {
+              if (key === "status") {
                 return (
                   <td key={key} className="px-4 py-3 whitespace-nowrap">
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        branch.STATUS === "ENABLE"
+                        branch.status === "ENABLE"
                           ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
                           : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
                       }`}
                     >
-                      {branch.STATUS === "ENABLE"
+                      {branch.status === "ENABLE"
                         ? "Hoạt động"
                         : "Ngưng hoạt động"}
                     </span>
@@ -178,7 +178,7 @@ function Branches() {
                 );
               }
 
-              if (key === "CREATED_AT" || key === "UPDATED_AT") {
+              if (key === "createdAt" || key === "updatedAt") {
                 return (
                   <td key={key} className={cellClass}>
                     {branch[key] ? formatDateTime(branch[key]) : "-"}
@@ -199,7 +199,7 @@ function Branches() {
                   onClick={() => openEditModal(branch)}
                   className="rounded-md p-2 text-indigo-600 transition hover:bg-indigo-50 cursor-pointer"
                   title="Chỉnh sửa"
-                  aria-label={`Chỉnh sửa ${branch.BRANCH_NAME}`}
+                  aria-label={`Chỉnh sửa ${branch.branchName}`}
                 >
                   <Pencil className="h-4 w-4" />
                 </button>
@@ -208,7 +208,7 @@ function Branches() {
                   onClick={() => openDeleteModal(branch)}
                   className="rounded-md p-2 text-rose-600 transition hover:bg-rose-50 cursor-pointer"
                   title="Xóa"
-                  aria-label={`Xóa ${branch.BRANCH_NAME}`}
+                  aria-label={`Xóa ${branch.branchName}`}
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>

@@ -1,250 +1,185 @@
+import { customStyles } from "@/utils/contants";
 import { X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import Modal from "react-modal";
 
-const emptyPosition = {
-  POSITION_ID: null,
-  POSITION_CODE: "",
-  POSITION_NAME: "",
-  LEVEL: "",
-  STATUS: "ENABLE",
-};
-
-const normalizePosition = (position) => {
-  if (!position) return emptyPosition;
-
-  return {
-    POSITION_ID: position.POSITION_ID ?? null,
-    POSITION_CODE: position.POSITION_CODE ?? "",
-    POSITION_NAME: position.POSITION_NAME ?? "",
-    LEVEL: position.LEVEL ?? "",
-    STATUS: position.STATUS ?? "ENABLE",
-  };
-};
-
-function Field({ label, children }) {
-  return (
-    <label className="block">
-      <span className="block text-sm font-medium text-gray-900">{label}</span>
-      <span className="mt-1 block">{children}</span>
-    </label>
-  );
-}
-
-function PositionModel({
+export default function PositionModel({
   open,
+  isOpen = open,
   onClose,
   onSubmit,
   mode = "create",
-  initialValues = null,
+  initialValues,
+  data = initialValues,
 }) {
-  const [values, setValues] = useState(emptyPosition);
-  const [touched, setTouched] = useState({});
-  const isEdit = mode === "edit";
-  const isDelete = mode === "delete";
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm();
 
   useEffect(() => {
-    if (!open) return;
+    if (isOpen) {
+      if (mode === "edit" && data) {
+        reset({
+          positionName: data.positionName || "",
+          level: data.level || "",
+          status: data.status || "ENABLE",
+        });
+      } else if (mode === "create") {
+        reset({
+          positionName: "",
+          level: "",
+          status: "ENABLE",
+        });
+      }
+    }
+  }, [isOpen, mode, data, reset]);
 
-    setValues(normalizePosition(initialValues));
-    setTouched({});
-  }, [initialValues, open]);
-
-  const errors = useMemo(() => {
-    if (isDelete) return {};
-
-    const next = {};
-    if (!values.POSITION_CODE.trim())
-      next.POSITION_CODE = "Vui lòng nhập mã chức vụ";
-    if (!values.POSITION_NAME.trim())
-      next.POSITION_NAME = "Vui lòng nhập tên chức vụ";
-    if (!values.LEVEL.trim()) next.LEVEL = "Vui lòng nhập cấp bậc";
-    if (!values.STATUS) next.STATUS = "Vui lòng chọn trạng thái";
-    return next;
-  }, [isDelete, values]);
-
-  const canSubmit = Object.keys(errors).length === 0;
-
-  if (!open) return null;
-
-  const setField = (key) => (e) => {
-    const val = e?.target?.value;
-    setValues((prev) => ({ ...prev, [key]: val }));
-  };
-
-  const markTouched = (key) => () =>
-    setTouched((prev) => ({ ...prev, [key]: true }));
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (isDelete) {
-      onSubmit?.(Number(values.POSITION_ID));
+  const handleFormSubmit = (formData) => {
+    if (mode === "delete") {
+      onSubmit?.(data?.id);
       return;
     }
-
-    setTouched({
-      POSITION_CODE: true,
-      POSITION_NAME: true,
-      LEVEL: true,
-      STATUS: true,
-    });
-    if (!canSubmit) return;
-
     const payload = {
-      ...(isEdit && values.POSITION_ID
-        ? { POSITION_ID: Number(values.POSITION_ID) }
-        : {}),
-      POSITION_NAME: values.POSITION_NAME.trim(),
-      LEVEL: values.LEVEL.trim(),
-      STATUS: values.STATUS,
+      ...formData,
+      positionName: formData.positionName.trim(),
+      level: formData.level.trim(),
+      status: formData.status,
     };
-
-    if (!isEdit) {
-      payload.POSITION_CODE = values.POSITION_CODE.trim();
+    if (mode === "edit" && data?.id) {
+      payload.id = data.id;
     }
-
     onSubmit?.(payload);
   };
 
-  return (
-    <div className="fixed inset-0 z-50">
-      <div
-        className="absolute inset-0 bg-gray-900/40"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+  if (mode === "delete") {
+    return (
+      <Modal
+        isOpen={isOpen}
+        onRequestClose={onClose}
+        style={customStyles}
+        ariaHideApp={false}
+      >
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Xác nhận xóa chức vụ
+            </h3>
+            <button
+              onClick={onClose}
+              className="p-1 rounded-md hover:bg-gray-100 cursor-pointer"
+            >
+              <X className="h-5 w-5 text-gray-400" />
+            </button>
+          </div>
+          <p className="text-sm text-gray-600 mb-6">
+            Bạn có chắc muốn xóa chức vụ{" "}
+            <span className="font-semibold">{data?.positionName}</span>? Thao tác này
+            không thể hoàn tác.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
+            >
+              Hủy
+            </button>
+            <button
+              onClick={() => handleFormSubmit()}
+              className="px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-lg hover:bg-rose-700 cursor-pointer"
+            >
+              Xóa
+            </button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
 
-      <div className="absolute inset-0 flex items-center justify-center p-4">
-        <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl border border-gray-200">
-          <div className="flex items-start justify-between gap-4 border-b border-gray-200 px-5 py-4">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                {isDelete
-                  ? "Xóa chức vụ"
-                  : isEdit
-                    ? "Cập nhật chức vụ"
-                    : "Thêm chức vụ"}
-              </h2>
-              <p className="mt-1 text-sm text-gray-600">
-                {isDelete ? (
-                  "Bạn có chắc muốn xóa chức vụ này không?"
-                ) : (
-                  <>
-                    Nhập thông tin theo dữ liệu được cung cấp. Các trường có dấu
-                    * là bắt buộc.
-                  </>
-                )}
+  const inputClass =
+    "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none";
+  const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={onClose}
+      style={customStyles}
+      ariaHideApp={false}
+    >
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-lg font-semibold text-gray-900">
+            {mode === "edit" ? "Chỉnh sửa chức vụ" : "Thêm chức vụ mới"}
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-md hover:bg-gray-100 cursor-pointer"
+          >
+            <X className="h-5 w-5 text-gray-400" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+          <div>
+            <label className={labelClass}>Tên chức vụ *</label>
+            <input
+              type="text"
+              placeholder="VD: Trưởng phòng"
+              className={inputClass}
+              {...register("positionName", { required: "Bắt buộc" })}
+            />
+            {errors.positionName && (
+              <p className="mt-1 text-xs text-rose-500">
+                {errors.positionName.message}
               </p>
-            </div>
+            )}
+          </div>
+
+          <div>
+            <label className={labelClass}>Cấp bậc *</label>
+            <input
+              type="text"
+              placeholder="VD: Senior"
+              className={inputClass}
+              {...register("level", { required: "Bắt buộc" })}
+            />
+            {errors.level && (
+              <p className="mt-1 text-xs text-rose-500">
+                {errors.level.message}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className={labelClass}>Trạng thái</label>
+            <select className={inputClass} {...register("status")}>
+              <option value="ENABLE">ENABLE (Hoạt động)</option>
+              <option value="DISABLED">DISABLED</option>
+            </select>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md p-2 text-gray-500 hover:bg-gray-50 hover:text-gray-700 cursor-pointer"
-              aria-label="Đóng"
-              title="Đóng"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
             >
-              <X className="h-4 w-4" />
+              Hủy
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+            >
+              {mode === "edit" ? "Cập nhật" : "Tạo chức vụ"}
             </button>
           </div>
-
-          <form onSubmit={handleSubmit} className="px-5 py-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Mã chức vụ *">
-                <input
-                  value={values.POSITION_CODE}
-                  onChange={setField("POSITION_CODE")}
-                  onBlur={markTouched("POSITION_CODE")}
-                  disabled={isEdit || isDelete}
-                  className={[
-                    "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none text-gray-900",
-                    isEdit || isDelete
-                      ? "disabled-input"
-                      : "focus:border-blue-500 focus:ring-2 focus:ring-blue-100",
-                  ].join(" ")}
-                  placeholder="VD: POS001"
-                />
-                {touched.POSITION_CODE && errors.POSITION_CODE ? (
-                  <p className="mt-1 text-xs text-rose-600">
-                    {errors.POSITION_CODE}
-                  </p>
-                ) : null}
-              </Field>
-
-              <Field label="Trạng thái *">
-                <select
-                  value={values.STATUS}
-                  onChange={setField("STATUS")}
-                  onBlur={markTouched("STATUS")}
-                  disabled={isEdit || isDelete}
-                  className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900 ${isEdit || isDelete ? "disabled-input" : ""}`}
-                >
-                  <option value="ENABLE">ENABLE (Hoạt động)</option>
-                  <option value="DISABLED">DISABLED</option>
-                </select>
-                {touched.STATUS && errors.STATUS ? (
-                  <p className="mt-1 text-xs text-rose-600">{errors.STATUS}</p>
-                ) : null}
-              </Field>
-
-              <Field label="Tên chức vụ *">
-                <input
-                  value={values.POSITION_NAME}
-                  onChange={setField("POSITION_NAME")}
-                  onBlur={markTouched("POSITION_NAME")}
-                  disabled={isEdit || isDelete}
-                  placeholder="VD: Trưởng phòng"
-                  className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900 ${isEdit || isDelete ? "disabled-input" : ""}`}
-                />
-                {touched.POSITION_NAME && errors.POSITION_NAME ? (
-                  <p className="mt-1 text-xs text-rose-600">
-                    {errors.POSITION_NAME}
-                  </p>
-                ) : null}
-              </Field>
-
-              <Field label="Cấp bậc *">
-                <input
-                  value={values.LEVEL}
-                  onChange={setField("LEVEL")}
-                  onBlur={markTouched("LEVEL")}
-                  disabled={isEdit || isDelete}
-                  placeholder="VD: Senior"
-                  className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-gray-900 ${isEdit || isDelete ? "disabled-input" : ""}`}
-                />
-                {touched.LEVEL && errors.LEVEL ? (
-                  <p className="mt-1 text-xs text-rose-600">{errors.LEVEL}</p>
-                ) : null}
-              </Field>
-            </div>
-
-            <div className="mt-6 flex items-center justify-end gap-2 border-t border-gray-200 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50 cursor-pointer"
-              >
-                Hủy
-              </button>
-              <button
-                type="submit"
-                disabled={!isDelete && !canSubmit}
-                className={[
-                  "inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm",
-                  isDelete
-                    ? "bg-rose-600 hover:bg-rose-700"
-                    : canSubmit
-                      ? "bg-primary hover:opacity-95 cursor-pointer"
-                      : "bg-gray-300 cursor-not-allowed",
-                ].join(" ")}
-              >
-                {isDelete ? "Xác nhận xóa" : isEdit ? "Cập nhật" : "Lưu"}
-              </button>
-            </div>
-          </form>
-        </div>
+        </form>
       </div>
-    </div>
+    </Modal>
   );
 }
-
-export default PositionModel;

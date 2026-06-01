@@ -39,17 +39,17 @@ function Employees() {
     if (!q) return employees;
     return employees.filter((employee) => {
       const hay = [
-        employee.EMPLOYEE_ID,
-        employee.EMPLOYEE_CODE,
-        employee.FIRST_NAME,
-        employee.LAST_NAME,
-        employee.EMAIL,
-        employee.PHONE,
-        employee.ORG_UNIT?.UNIT_NAME,
-        employee.ORG_UNIT?.PARENT_UNIT?.UNIT_NAME,
-        employee.POSITION?.POSITION_NAME,
-        employee.VIETTEL?.VIETTEL_CODE,
-        employee.STATUS,
+        employee.employeeId,
+        employee.employeeCode,
+        employee.firstName,
+        employee.lastName,
+        employee.email,
+        employee.phone,
+        employee.orgUnit?.unitName,
+        employee.orgUnit?.parentUnit?.unitName,
+        employee.position?.positionName,
+        employee.viettel?.viettelCode,
+        employee.status,
       ]
         .filter(Boolean)
         .join(" ")
@@ -60,7 +60,7 @@ function Employees() {
 
   const totalEmployees = employees.length;
   const activeEmployees = employees.filter(
-    (employee) => employee.STATUS === "ENABLE",
+    (employee) => employee.status === "ENABLE",
   ).length;
 
   const openCreateModal = () => {
@@ -152,111 +152,95 @@ function Employees() {
     return (
       <tbody className="divide-y divide-gray-200 bg-white">
         {filteredRows.map((employee, rowIndex) => (
-          <tr key={employee.EMPLOYEE_ID} className="hover:bg-gray-50">
+          <tr key={employee.id} className="hover:bg-gray-50">
             {employeeColumns.map(([key]) => {
               const cellClass = "px-4 py-3 text-gray-700 whitespace-nowrap";
-
-              if (key === "INDEX") {
+              if (key === "employeeCode") {
                 return (
                   <td
                     key={key}
                     className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap"
                   >
-                    {rowIndex + 1}
+                    {employee.employeeCode}
                   </td>
                 );
               }
 
-              if (key === "EMPLOYEE_CODE") {
-                return (
-                  <td
-                    key={key}
-                    className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap"
-                  >
-                    {employee.EMPLOYEE_CODE}
-                  </td>
-                );
-              }
-
-              if (key === "NAME") {
+              if (key === "name") {
                 return (
                   <td key={key} className={cellClass}>
-                    {employee.FIRST_NAME || "-"} {employee.LAST_NAME || ""}
+                    {employee.firstName || "-"} {employee.lastName || ""}
                   </td>
                 );
               }
 
-              if (key === "EMAIL") {
+              if (key === "email") {
                 return (
                   <td key={key} className={cellClass}>
-                    {employee.EMAIL || "-"}
+                    {employee.email || "-"}
                   </td>
                 );
               }
 
-              if (key === "BIRTHDAY") {
+              if (key === "birthday") {
                 return (
                   <td key={key} className={cellClass}>
-                    {employee.BIRTH_DATE
-                      ? formatDateTime(employee.BIRTH_DATE).split(" ")[0]
+                    {employee.birthDate
+                      ? formatDateTime(employee.birthDate).split(" ")[0]
                       : "-"}
                   </td>
                 );
               }
 
-              if (key === "UNIT") {
-                const parentName = employee.ORG_UNIT?.PARENT_UNIT?.UNIT_NAME;
-                const unitName = employee.ORG_UNIT?.UNIT_NAME;
+              if (key === "unit") {
+                const parentName = employee.unit?.parentUnit?.unitName;
+                const unitName = employee.unit?.unitName;
                 const hierarchy =
                   parentName && unitName
                     ? `${parentName} > ${unitName}`
                     : unitName;
                 return (
                   <td key={key} className={cellClass}>
-                    {hierarchy || employee.UNIT_ID || "-"}
+                    {/* {hierarchy || employee.orgUnit.unitName || "-"} */}
                   </td>
                 );
               }
 
-              if (key === "UNIT_PARENT") {
+              if (key === "parentUnit") {
                 return (
                   <td key={key} className={cellClass}>
-                    {employee.ORG_UNIT?.PARENT_UNIT?.UNIT_NAME || "-"}
+                    {employee.orgUnit?.parentUnit?.unitName || employee.orgUnit?.unitName || "-"}
                   </td>
                 );
               }
 
-              if (key === "POSITION") {
+              if (key === "position") {
                 return (
                   <td key={key} className={cellClass}>
-                    {employee.POSITION?.POSITION_NAME ||
-                      employee.POSITION_ID ||
-                      "-"}
+                    {employee.position?.positionName || "-"}
                   </td>
                 );
               }
 
-              if (key === "VIETTEL") {
+              if (key === "viettel") {
                 return (
                   <td key={key} className={cellClass}>
-                    {employee.VIETTEL?.VIETTEL_CODE ||
-                      employee.VIETTEL_ID ||
-                      "-"}
+                    {employee?.viettel?.viettelCode || "-"}
                   </td>
                 );
               }
 
-              if (key === "STATUS") {
+              if (key === "status") {
                 return (
                   <td key={key} className="px-4 py-3 whitespace-nowrap">
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        employee.STATUS === "ENABLE"
+                        employee.status === "ENABLE"
                           ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
                           : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
                       }`}
                     >
-                      {employee.STATUS === "ENABLE"
+                      {employee.status === "ENABLE"
                         ? "Hoạt động"
                         : "Ngưng hoạt động"}
                     </span>
@@ -264,7 +248,7 @@ function Employees() {
                 );
               }
 
-              if (key === "CREATED_AT" || key === "UPDATED_AT") {
+              if (key === "createdAt" || key === "updatedAt") {
                 return (
                   <td key={key} className={cellClass}>
                     {employee[key] ? formatDateTime(employee[key]) : "-"}
@@ -285,7 +269,7 @@ function Employees() {
                   onClick={() => openEditModal(employee)}
                   className="rounded-md p-2 text-indigo-600 transition hover:bg-indigo-50 cursor-pointer"
                   title="Chỉnh sửa"
-                  aria-label={`Chỉnh sửa ${employee.EMPLOYEE_CODE}`}
+                  aria-label={`Chỉnh sửa ${employee.employeeCode}`}
                 >
                   <Pencil className="h-4 w-4" />
                 </button>
@@ -294,7 +278,7 @@ function Employees() {
                   onClick={() => openDeleteModal(employee)}
                   className="rounded-md p-2 text-rose-600 transition hover:bg-rose-50 cursor-pointer"
                   title="Xóa"
-                  aria-label={`Xóa ${employee.EMPLOYEE_CODE}`}
+                  aria-label={`Xóa ${employee.employeeCode}`}
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
