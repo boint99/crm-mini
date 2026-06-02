@@ -1,5 +1,4 @@
 import { CreatedResponse, SuccessResponse } from '../../utils/SuccessResponse.js'
-import { employeesViettelModel } from './employees.viettel.model.js'
 import { employeesViettelServices } from './employees.viettel.service.js'
 
 
@@ -7,11 +6,11 @@ class EmployeesViettelController {
   // list
   async lists(req, res, next) {
     try {
-      const result = await employeesViettelModel.lists()
+      const result = await employeesViettelServices.Lists()
       new SuccessResponse({
         res: res,
         data: result,
-        message: 'Employees fetched successfully.'
+        message: 'OK'
       })
     } catch (error) { next(error) }
   }
@@ -22,7 +21,7 @@ class EmployeesViettelController {
       new CreatedResponse({
         res: res,
         data: result,
-        message: 'Employee created successfully.'
+        message: 'Ok'
       })
     } catch (error) { next(error) }
   }
@@ -34,7 +33,7 @@ class EmployeesViettelController {
       await employeesViettelServices.update(data)
       new SuccessResponse({
         res: res,
-        message: 'Employee updated successfully.'
+        message: 'Ok'
       })
     } catch (error) { next(error) }
   }
@@ -47,7 +46,7 @@ class EmployeesViettelController {
       await employeesViettelServices.delete(id)
       new SuccessResponse({
         res: res,
-        message: 'Employee deleted successfully.'
+        message: 'Ok'
       })
     } catch (error) { next(error) }
   }

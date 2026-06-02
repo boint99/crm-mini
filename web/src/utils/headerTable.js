@@ -17,12 +17,13 @@ export const headerTablePositions = {
 }
 
 export const headerTableEmployees = {
-  index: 'STT',
+  employeeId: 'STT',
   employeeCode: 'Mã NV',
   name: 'Tên nhân viên',
   email: 'Email',
   birthday: 'Ngày sinh',
-  unit: 'Phòng ban/Bộ Phận',
+  parentUnit: 'Đơn vị',
+  unit: 'Phòng ban',
   position: 'Chức vụ',
   viettel: 'Mã Viettel',
   status: 'Trạng thái',
@@ -31,9 +32,11 @@ export const headerTableEmployees = {
 }
 
 export const headerTableEmployeesViettel = {
-  index: 'STT',
-  employeeCode: 'Mã NV',
+  viettelId: 'STT',
+  viettelCode: 'Mã',
   viettelEmail: 'Email',
+  employeeCode: 'Mã NV ACT',
+  employeeName: 'Họ và Tên',
   status: 'Trạng thái',
   createdAt: 'Ngày tạo',
   updatedAt: 'Ngày cập nhật'

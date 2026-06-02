@@ -26,17 +26,17 @@ export default function ViettelModel({
     if (isOpen) {
       if (mode === "edit" && data) {
         reset({
-          VIETTEL_CODE: data.VIETTEL_CODE || "",
-          VIETTEL_EMAIL: data.VIETTEL_EMAIL || "",
-          EMPLOYEE_ID: data.EMPLOYEE_ID || "",
-          STATUS: data.STATUS || "ENABLE",
+          viettelCode: data.viettelCode || "",
+          viettelEmail: data.viettelEmail || "",
+          employeeCode: data.employee?.employeeCode || "",
+          status: data.status || "ENABLE",
         });
       } else if (mode === "create") {
         reset({
-          VIETTEL_CODE: "",
-          VIETTEL_EMAIL: "",
-          EMPLOYEE_ID: "",
-          STATUS: "ENABLE",
+          viettelCode: "",
+          viettelEmail: "",
+          employeeCode: "",
+          status: "ENABLE",
         });
       }
     }
@@ -44,19 +44,19 @@ export default function ViettelModel({
 
   const handleFormSubmit = (formData) => {
     if (mode === "delete") {
-      onSubmit?.(Number(data?.VIETTEL_ID));
+      onSubmit?.(data?.id);
       return;
     }
 
     const payload = {
-      VIETTEL_CODE: formData.VIETTEL_CODE.trim(),
-      VIETTEL_EMAIL: formData.VIETTEL_EMAIL?.trim() || null,
-      EMPLOYEE_ID: formData.EMPLOYEE_ID ? Number(formData.EMPLOYEE_ID) : null,
-      STATUS: formData.STATUS,
+      viettelCode: formData.viettelCode.trim(),
+      viettelEmail: formData.viettelEmail?.trim() || null,
+      employeeCode: formData.employeeCode?.trim() || null,
+      status: formData.status,
     };
 
-    if (isEdit && data?.VIETTEL_ID) {
-      payload.VIETTEL_ID = Number(data.VIETTEL_ID);
+    if (isEdit && data?.id) {
+      payload.id = data.id;
     }
 
     onSubmit?.(payload);
@@ -84,7 +84,7 @@ export default function ViettelModel({
           </div>
           <p className="text-sm text-gray-600 mb-6">
             Bạn có chắc muốn xóa nhân viên Viettel với mã{" "}
-            <span className="font-semibold">{data?.VIETTEL_CODE}</span>? Thao tác này
+            <span className="font-semibold">{data?.viettelCode}</span>? Thao tác này
             không thể hoàn tác.
           </p>
           <div className="flex justify-end gap-3">
@@ -120,7 +120,7 @@ export default function ViettelModel({
       <div className="p-6">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-semibold text-gray-900">
-            {isEdit ? "Chỉnh sửa nhân viên Viettel" : "Thêm nhân viên Viettel mới"}
+            {isEdit ? "Chỉnh sửa" : "Thêm mới"}
           </h3>
           <button
             onClick={onClose}
@@ -133,28 +133,28 @@ export default function ViettelModel({
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>Mã Viettel (VIETTEL_CODE) *</label>
+              <label className={labelClass}>Mã *</label>
               <input
                 type="text"
                 placeholder="VD: VT0001"
                 disabled={isEdit}
                 className={inputClass}
-                {...register("VIETTEL_CODE", {
+                {...register("viettelCode", {
                   required: "Bắt buộc",
                   validate: (v) =>
                     v.trim().length === 6 || "Mã Viettel phải đúng 6 ký tự",
                 })}
               />
-              {errors.VIETTEL_CODE && (
+              {errors.viettelCode && (
                 <p className="mt-1 text-xs text-rose-500">
-                  {errors.VIETTEL_CODE.message}
+                  {errors.viettelCode.message}
                 </p>
               )}
             </div>
 
             <div>
-              <label className={labelClass}>Trạng thái (STATUS) *</label>
-              <select className={inputClass} {...register("STATUS")}>
+              <label className={labelClass}>Trạng thái (status)</label>
+              <select className={inputClass} {...register("status")}>
                 <option value="ENABLE">ENABLE (Hoạt động)</option>
                 <option value="DISABLED">DISABLED</option>
               </select>
@@ -162,33 +162,32 @@ export default function ViettelModel({
           </div>
 
           <div>
-            <label className={labelClass}>Email Viettel (VIETTEL_EMAIL)</label>
+            <label className={labelClass}>Email Viettel</label>
             <input
               type="text"
               placeholder="VD: user@viettel.com.vn"
               className={inputClass}
-              {...register("VIETTEL_EMAIL", {
+              {...register("viettelEmail", {
                 pattern: {
                   value: /^\S+@\S+\.\S+$/,
                   message: "Email không hợp lệ",
                 },
               })}
             />
-            {errors.VIETTEL_EMAIL && (
+            {errors.viettelEmail && (
               <p className="mt-1 text-xs text-rose-500">
-                {errors.VIETTEL_EMAIL.message}
+                {errors.viettelEmail.message}
               </p>
             )}
           </div>
 
           <div>
-            <label className={labelClass}>Mã nhân viên (EMPLOYEE_ID)</label>
+            <label className={labelClass}>Mã nhân viên liên kết</label>
             <input
               type="text"
-              inputMode="numeric"
-              placeholder="VD: 1"
+              placeholder="VD: NV001"
               className={inputClass}
-              {...register("EMPLOYEE_ID")}
+              {...register("employeeCode")}
             />
           </div>
 

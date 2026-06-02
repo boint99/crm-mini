@@ -95,6 +95,7 @@ function Employees() {
         payload,
         messages: CUSTOM_MESSAGES.delete,
       });
+      dispatchAsync(getEmployees());
       handleCloseModal();
       return;
     }
@@ -106,6 +107,7 @@ function Employees() {
         payload,
         messages: CUSTOM_MESSAGES.update,
       });
+      dispatchAsync(getEmployees());
       handleCloseModal();
       return;
     }
@@ -116,6 +118,7 @@ function Employees() {
       payload,
       messages: CUSTOM_MESSAGES.create,
     });
+    dispatchAsync(getEmployees());
     handleCloseModal();
   };
 
@@ -151,10 +154,21 @@ function Employees() {
 
     return (
       <tbody className="divide-y divide-gray-200 bg-white">
-        {filteredRows.map((employee, rowIndex) => (
+        {filteredRows.map((employee) => (
           <tr key={employee.id} className="hover:bg-gray-50">
             {employeeColumns.map(([key]) => {
               const cellClass = "px-4 py-3 text-gray-700 whitespace-nowrap";
+              if (key === "employeeId") {
+                return (
+                  <td
+                    key={key}
+                    className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap"
+                  >
+                    {employee.employeeId || "-"}
+                  </td>
+                );
+              }
+
               if (key === "employeeCode") {
                 return (
                   <td

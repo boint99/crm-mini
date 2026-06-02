@@ -8,11 +8,11 @@ const Router = express.Router()
 Router.get('/lists' , employeesViettelController.lists)
 
 // POST /api/viettel-employees
-Router.post('/', EmployeesViettelValidate.create, employeesViettelController.create)
+Router.post('/create', EmployeesViettelValidate.create, employeesViettelController.create)
 
 // Update PUT /api/viettel-employees
 // Note: add EMPLOYEE_Code in body to update
-Router.put('/', EmployeesViettelValidate.update, employeesViettelController.update)
+Router.put('/update', EmployeesViettelValidate.update, employeesViettelController.update)
 
 // DELETE /api/viettel-employees/:id
 // NOTE: id: EMPLOYEE_ID

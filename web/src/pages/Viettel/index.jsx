@@ -38,11 +38,13 @@ function Viettel() {
     const q = query.trim().toLowerCase();
     if (!q) return items;
     return items.filter((item) => {
+      const fullName = item.employee ? `${item.employee.firstName || ''} ${item.employee.lastName || ''}`.trim() : '';
       const hay = [
-        item.VIETTEL_ID,
-        item.VIETTEL_CODE,
-        item.VIETTEL_EMAIL,
-        item.STATUS,
+        item.viettelCode,
+        item.viettelEmail,
+        item.status,
+        item.employee?.employeeCode,
+        fullName
       ]
         .filter(Boolean)
         .join(" ")
@@ -52,7 +54,7 @@ function Viettel() {
   }, [items, query]);
 
   const totalItems = items.length;
-  const activeItems = items.filter((item) => item.STATUS === "ENABLE").length;
+  const activeItems = items.filter((item) => item.status === "ENABLE").length;
 
   const openCreateModal = () => {
     setMode("create");
@@ -87,6 +89,7 @@ function Viettel() {
         messages: CUSTOM_MESSAGES.delete,
       });
       handleCloseModal();
+      dispatchAsync(getEmployees());
       return;
     }
 
@@ -98,6 +101,7 @@ function Viettel() {
         messages: CUSTOM_MESSAGES.update,
       });
       handleCloseModal();
+      dispatchAsync(getEmployees());
       return;
     }
 
@@ -108,6 +112,7 @@ function Viettel() {
       messages: CUSTOM_MESSAGES.create,
     });
     handleCloseModal();
+    dispatchAsync(getEmployees());
   };
 
   const renderTableBody = () => {
@@ -142,63 +147,71 @@ function Viettel() {
 
     return (
       <tbody className="divide-y divide-gray-200 bg-white">
-        {filteredRows.map((item, rowIndex) => (
-          <tr key={item.VIETTEL_ID} className="hover:bg-gray-50">
+        {filteredRows.map((item) => (
+          <tr key={item.id} className="hover:bg-gray-50">
             {viettelColumns.map(([key]) => {
               const cellClass = "px-4 py-3 text-gray-700 whitespace-nowrap";
 
-              if (key === "INDEX") {
+              if (key === "viettelId") {
                 return (
                   <td
                     key={key}
                     className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap"
                   >
-                    {rowIndex + 1}
+                    {item.viettelId}
                   </td>
                 );
               }
 
-              if (key === "EMPLOYEE_CODE") {
+              if (key === "viettelCode") {
                 return (
                   <td
                     key={key}
                     className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap"
                   >
-                    {item.VIETTEL_CODE ?? "-"}
+                    {item.viettelCode || "-"}
                   </td>
                 );
               }
 
-              if (key === "VIETTEL_EMAIL") {
+              if (key === "viettelEmail") {
                 return (
                   <td key={key} className={cellClass}>
-                    {item.VIETTEL_EMAIL || "-"}
+                    {item.viettelEmail || "-"}
                   </td>
                 );
               }
 
-              if (key === "VIETTEL") {
+              if (key === "employeeCode") {
                 return (
-                  <td
-                    key={key}
-                    className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap"
-                  >
-                    {item.VIETTEL_CODE || "-"}
+                  <td key={key} className={cellClass}>
+                    {item.employee?.employeeCode || "-"}
                   </td>
                 );
               }
 
-              if (key === "STATUS") {
+              if (key === "employeeName") {
+                const fullName = item.employee
+                  ? `${item.employee.firstName || ""} ${item.employee.lastName || ""}`.trim()
+                  : "";
+                return (
+                  <td key={key} className={cellClass}>
+                    {fullName || "-"}
+                  </td>
+                );
+              }
+
+              if (key === "status") {
                 return (
                   <td key={key} className="px-4 py-3 whitespace-nowrap">
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        item.STATUS === "ENABLE"
+                        item.status === "ENABLE"
                           ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
                           : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
                       }`}
                     >
-                      {item.STATUS === "ENABLE"
+                      {item.status === "ENABLE"
                         ? "Hoạt động"
                         : "Ngưng hoạt động"}
                     </span>
@@ -206,11 +219,10 @@ function Viettel() {
                 );
               }
 
-              if (key === "CREATED_AT" || key === "UPDATED_AT") {
-                const field = key === "CREATED_AT" ? "CREATE_AT" : "UPDATE_AT";
+              if (key === "createdAt" || key === "updatedAt") {
                 return (
                   <td key={key} className={cellClass}>
-                    {item[field] ? formatDateTime(item[field]) : "-"}
+                    {item[key] ? formatDateTime(item[key]) : "-"}
                   </td>
                 );
               }
@@ -228,7 +240,7 @@ function Viettel() {
                   onClick={() => openEditModal(item)}
                   className="rounded-md p-2 text-indigo-600 transition hover:bg-indigo-50 cursor-pointer"
                   title="Chỉnh sửa"
-                  aria-label={`Chỉnh sửa ${item.VIETTEL_CODE}`}
+                  aria-label={`Chỉnh sửa ${item.viettelCode}`}
                 >
                   <Pencil className="h-4 w-4" />
                 </button>
@@ -237,7 +249,7 @@ function Viettel() {
                   onClick={() => openDeleteModal(item)}
                   className="rounded-md p-2 text-rose-600 transition hover:bg-rose-50 cursor-pointer"
                   title="Xóa"
-                  aria-label={`Xóa ${item.VIETTEL_CODE}`}
+                  aria-label={`Xóa ${item.viettelCode}`}
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>

@@ -9,24 +9,27 @@ class EmployeesViettelValidate extends ValidateCore {
     try {
       const data = req.body
       ValidateCores.validateStringLength(
-        data.VIETTEL_CODE, 6,
+        data.viettelCode, 6,
         'Viettel code must be 6 characters or more!'
       )
 
       ValidateCores.validateEnum(data.STATUS, ALLOWED_STATUS)
 
-      if (data.EMPLOYEE_ID !== undefined && data.EMPLOYEE_ID !== null) {
-        ValidateCores.validateId(data.EMPLOYEE_ID, 'Employee ID is invalid!.')
+      if (data.employeeCode !== undefined && data.employeeCode !== null) {
+        ValidateCores.validateId(data.employeeCode, 'Employee ID is invalid!.')
       }
 
-      if (data.VIETTEL_EMAIL) {
-        ValidateCores.validateEmail(data.VIETTEL_EMAIL, 'Viettel email is invalid!.')
+      if (data.viettelEmail) {
+        ValidateCores.validateEmail(data.viettelEmail, 'Viettel email is invalid!.')
         ValidateCores.validateEmailDomain(
-          data.VIETTEL_EMAIL, ALLOWED_EMAIL_DOMAINS,
+          data.viettelEmail, ALLOWED_EMAIL_DOMAINS,
           'Viettel email domain is not allowed!.'
         )
       }
 
+      if (data.employeeCode) {
+        ValidateCores.validateId(data.employeeCode, 'Employee code is invalid!.')
+      }
       next()
     } catch (error) {
       next(error)
@@ -37,22 +40,22 @@ class EmployeesViettelValidate extends ValidateCore {
   static update(req, res, next) {
     try {
       const data = req.body
-      ValidateCores.validateId(data.VIETTEL_ID, 'Viettel ID is required!.')
+      ValidateCores.validateIdUuid(data.id, 'Id is required!.')
 
-      if (data.VIETTEL_CODE !== undefined) {
-        ValidateCores.validateStringLength(data.VIETTEL_CODE, 6, 'Viettel code must be 6 characters or more!')
+      if (data.viettelCode !== undefined) {
+        ValidateCores.validateStringLength(data.viettelCode, 6, 'Viettel code must be 6 characters or more!')
       }
-      if (data.STATUS !== undefined) {
-        ValidateCores.validateEnum(data.STATUS, ALLOWED_STATUS)
+      if (data.status !== undefined) {
+        ValidateCores.validateEnum(data.status, ALLOWED_STATUS)
       }
-      if (data.VIETTEL_ID !== undefined && data.VIETTEL_ID !== null) {
-        ValidateCores.validateId(data.VIETTEL_ID, 'Viettel ID is invalid!.')
-      }
-      if (data.VIETTEL_EMAIL) {
-        ValidateCores.validateEmail(data.VIETTEL_EMAIL, 'Viettel email is invalid!.')
-        ValidateCores.validateEmailDomain(data.VIETTEL_EMAIL, ALLOWED_EMAIL_DOMAINS, 'Viettel email domain is not allowed!.')
+      if (data.viettelEmail) {
+        ValidateCores.validateEmail(data.viettelEmail, 'Viettel email is invalid!.')
+        ValidateCores.validateEmailDomain(data.viettelEmail, ALLOWED_EMAIL_DOMAINS, 'Viettel email domain is not allowed!.')
       }
 
+      if (data.employeeCode) {
+        ValidateCores.validateId(data.employeeCode, 'Employee code is invalid!.')
+      }
       next()
     } catch (error) {
       next(error)

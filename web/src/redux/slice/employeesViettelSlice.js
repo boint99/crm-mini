@@ -104,7 +104,7 @@ const employeesViettelSlice = createSlice({
       // UPDATE
       .addCase(updateEmployee.fulfilled, (state, action) => {
         const index = state.items.findIndex(
-          (item) => item.VIETTEL_ID === action.payload.VIETTEL_ID
+          (item) => item.id === action.payload.id
         )
         if (index !== -1) {
           state.items[index] = {
@@ -122,7 +122,7 @@ const employeesViettelSlice = createSlice({
       // DELETE
       .addCase(deleteEmployee.fulfilled, (state, action) => {
         state.items = state.items.filter(
-          (item) => Number(item.VIETTEL_ID) !== Number(action.payload)
+          (item) => item.id !== action.payload
         )
         state.message = CUSTOM_MESSAGES.delete.success
       })

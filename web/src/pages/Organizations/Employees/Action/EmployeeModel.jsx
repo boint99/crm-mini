@@ -1,16 +1,122 @@
 import { customStyles } from "@/utils/contants";
 import { X } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import Modal from "react-modal";
+import { divisionsAPI } from "@/api/divisionsAPI";
+import { positionsAPI } from "@/api/positionsAPI";
 
 const modalStyles = {
   ...customStyles,
   content: {
     ...customStyles.content,
     maxWidth: "672px",
+    overflow: "visible",
   },
 };
+
+function SearchableSelect({
+  options,
+  value,
+  onChange,
+  placeholder = "Chọn...",
+  inputClass,
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const filteredOptions = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return options;
+    return options.filter((opt) =>
+      opt.label?.toLowerCase().includes(query)
+    );
+  }, [options, search]);
+
+  const selectedOption = options.find((opt) => opt.value === value);
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <button
+        type="button"
+        onClick={() => {
+          setIsOpen(!isOpen);
+          setSearch("");
+        }}
+        className={`${inputClass} flex items-center justify-between bg-white text-left`}
+      >
+        <span className={selectedOption ? "text-gray-900" : "text-gray-400"}>
+          {selectedOption ? selectedOption.label : placeholder}
+        </span>
+        <svg
+          className="ml-2 h-4 w-4 text-gray-400 flex-shrink-0"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fillRule="evenodd"
+            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg">
+          <div className="p-2 border-b border-gray-100">
+            <input
+              type="text"
+              placeholder="Tìm kiếm..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                }
+              }}
+              className="w-full rounded-md border border-gray-200 px-2 py-1 text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              autoFocus
+            />
+          </div>
+          <ul className="max-h-48 overflow-y-auto py-1 text-sm text-gray-700">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt) => (
+                <li
+                  key={opt.value}
+                  onClick={() => {
+                    onChange(opt.value);
+                    setIsOpen(false);
+                  }}
+                  className={`px-3 py-2 hover:bg-slate-100 cursor-pointer ${
+                    opt.value === value ? "bg-blue-50 text-blue-600 font-medium" : ""
+                  }`}
+                >
+                  {opt.label}
+                </li>
+              ))
+            ) : (
+              <li className="px-3 py-2 text-xs text-gray-400 italic">
+                Không tìm thấy kết quả
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function EmployeeModel({
   open,
@@ -25,10 +131,41 @@ export default function EmployeeModel({
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm();
 
   const isEdit = mode === "edit";
+
+  useEffect(() => {
+    register("unitId");
+    register("positionId");
+  }, [register]);
+
+  const unitId = watch("unitId");
+  const positionId = watch("positionId");
+
+  const [units, setUnits] = useState([]);
+  const [positions, setPositions] = useState([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      divisionsAPI
+        .getLists()
+        .then((res) => {
+          setUnits(res.data || []);
+        })
+        .catch((err) => console.error("Failed to load units:", err));
+
+      positionsAPI
+        .getLists()
+        .then((res) => {
+          setPositions(res.data || []);
+        })
+        .catch((err) => console.error("Failed to load positions:", err));
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -40,9 +177,9 @@ export default function EmployeeModel({
           phone: data.phone || "",
           email: data.email || "",
           birthDate: data.birthDate ? String(data.birthDate).slice(0, 10) : "",
-          unitId: data.unitId || "",
+          unitId: data.orgUnit?.id || data.unitId || "",
           viettelCode: data.viettelCode || "",
-          positionId: data.positionId || "",
+          positionId: data.position?.id || data.positionId || "",
           status: data.status || "ENABLE",
         });
       } else if (mode === "create") {
@@ -71,8 +208,8 @@ export default function EmployeeModel({
     const payload = {
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim(),
-      unitId: formData.unitId ? Number(formData.unitId) : null,
-      positionId: formData.positionId ? Number(formData.positionId) : null,
+      unitId: formData.unitId || null,
+      positionId: formData.positionId || null,
       birthDate: formData.birthDate || null,
       status: formData.status,
       phone: formData.phone?.trim() || null,
@@ -186,14 +323,6 @@ export default function EmployeeModel({
             </div>
 
             <div>
-              <label className={labelClass}>Trạng thái (STATUS) *</label>
-              <select className={inputClass} {...register("status")}>
-                <option value="ENABLE">ENABLE (Hoạt động)</option>
-                <option value="DISABLED">DISABLED</option>
-              </select>
-            </div>
-
-            <div>
               <label className={labelClass}>Họ (First Name) *</label>
               <input
                 type="text"
@@ -260,12 +389,29 @@ export default function EmployeeModel({
 
             <div>
               <label className={labelClass}>Đơn vị (Unit)</label>
-              <input
-                type="text"
-                inputMode="numeric"
-                placeholder="VD: 1"
-                className={inputClass}
-                {...register("unitId")}
+              <SearchableSelect
+                options={units.map((unit) => ({
+                  value: unit.id || "",
+                  label: unit.unitName || "",
+                }))}
+                value={unitId}
+                onChange={(val) => setValue("unitId", val)}
+                placeholder="Chọn đơn vị"
+                inputClass={inputClass}
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>Chức vụ (Position)</label>
+              <SearchableSelect
+                options={positions.map((pos) => ({
+                  value: pos.id || "",
+                  label: pos.positionName || "",
+                }))}
+                value={positionId}
+                onChange={(val) => setValue("positionId", val)}
+                placeholder="Chọn chức vụ"
+                inputClass={inputClass}
               />
             </div>
 
@@ -280,14 +426,11 @@ export default function EmployeeModel({
             </div>
 
             <div>
-              <label className={labelClass}>Chức vụ (Position)</label>
-              <input
-                type="text"
-                inputMode="numeric"
-                placeholder="VD: 3"
-                className={inputClass}
-                {...register("positionId")}
-              />
+              <label className={labelClass}>Trạng thái (STATUS) *</label>
+              <select className={inputClass} {...register("status")}>
+                <option value="ENABLE">ENABLE (Hoạt động)</option>
+                <option value="DISABLED">DISABLED</option>
+              </select>
             </div>
           </div>
 

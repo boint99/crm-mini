@@ -29,7 +29,11 @@ class EmployeesModel extends BaseModel {
     if (info) {
       return await this.model.findFirst({
         where,
-        include: {
+        select: {
+          id: true,
+          employeeId: true,
+          employeeCode: true,
+          status: true,
           position: { select: { id: true, positionId: true, positionName: true, level: true, status: true } },
           orgUnit: {
             select: {
@@ -46,7 +50,7 @@ class EmployeesModel extends BaseModel {
               branch: { select: { id: true, branchId: true, branchName: true, location: true, status: true } }
             }
           },
-          viettel: { select: { id: true, viettelId: true, viettelEmail: true, status: true } },
+          viettel: { select: { id: true, viettelId: true, viettelCode: true, viettelEmail: true, status: true } },
           accounts: {
             select: {
               accountId: true,
@@ -62,14 +66,7 @@ class EmployeesModel extends BaseModel {
                       roleName: true,
                       description: true,
                       status: true,
-                      permissions: {
-                        select: {
-                          perId: true,
-                          perName: true,
-                          status: true,
-                          notes: true
-                        }
-                      }
+                      permissions: { select: { perId: true, perName: true, status: true, notes: true } }
                     }
                   }
                 }
@@ -83,14 +80,7 @@ class EmployeesModel extends BaseModel {
               deviceType: true,
               status: true,
               vlan: {
-                select: {
-                  vlanId: true,
-                  vlanName: true,
-                  network: true,
-                  defaultGateway: true,
-                  ipRange: true,
-                  status: true
-                }
+                select: { vlanId: true, vlanName: true, network: true, defaultGateway: true, ipRange: true, status: true }
               }
             }
           }
@@ -98,6 +88,8 @@ class EmployeesModel extends BaseModel {
       })
     }
 
+    // Đối với hàm super, truyền thêm select nếu hàm cha hỗ trợ,
+    // hoặc kiểm tra lại hàm cha xem có đang bị ẩn employeeId không.
     return await super.LISTQUERY({
       where: Object.keys(where).length ? where : undefined,
       include: {

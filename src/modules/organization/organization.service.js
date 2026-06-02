@@ -126,7 +126,7 @@ class OrganizationService {
       query.branchId = findBranch.branchId || null
     }
 
-    return await organizationModel.listsTest(query)
+    return await organizationModel.lists(query)
   }
 
   async create(data) {

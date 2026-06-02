@@ -84,7 +84,7 @@ model EMPLOYEES {
   birthDate    DateTime?          @map("BIRTH_DATE") @db.Date
   unitId       Int?               @map("UNIT_ID")
   positionId   Int?               @map("POSITION_ID")
-  viettelId    Int?               @map("VIETTEL_ID")
+  viettelId    Int?               @unique@map("VIETTEL_ID")
   status       ENUMSTATUS         @default(ENABLE) @map("STATUS")
   isAccount    Boolean            @default(false) @map("IS_ACCOUNT")
   createdAt    DateTime           @default(now()) @map("CREATED_AT") @db.Timestamp(6)
@@ -215,12 +215,13 @@ model IPS {
 model VIETTEL_EMPLOYEES {
   id           String      @unique @map("ID") @db.Uuid
   viettelId    Int         @id @default(autoincrement()) @map("VIETTEL_ID")
+  viettelCode  String      @unique @map("VIETTEL_CODE")
   viettelEmail String      @unique @map("VIETTEL_EMAIL")
   status       ENUMSTATUS  @default(ENABLE) @map("STATUS")
   createdAt    DateTime    @default(now()) @map("CREATED_AT") @db.Timestamp(6)
   updatedAt    DateTime?   @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
   deletedAt    DateTime?   @map("DELETED_AT") @db.Timestamp(6)
-  employees    EMPLOYEES[]
+  employee EMPLOYEES?
 
   @@map("VIETTEL_EMPLOYEES")
 }

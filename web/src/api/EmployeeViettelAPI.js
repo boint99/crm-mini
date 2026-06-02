@@ -10,13 +10,13 @@ import axios from "axios";
 
     // CREATE
     create: async (payload) => {
-      const res = await axios.post(`${ROOT_DOMAIN}/viettel-employees`, payload);
+      const res = await axios.post(`${ROOT_DOMAIN}/viettel-employees/create`, payload);
       return res.data;
     },
 
     // UPDATE
     update: async ( payload) => {
-      const res = await axios.put(`${ROOT_DOMAIN}/viettel-employees`, payload);
+      const res = await axios.put(`${ROOT_DOMAIN}/viettel-employees/update`, payload);
       return res.data;
     },
 
