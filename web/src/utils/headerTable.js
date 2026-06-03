@@ -31,6 +31,19 @@ export const headerTableEmployees = {
   updatedAt: 'Ngày cập nhật'
 }
 
+export const headerTableDepartments = {
+  orgUnitId: 'orgUnitId',
+  orgUnitCode: 'Mã phòng ban',
+  unitName: 'Tên phòng ban',
+  unitType: 'Loại phòng ban',
+  parentUnit: 'Đơn vị cha',
+  branchName: 'Chi nhánh',
+  companyName: 'Công ty',
+  status: 'Trạng thái',
+  createdAt: 'Ngày tạo',
+  updatedAt: 'Ngày cập nhật'
+}
+
 export const headerTableEmployeesViettel = {
   viettelId: 'STT',
   viettelCode: 'Mã viettel',

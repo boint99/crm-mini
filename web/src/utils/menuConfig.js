@@ -68,7 +68,12 @@ items: [
     icon: BriefcaseBusiness,
     path: "/organizations/positions",
   },
-
+{
+    id: "departments",
+    label: "Departments",
+    icon: Folder,
+    path: "/organizations/departments",
+  },
   {
     id: "branches",
     label: "Branches",

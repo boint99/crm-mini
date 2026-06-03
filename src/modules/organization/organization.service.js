@@ -5,6 +5,7 @@ import ApiError from '../../utils/ApiError.js'
 import { v7 as uuidv7 } from 'uuid'
 import { companyModel } from '../company/company.model.js'
 import { branchesModel } from '../branch/branch.model.js'
+import { employeesModel } from '../employees/employees.model.js'
 
 class OrganizationService {
   static checkRequiredFields(data) {
@@ -239,9 +240,11 @@ class OrganizationService {
     }
 
     OrganizationService.checkEnumStatus(updateData.status)
+
+    delete updateData.orgUnitCode
     await OrganizationService.checkUniqueFields(updateData, id)
 
-    return await organizationModel.update(orgUnitId, updateData)
+    return await organizationModel.updateById(orgUnitId, updateData)
   }
 
   async delete(id) {
@@ -251,7 +254,27 @@ class OrganizationService {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Organization not found!')
     }
 
-    return await organizationModel.update(findOrg.orgUnitId, {
+    const employeeCount = await employeesModel.model.count({
+      where: { unitId: findOrg.orgUnitId, deletedAt: null }
+    })
+    if (employeeCount > 0) {
+      throw new ApiError(
+        StatusCodes.CONFLICT,
+        'Cannot delete department because there are active employees linked to it!'
+      )
+    }
+
+    const childCount = await organizationModel.model.count({
+      where: { parentUnitId: findOrg.orgUnitId, deletedAt: null }
+    })
+    if (childCount > 0) {
+      throw new ApiError(
+        StatusCodes.CONFLICT,
+        'Cannot delete department because there are active child departments linked to it!'
+      )
+    }
+
+    return await organizationModel.updateById(findOrg.orgUnitId, {
       deletedAt: new Date(),
       status: 'DISABLED'
     })

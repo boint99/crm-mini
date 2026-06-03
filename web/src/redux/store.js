@@ -8,6 +8,7 @@ import ipsReducer from "./slice/ipsSlice";
 import employeesViettelReducer from "./slice/employeesViettelSlice";
 import viettelBranchReducer from "./slice/viettelBranchSlice";
 import accountsReducer from "./slice/accountsSlice";
+import departmentsReducer from "./slice/departmentsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -20,5 +21,6 @@ export const store = configureStore({
     vlans: vlansReducer,
     ips: ipsReducer,
     accounts: accountsReducer,
+    departments: departmentsReducer,
   },
 });
