@@ -84,7 +84,6 @@ model EMPLOYEES {
   birthDate    DateTime?          @map("BIRTH_DATE") @db.Date
   unitId       Int?               @map("UNIT_ID")
   positionId   Int?               @map("POSITION_ID")
-  viettelId    Int?               @unique@map("VIETTEL_ID")
   status       ENUMSTATUS         @default(ENABLE) @map("STATUS")
   isAccount    Boolean            @default(false) @map("IS_ACCOUNT")
   createdAt    DateTime           @default(now()) @map("CREATED_AT") @db.Timestamp(6)
@@ -93,7 +92,7 @@ model EMPLOYEES {
   accounts     ACCOUNTS[]
   position     POSITIONS?         @relation(fields: [positionId], references: [positionId])
   orgUnit      ORG_UNITS?         @relation(fields: [unitId], references: [orgUnitId])
-  viettel      VIETTEL_EMPLOYEES? @relation(fields: [viettelId], references: [viettelId])
+  viettel      VIETTEL_EMPLOYEES?
   ips          IPS[]
 
   @@index([unitId])
@@ -213,18 +212,39 @@ model IPS {
 }
 
 model VIETTEL_EMPLOYEES {
-  id           String      @unique @map("ID") @db.Uuid
-  viettelId    Int         @id @default(autoincrement()) @map("VIETTEL_ID")
-  viettelCode  String      @unique @map("VIETTEL_CODE")
-  viettelEmail String      @unique @map("VIETTEL_EMAIL")
-  status       ENUMSTATUS  @default(ENABLE) @map("STATUS")
-  createdAt    DateTime    @default(now()) @map("CREATED_AT") @db.Timestamp(6)
-  updatedAt    DateTime?   @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
-  deletedAt    DateTime?   @map("DELETED_AT") @db.Timestamp(6)
-  employee EMPLOYEES?
+  id               String          @unique @map("ID") @db.Uuid
+  viettelId        Int             @id @default(autoincrement()) @map("VIETTEL_ID")
+  viettelCode      String          @unique @map("VIETTEL_CODE")
+  viettelEmail     String          @unique @map("VIETTEL_EMAIL")
+  viettelPosition  String?         @map("VIETTEL_POSITION")
+  viettelBranchId  Int?            @map("VIETTEL_BRANCH_ID")
+  employeeId       Int?            @unique @map("EMPLOYEE_ID")
+  status           ENUMSTATUS      @default(ENABLE) @map("STATUS")
+  createdAt        DateTime        @default(now()) @map("CREATED_AT") @db.Timestamp(6)
+  updatedAt        DateTime?       @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
+  deletedAt        DateTime?       @map("DELETED_AT") @db.Timestamp(6)
+
+  employee         EMPLOYEES?      @relation(fields: [employeeId], references: [employeeId])
+  viettelBranch    VIETTEL_BRANCH? @relation(fields: [viettelBranchId], references: [viettelBranchId])
 
   @@map("VIETTEL_EMPLOYEES")
 }
+
+model VIETTEL_BRANCH {
+  id                String              @unique @map("ID") @db.Uuid
+  viettelBranchId   Int                 @id @default(autoincrement()) @map("VIETTEL_BRANCH_ID")
+  viettelBranchCode String              @unique @map("VIETTEL_BRANCH_CODE")
+  viettelBranchName String?             @map("VIETTEL_BRANCH_NAME")
+  status            ENUMSTATUS          @default(ENABLE) @map("STATUS")
+  createdAt         DateTime            @default(now()) @map("CREATED_AT") @db.Timestamp(6)
+  updatedAt         DateTime?           @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
+  deletedAt         DateTime?           @map("DELETED_AT") @db.Timestamp(6)
+
+  viettelEmployees  VIETTEL_EMPLOYEES[]
+
+  @@map("VIETTEL_BRANCH")
+}
+
 
 model OTP_TOKENS {
   id        String    @unique @map("ID") @db.Uuid
