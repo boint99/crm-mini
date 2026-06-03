@@ -4,6 +4,7 @@ import ApiError from '../../utils/ApiError.js'
 import ValidateCores from '../../validates/index.js'
 import { employeesViettelModel } from './employees.viettel.model.js'
 import { employeesModel } from '../employees/employees.model.js'
+import { viettelBranchModel } from './viettelBranch/viettelBranch.model.js'
 
 class EmployeesViettelServices {
 
@@ -156,9 +157,19 @@ class EmployeesViettelServices {
     }
 
     // 5. Check viettelBranchId
+    // if (viettelBranchId !== undefined) {
+    //   payload.viettelBranchId = viettelBranchId ? Number(viettelBranchId) : null
+    // }
+
     if (viettelBranchId !== undefined) {
-      payload.viettelBranchId = viettelBranchId ? Number(viettelBranchId) : null
+      console.log(viettelBranchId)
+      const findBranch = await viettelBranchModel.findByUnique(viettelBranchId, 'id')
+      if (!findBranch) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Branch not found!')
+      }
+      payload.viettelBranchId = findBranch.viettelBranchId
     }
+
 
     // 6. Check status enum
     if (status !== undefined) {

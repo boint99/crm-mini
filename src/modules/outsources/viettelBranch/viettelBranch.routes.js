@@ -4,8 +4,8 @@ import ViettelBranchValidate from './viettelBranch.validate.js'
 
 const Router = express.Router()
 
-// GET - /api/viettel-branches/lists
-Router.get('/lists', viettelBranchController.lists)
+// GET - /api/viettel-branches
+Router.get('/', viettelBranchController.lists)
 
 // POST /api/viettel-branches/create
 Router.post('/create', ViettelBranchValidate.create, viettelBranchController.create)

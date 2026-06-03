@@ -33,10 +33,21 @@ export const headerTableEmployees = {
 
 export const headerTableEmployeesViettel = {
   viettelId: 'STT',
-  viettelCode: 'Mã',
-  viettelEmail: 'Email',
-  employeeCode: 'Mã NV ACT',
+  viettelCode: 'Mã viettel',
   employeeName: 'Họ và Tên',
+  viettelEmail: 'Email Viettel',
+  viettelPosition: 'Chức danh Viettel',
+  viettelBranchName: 'Đơn vị Viettel',
+  employeeCode: 'Mã NV ACT',
+  status: 'Trạng thái',
+  createdAt: 'Ngày tạo',
+  updatedAt: 'Ngày cập nhật'
+}
+
+export const headerTableViettelBranches = {
+  viettelBranchId: 'STT',
+  viettelBranchCode: 'Mã chi nhánh',
+  viettelBranchName: 'Tên chi nhánh',
   status: 'Trạng thái',
   createdAt: 'Ngày tạo',
   updatedAt: 'Ngày cập nhật'
@@ -55,7 +66,7 @@ export const headerTableOrgUnits = {
 }
 
 export const headerTableBranch = {
-  index: 'STT',
+  index: 'viettelBranchId',
   branchCode: 'ID',
   branchName: 'Tên chi nhánh',
   location: 'Địa điểm',

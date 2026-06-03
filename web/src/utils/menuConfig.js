@@ -85,9 +85,10 @@ items: [
 ]
   },
   {
-    group: "Outsource",
+    group: "VIETTEL",
     items: [
-      { id: "viettel",   label: "Viettel OS",   icon: BriefcaseBusiness, path: "/viettel-employees" },
+      { id: "employee",   label: "Employee",   icon: Users, path: "/viettel-employees" },
+      { id: "branch",   label: "Branch",   icon: MapPinned, path: "/viettel-branches" },
     ],
   },
   {

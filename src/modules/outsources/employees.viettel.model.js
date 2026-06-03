@@ -19,6 +19,14 @@ class EmployeesViettelModel extends BaseModel {
             email: true,
             phone: true
           }
+        },
+        viettelBranch: {
+          select: {
+            id: true,
+            viettelBranchId: true,
+            viettelBranchCode: true,
+            viettelBranchName: true
+          }
         }
       }
     })

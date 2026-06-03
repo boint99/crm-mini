@@ -4,7 +4,7 @@ import axios from "axios";
   export const EmployeeViettelAPI = {
     // GET list
     getLists: async () => {
-      const res = await axios.get(`${ROOT_DOMAIN}/viettel-employees/lists`);
+      const res = await axios.get(`${ROOT_DOMAIN}/viettel-employees/`);
       return res.data;
     },
 

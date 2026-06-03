@@ -53,6 +53,10 @@ class EmployeesViettelValidate extends ValidateCore {
         ValidateCores.validateEmailDomain(data.viettelEmail, ALLOWED_EMAIL_DOMAINS, 'Viettel email domain is not allowed!.')
       }
 
+      if (data.viettelBranchId) {
+        ValidateCores.validateIdUuid(data.viettelBranchId, 'Viettel branch ID is invalid!.')
+      }
+
       if (data.employeeCode) {
         ValidateCores.validateId(data.employeeCode, 'Employee code is invalid!.')
       }

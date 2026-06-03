@@ -3,6 +3,9 @@ import { X } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import Modal from "react-modal";
+import { useSelector } from "react-redux";
+import { useAppDispatch } from "@/hook/useAppDispatch";
+import { getBranches, selectViettelBranches } from "@/redux/slice/viettelBranchSlice";
 
 export default function ViettelModel({
   open,
@@ -22,6 +25,15 @@ export default function ViettelModel({
 
   const isEdit = mode === "edit";
 
+  const dispatchAsync = useAppDispatch();
+  const branches = useSelector(selectViettelBranches);
+
+  useEffect(() => {
+    if (isOpen) {
+      dispatchAsync(getBranches());
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (isOpen) {
       if (mode === "edit" && data) {
@@ -30,6 +42,8 @@ export default function ViettelModel({
           viettelEmail: data.viettelEmail || "",
           employeeCode: data.employee?.employeeCode || "",
           status: data.status || "ENABLE",
+          viettelPosition: data.viettelPosition || "",
+          viettelBranchId: data.viettelBranch?.id || "",
         });
       } else if (mode === "create") {
         reset({
@@ -37,6 +51,8 @@ export default function ViettelModel({
           viettelEmail: "",
           employeeCode: "",
           status: "ENABLE",
+          viettelPosition: "",
+          viettelBranchId: "",
         });
       }
     }
@@ -52,6 +68,8 @@ export default function ViettelModel({
       viettelCode: formData.viettelCode.trim(),
       viettelEmail: formData.viettelEmail?.trim() || null,
       employeeCode: formData.employeeCode?.trim() || null,
+      viettelPosition: formData.viettelPosition?.trim() || null,
+      viettelBranchId: formData.viettelBranchId || null,
       status: formData.status,
     };
 
@@ -179,6 +197,30 @@ export default function ViettelModel({
                 {errors.viettelEmail.message}
               </p>
             )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Chức danh Viettel</label>
+              <input
+                type="text"
+                placeholder="VD: Chuyên viên"
+                className={inputClass}
+                {...register("viettelPosition")}
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>Đơn vị Viettel</label>
+              <select className={inputClass} {...register("viettelBranchId")}>
+                <option value="">-- Chọn đơn vị --</option>
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.viettelBranchName || b.viettelBranchCode}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div>

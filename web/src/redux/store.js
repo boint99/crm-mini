@@ -6,6 +6,7 @@ import positionsReducer from "./slice/positionsSlice";
 import vlansReducer from "./slice/vlansSlice";
 import ipsReducer from "./slice/ipsSlice";
 import employeesViettelReducer from "./slice/employeesViettelSlice";
+import viettelBranchReducer from "./slice/viettelBranchSlice";
 import accountsReducer from "./slice/accountsSlice";
 
 export const store = configureStore({
@@ -13,6 +14,7 @@ export const store = configureStore({
     companies: companiesReducer,
     employees: employeesReducer,
     employeesViettel: employeesViettelReducer,
+    viettelBranch: viettelBranchReducer,
     branches: branchesReducer,
     positions: positionsReducer,
     vlans: vlansReducer,

@@ -5,7 +5,7 @@ import EmployeesViettelValidate from './empolyees.viettel.validate.js'
 const Router = express.Router()
 
 // GET - /api/viettel-employees/lists
-Router.get('/lists' , employeesViettelController.lists)
+Router.get('/' , employeesViettelController.lists)
 
 // POST /api/viettel-employees
 Router.post('/create', EmployeesViettelValidate.create, employeesViettelController.create)

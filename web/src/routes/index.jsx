@@ -13,7 +13,8 @@ const Positions = lazy(() => import("@/pages/Organizations/Positions"));
 const Branches = lazy(() => import("@/pages/Organizations/Branches"));
 const Networks = lazy(() => import("@/pages/networks"));
 const Accounts = lazy(() => import("@/pages/accounts"));
-const Viettel = lazy(() => import("@/pages/viettel"));
+const ViettelEmployee = lazy(() => import("@/pages/Viettel/employee"));
+const ViettelBranch = lazy(() => import("@/pages/Viettel/branch"));
 
 const Login = lazy(() => import("@/pages/auth/login"));
 const Register = lazy(() => import("@/pages/auth/register"));
@@ -90,7 +91,15 @@ const routes = [
         path: "viettel-employees",
         element: (
           <WithSpinner>
-            <Viettel />
+            <ViettelEmployee />
+          </WithSpinner>
+        ),
+      },
+      {
+        path: "viettel-branches",
+        element: (
+          <WithSpinner>
+            <ViettelBranch />
           </WithSpinner>
         ),
       },
