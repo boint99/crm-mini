@@ -3,9 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import ApiError from '../../utils/ApiError.js'
 import { employeesModel } from './employees.model.js'
 import { positionsModel } from '../positions/postisions.model.js'
-import { employeesViettelModel } from '../outsources/employees.viettel.model.js'
 import { organizationModel } from '../organization/organization.model.js'
-import ServiceCore from '../../service/service.core.js'
 import { PRISMA } from '../../configs/db.config.js'
 
 class EmployeesServices {
@@ -46,15 +44,7 @@ class EmployeesServices {
     //   )
     // }
 
-    // 5. FK: viettelId
-    if (data.viettelId) {
-      await ServiceCore.CheckFindbyId(
-        data.viettelId,
-        employeesViettelModel,
-        'Viettel ID',
-        'Viettel ID is invalid!'
-      )
-    }
+
 
     // // 6. FK: unitId
     // if (data.unitId) {
@@ -135,39 +125,32 @@ class EmployeesServices {
       positionId = findPosition.positionId
     }
 
-    return await PRISMA.$transaction(async (tx) => {
-      let viettelId = payload.viettelId ?? null
+    const prismaPayload = {
+      employeeCode: payload.employeeCode,
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      phone: payload.phone || null,
+      email: payload.email ? payload.email.toLowerCase() : null,
+      birthDate: payload.birthDate ? new Date(payload.birthDate) : null,
+      status: payload.status || 'ENABLE',
+      isAccount: isAccount || false,
+      unitId: unitId,
+      positionId: positionId
+    }
 
-      const prismaPayload = {
-        employeeCode: payload.employeeCode,
-        firstName: payload.firstName,
-        lastName: payload.lastName,
-        phone: payload.phone || null,
-        email: payload.email ? payload.email.toLowerCase() : null,
-        birthDate: payload.birthDate ? new Date(payload.birthDate) : null,
-        status: payload.status || 'ENABLE',
-        isAccount: isAccount || false,
-        unitId: unitId,
-        positionId: positionId,
-        viettelId: viettelId ? Number(viettelId) : null
-      }
+    const createdEmp = await employeesModel.create(prismaPayload)
 
-      const createdEmp = await tx['eMPLOYEES'].create({
-        data: prismaPayload
+    if (isAccount === true) {
+      await PRISMA.aCCOUNTS.create({
+        data: {
+          accountName: emailToAccount,
+          isLogin: true,
+          employeeId: createdEmp.employeeId
+        }
       })
+    }
 
-      if (isAccount === true) {
-        await tx['aCCOUNTS'].create({
-          data: {
-            accountName: emailToAccount,
-            isLogin: true,
-            employeeId: createdEmp.employeeId
-          }
-        })
-      }
-
-      return createdEmp
-    })
+    return createdEmp
   }
 
   /**
@@ -241,7 +224,7 @@ class EmployeesServices {
     if (payload.isAccount !== undefined) updateData.isAccount = payload.isAccount
     if (unitId !== undefined) updateData.unitId = unitId
     if (positionId !== undefined) updateData.positionId = positionId
-    if (payload.viettelId !== undefined) updateData.viettelId = payload.viettelId ? Number(payload.viettelId) : null
+
 
     if (Object.keys(updateData).length === 0) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'No data to update!')

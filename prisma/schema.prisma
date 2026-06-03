@@ -97,7 +97,6 @@ model EMPLOYEES {
 
   @@index([unitId])
   @@index([positionId])
-  @@index([viettelId])
   @@map("EMPLOYEES")
 }
 
@@ -218,7 +217,7 @@ model VIETTEL_EMPLOYEES {
   viettelEmail     String          @unique @map("VIETTEL_EMAIL")
   viettelPosition  String?         @map("VIETTEL_POSITION")
   viettelBranchId  Int?            @map("VIETTEL_BRANCH_ID")
-  employeeId       Int?            @unique @map("EMPLOYEE_ID")
+  employeeId       Int            @unique @map("EMPLOYEE_ID")
   status           ENUMSTATUS      @default(ENABLE) @map("STATUS")
   createdAt        DateTime        @default(now()) @map("CREATED_AT") @db.Timestamp(6)
   updatedAt        DateTime?       @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
