@@ -93,7 +93,8 @@ class EmployeesServices {
    * Create a new employee
    */
   async create(data) {
-    const { isAccount, ...payload } = data
+    const { isAccount: rawIsAccount, ...payload } = data
+    const isAccount = rawIsAccount === true || rawIsAccount === 'true'
     if (!payload.status) throw new ApiError(StatusCodes.BAD_REQUEST, 'Status is required!')
     await this.checked(payload)
 

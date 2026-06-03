@@ -5,6 +5,7 @@ import { branchesRoutes } from '../modules/branch/branch.routes.js'
 import { positionsRoutes } from '../modules/positions/positions.routes.js'
 import { employeesRoutes } from '../modules/employees/employees.routes.js'
 import { employeesViettelRoutes } from '../modules/outsources/employees.viettel.routes.js'
+import { viettelBranchRoutes } from '../modules/outsources/viettelBranch/viettelBranch.routes.js'
 import { vlansRoutes } from '../modules/network/vlans/vlans.routes.js'
 import { ipsRoutes } from '../modules/network/ips/ips.routes.js'
 import { accountsRoutes } from '../modules/accounts/accounts.routes.js'
@@ -30,6 +31,8 @@ Router.use('/positions', positionsRoutes)
 Router.use('/employees', employeesRoutes)
 
 Router.use('/viettel-employees', employeesViettelRoutes)
+
+Router.use('/viettel-branches', viettelBranchRoutes)
 
 Router.use('/networks', vlansRoutes)
 

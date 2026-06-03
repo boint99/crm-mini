@@ -7,7 +7,7 @@ import { employeesModel } from '../employees/employees.model.js'
 
 class EmployeesViettelServices {
 
-  static async _checkData(viettelCode, viettelEmail, employeeCode = null) {
+  static async _checkData(viettelCode, viettelEmail, employeeCode = null, excludeViettelId = null) {
     // validate required
     if (!viettelCode || !viettelCode.trim()) {
       throw new ApiError(
@@ -32,13 +32,13 @@ class EmployeesViettelServices {
 
     // check duplicate viettel code
     const checkViettelCode = await employeesViettelModel.findByName(viettelCode, 'viettelCode')
-    if (checkViettelCode) {
+    if (checkViettelCode && checkViettelCode.viettelId !== excludeViettelId) {
       throw new ApiError(StatusCodes.CONFLICT, 'This Viettel code is already taken!')
     }
 
     // check duplicate viettel email
     const checkViettelEmail = await employeesViettelModel.findByName(viettelEmail, 'viettelEmail')
-    if (checkViettelEmail) {
+    if (checkViettelEmail && checkViettelEmail.viettelId !== excludeViettelId) {
       throw new ApiError(StatusCodes.CONFLICT, 'This Viettel email is already taken!')
     }
 
@@ -51,7 +51,8 @@ class EmployeesViettelServices {
       }
 
       // Check if employee is already linked to a Viettel account
-      if (findEmployee.viettelId) {
+      const existingLink = await employeesViettelModel.findByField(findEmployee.employeeId, 'employeeId')
+      if (existingLink && existingLink.viettelId !== excludeViettelId) {
         throw new ApiError(StatusCodes.CONFLICT, 'This employee is already linked to another Viettel account!')
       }
     }
@@ -70,7 +71,14 @@ class EmployeesViettelServices {
     const viettelCode = (data.viettelCode || '').trim()
     const viettelEmail = (data.viettelEmail || '').trim()
     const employeeCode = data.employeeCode
+    const viettelPosition = data.viettelPosition || null
+    const viettelBranchId = data.viettelBranchId || null
     const status = data.status || 'ENABLE'
+
+    // employeeCode is required to link
+    if (!employeeCode) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Employee code is required!')
+    }
 
     const findEmployee = await EmployeesViettelServices._checkData(
       viettelCode,
@@ -84,15 +92,11 @@ class EmployeesViettelServices {
     const newRecord = await employeesViettelModel.create({
       viettelCode,
       viettelEmail,
+      viettelPosition,
+      viettelBranchId: viettelBranchId ? Number(viettelBranchId) : null,
+      employeeId: findEmployee.employeeId,
       status
     })
-
-    // Link employee to the new viettel employee record
-    if (findEmployee && newRecord.viettelId) {
-      await employeesModel.updateById(findEmployee.id, {
-        viettelId: newRecord.viettelId
-      })
-    }
 
     return newRecord
   }
@@ -101,7 +105,7 @@ class EmployeesViettelServices {
    * Update Employee VIETTEL details
    */
   async update(data) {
-    const { id, viettelCode, viettelEmail, employeeCode, status } = data
+    const { id, viettelCode, viettelEmail, viettelPosition, viettelBranchId, employeeCode, status } = data
 
     // 1. Verify existence using uuid_v7 'id'
     if (!id) {
@@ -146,16 +150,23 @@ class EmployeesViettelServices {
       }
     }
 
-    // 4. Check status enum
+    // 4. Check viettelPosition
+    if (viettelPosition !== undefined) {
+      payload.viettelPosition = viettelPosition || null
+    }
+
+    // 5. Check viettelBranchId
+    if (viettelBranchId !== undefined) {
+      payload.viettelBranchId = viettelBranchId ? Number(viettelBranchId) : null
+    }
+
+    // 6. Check status enum
     if (status !== undefined) {
       CHECK_ENUM(status, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, `Invalid status. Allowed values: ${ALLOWED_STATUS.join(', ')}`)
       payload.status = status
     }
 
-    // 5. Update Viettel record
-    const updatedRecord = await employeesViettelModel.updateById(viettelId, payload)
-
-    // 6. Handle Employee Link Update if employeeCode is passed
+    // 7. Handle Employee Link Update if employeeCode is passed
     if (employeeCode !== undefined) {
       if (employeeCode) {
         const findEmployee = await employeesModel.findByUnique(employeeCode, 'employeeCode')
@@ -164,28 +175,21 @@ class EmployeesViettelServices {
         }
 
         // Check if this employee is already linked to another Viettel record
-        if (findEmployee.viettelId && findEmployee.viettelId !== viettelId) {
+        const existingLink = await employeesViettelModel.findByField(findEmployee.employeeId, 'employeeId')
+        if (existingLink && existingLink.viettelId !== viettelId) {
           throw new ApiError(StatusCodes.CONFLICT, 'This employee is already linked to another Viettel account!')
         }
 
-        // Disassociate any employee currently linked to this viettel record
-        const linkedEmployee = await employeesModel.FINDBYFIELD_WHERE({ viettelId })
-        if (linkedEmployee && linkedEmployee.id !== findEmployee.id) {
-          await employeesModel.updateById(linkedEmployee.id, { viettelId: null })
-        }
-
-        // Link the new employee
-        await employeesModel.updateById(findEmployee.id, { viettelId })
-      } else {
-        // Disassociate employee currently linked to this viettel record
-        const linkedEmployee = await employeesModel.FINDBYFIELD_WHERE({ viettelId })
-        if (linkedEmployee) {
-          await employeesModel.updateById(linkedEmployee.id, { viettelId: null })
-        }
+        payload.employeeId = findEmployee.employeeId
       }
     }
 
-    return updatedRecord
+    if (Object.keys(payload).length === 0) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'No data to update!')
+    }
+
+    // 8. Update Viettel record
+    return await employeesViettelModel.updateById(viettelId, payload)
   }
 
   /**
@@ -200,15 +204,8 @@ class EmployeesViettelServices {
     if (!existing) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Employee is not found!')
     }
-    const viettelId = existing.viettelId
 
-    // Disassociate any employee currently linked to this viettel record before deleting
-    const linkedEmployee = await employeesModel.FINDBYFIELD_WHERE({ viettelId })
-    if (linkedEmployee) {
-      await employeesModel.updateById(linkedEmployee.id, { viettelId: null })
-    }
-
-    return await employeesViettelModel.deleteById(viettelId)
+    return await employeesViettelModel.deleteById(existing.viettelId)
   }
 }
 
