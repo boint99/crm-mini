@@ -1,5 +1,5 @@
 class Serializer {
-  static sanitize(data, hiddenFields = ['PASSWORD', 'DELETED_AT']) {
+  static sanitize(data, hiddenFields = ['password', 'deletedAt']) {
     if (data === null || data === undefined) return data
 
     // Array

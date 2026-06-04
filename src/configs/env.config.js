@@ -22,5 +22,11 @@ export const environments = {
   MAIL_HOST: process.env.MAIL_HOST,
   MAIL_PORT: process.env.MAIL_PORT,
   SMTP_USER: process.env.SMTP_USER,
-  SMTP_PASS: process.env.SMTP_PASS
+  SMTP_PASS: process.env.SMTP_PASS,
+
+  // JWT
+  JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET,
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '1d',
+  JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || '7d'
 }

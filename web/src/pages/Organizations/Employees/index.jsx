@@ -206,7 +206,7 @@ function Employees() {
                 );
               }
 
-              if (key === "unit") {
+              if (key === "department") {
                 const parentName = employee.unit?.parentUnit?.unitName;
                 const unitName = employee.unit?.unitName;
                 const hierarchy =
@@ -215,7 +215,7 @@ function Employees() {
                     : unitName;
                 return (
                   <td key={key} className={cellClass}>
-                    {/* {hierarchy || employee.orgUnit.unitName || "-"} */}
+                    {hierarchy || employee.orgUnit.unitName || "-" || null}
                   </td>
                 );
               }

@@ -97,7 +97,7 @@ class OrganizationService {
   }
 
   async lists(option) {
-    const { branchid, companyid } = option || {}
+    const { branchid, companyid, tree } = option || {}
     let query = {}
 
     if (companyid) {
@@ -127,7 +127,33 @@ class OrganizationService {
       query.branchId = findBranch.branchId || null
     }
 
-    return await organizationModel.lists(query)
+    const list = await organizationModel.lists(query)
+
+    if (tree !== undefined) {
+      const map = {}
+      const roots = []
+
+      // First pass: put all items in the map with a children array
+      list.forEach((item) => {
+        map[item.orgUnitId] = { ...item, children: [] }
+      })
+
+      // Second pass: link parent/children
+      list.forEach((item) => {
+        const mappedItem = map[item.orgUnitId]
+        const parentId = item.parentUnitId
+
+        if (parentId && map[parentId]) {
+          map[parentId].children.push(mappedItem)
+        } else {
+          roots.push(mappedItem)
+        }
+      })
+
+      return roots
+    }
+
+    return list
   }
 
   async create(data) {

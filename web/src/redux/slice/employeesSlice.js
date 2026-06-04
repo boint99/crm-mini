@@ -9,9 +9,9 @@ const getErrorMessage = (error, fallback = "Có lỗi xảy ra") => {
 // GET LIST
 export const getEmployees = createAsyncThunk(
   "employees/getEmployees",
-  async (_, { rejectWithValue }) => {
+  async (params, { rejectWithValue }) => {
     try {
-      const data = await employeesAPI.getLists();
+      const data = await employeesAPI.getLists(params);
       return data.data || [];
     } catch (error) {
       return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.get.error));

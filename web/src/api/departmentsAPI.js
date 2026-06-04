@@ -4,8 +4,8 @@ import axios from 'axios'
 
 export const departmentsAPI = {
   // GET list
-  getLists: async () => {
-    const res = await axios.get(`${ROOT_DOMAIN}/organizations`)
+  getLists: async (params) => {
+    const res = await axios.get(`${ROOT_DOMAIN}/organizations`, { params })
     return res.data
   },
 

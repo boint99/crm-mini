@@ -3,8 +3,8 @@ import axios from 'axios'
 
 export const employeesAPI = {
   // GET list
-  getLists: async () => {
-    const res = await axios.get(`${ROOT_DOMAIN}/employees`)
+  getLists: async (params) => {
+    const res = await axios.get(`${ROOT_DOMAIN}/employees`, { params })
     return res.data
   },
 

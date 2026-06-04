@@ -5,35 +5,39 @@ class AccountsModel extends ModelCore {
     super('aCCOUNTS', 'accountId')
   }
 
-  _mapToUpper(record) {
+  /**
+   * Map Prisma record → response theo đúng schema SQL
+   * Field names khớp với @map() trong Prisma schema
+   */
+  _mapResponse(record) {
     if (!record) return null
     return {
-      ACCOUNT_ID: record.accountId,
-      ACCOUNT_NAME: record.accountName,
-      PASSWORD: record.password,
-      IS_LOGIN: record.isLogin,
-      LOGIN: record.login,
-      DESCRIPTION: record.description,
-      EMPLOYEE_ID: record.employeeId,
-      STATUS: record.status,
+      accountId: record.accountId,
+      accountName: record.accountName,
+      password: record.password,
+      isLogin: record.isLogin,
+      login: record.login,
+      description: record.description,
+      employeeId: record.employeeId,
+      status: record.status,
       id: record.id,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
       deletedAt: record.deletedAt,
-      EMPLOYEE: record.employee ? {
-        EMPLOYEE_ID: record.employee.employeeId,
-        FIRST_NAME: record.employee.firstName,
-        LAST_NAME: record.employee.lastName
-      } : null
+      employee: record.employee ? {
+        employeeId: record.employee.employeeId,
+        firstName: record.employee.firstName,
+        lastName: record.employee.lastName
+      } : undefined
     }
   }
 
   async lists(where = null, includeDeleted = false) {
     const prismaWhere = {}
     if (where) {
-      if (where.ACCOUNT_NAME !== undefined) prismaWhere.accountName = where.ACCOUNT_NAME
-      if (where.EMPLOYEE_ID !== undefined) prismaWhere.employeeId = Number(where.EMPLOYEE_ID)
-      if (where.STATUS !== undefined) prismaWhere.status = where.STATUS
+      if (where.accountName !== undefined) prismaWhere.accountName = where.accountName
+      if (where.employeeId !== undefined) prismaWhere.employeeId = Number(where.employeeId)
+      if (where.status !== undefined) prismaWhere.status = where.status
     }
 
     const list = await super.LISTQUERY(
@@ -51,27 +55,27 @@ class AccountsModel extends ModelCore {
       },
       includeDeleted
     )
-    return list.map(item => this._mapToUpper(item))
+    return list.map(item => this._mapResponse(item))
   }
 
   async create(createData) {
     const prismaData = {
-      accountName: createData.ACCOUNT_NAME,
-      password: createData.PASSWORD,
-      isLogin: createData.IS_LOGIN || false,
-      login: createData.LOGIN || 0,
-      description: createData.DESCRIPTION,
-      employeeId: createData.EMPLOYEE_ID ? Number(createData.EMPLOYEE_ID) : null,
-      status: createData.STATUS || 'ENABLE'
+      accountName: createData.accountName,
+      password: createData.password,
+      isLogin: createData.isLogin || false,
+      login: createData.login || 0,
+      description: createData.description,
+      employeeId: createData.employeeId ? Number(createData.employeeId) : null,
+      status: createData.status || 'ENABLE'
     }
     const record = await super.CREATE(prismaData)
-    return this._mapToUpper(record)
+    return this._mapResponse(record)
   }
 
-  async findByUnique(id, field = 'ACCOUNT_ID', includeDeleted = false) {
+  async findByUnique(id, field = 'accountId', includeDeleted = false) {
     let prismaField = 'accountId'
     let queryVal = id
-    if (field === 'ACCOUNT_NAME') {
+    if (field === 'accountName') {
       prismaField = 'accountName'
     } else {
       queryVal = Number(id)
@@ -81,34 +85,34 @@ class AccountsModel extends ModelCore {
       { [prismaField]: queryVal },
       includeDeleted
     )
-    return this._mapToUpper(record)
+    return this._mapResponse(record)
   }
 
-  async updateById(id, updateData, field = 'ACCOUNT_ID') {
+  async updateById(id, updateData, field = 'accountId') {
     const prismaData = {}
-    if (updateData.PASSWORD !== undefined) prismaData.password = updateData.PASSWORD
-    if (updateData.IS_LOGIN !== undefined) prismaData.isLogin = updateData.IS_LOGIN
-    if (updateData.LOGIN !== undefined) prismaData.login = updateData.LOGIN
-    if (updateData.DESCRIPTION !== undefined) prismaData.description = updateData.DESCRIPTION
-    if (updateData.EMPLOYEE_ID !== undefined) prismaData.employeeId = updateData.EMPLOYEE_ID ? Number(updateData.EMPLOYEE_ID) : null
-    if (updateData.STATUS !== undefined) prismaData.status = updateData.STATUS
+    if (updateData.password !== undefined) prismaData.password = updateData.password
+    if (updateData.isLogin !== undefined) prismaData.isLogin = updateData.isLogin
+    if (updateData.login !== undefined) prismaData.login = updateData.login
+    if (updateData.description !== undefined) prismaData.description = updateData.description
+    if (updateData.employeeId !== undefined) prismaData.employeeId = updateData.employeeId ? Number(updateData.employeeId) : null
+    if (updateData.status !== undefined) prismaData.status = updateData.status
 
     let prismaField = 'accountId'
-    if (field === 'ACCOUNT_NAME') prismaField = 'accountName'
+    if (field === 'accountName') prismaField = 'accountName'
 
     const record = await super.UPDATE(Number(id), prismaField, prismaData)
-    return this._mapToUpper(record)
+    return this._mapResponse(record)
   }
 
-  async softDeleteById(id, field = 'ACCOUNT_ID') {
+  async softDeleteById(id, field = 'accountId') {
     let prismaField = 'accountId'
-    if (field === 'ACCOUNT_NAME') prismaField = 'accountName'
+    if (field === 'accountName') prismaField = 'accountName'
 
     const record = await super.UPDATE(Number(id), prismaField, {
       deletedAt: new Date(),
       status: 'DISABLED'
     })
-    return this._mapToUpper(record)
+    return this._mapResponse(record)
   }
 }
 

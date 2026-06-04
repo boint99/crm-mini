@@ -114,8 +114,9 @@ model ACCOUNTS {
   updatedAt    DateTime?       @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
   deletedAt    DateTime?       @map("DELETED_AT") @db.Timestamp(6)
   employee     EMPLOYEES?      @relation(fields: [employeeId], references: [employeeId])
-  accountRoles ACCOUNT_ROLES[]
-  otpTokens    OTP_TOKENS[]
+  accountRoles   ACCOUNT_ROLES[]
+  otpTokens      OTP_TOKENS[]
+  refreshTokens  REFRESH_TOKENS[]
 
   @@index([employeeId])
   @@map("ACCOUNTS")
@@ -278,4 +279,20 @@ enum NETWORK_STATUS {
   INACTIVE
   DISABLED
   CONFLICT
+}
+
+model REFRESH_TOKENS {
+  id        String   @unique @map("ID") @db.Uuid
+  tokenId   Int      @id @default(autoincrement()) @map("TOKEN_ID")
+  token     String   @map("TOKEN") @db.Text
+  accountId Int      @map("ACCOUNT_ID")
+  isRevoked Boolean  @default(false) @map("IS_REVOKED")
+  expiresAt DateTime @map("EXPIRES_AT") @db.Timestamp(6)
+  createdAt DateTime @default(now()) @map("CREATED_AT") @db.Timestamp(6)
+
+  account   ACCOUNTS @relation(fields: [accountId], references: [accountId])
+
+  @@index([accountId])
+  @@index([token])
+  @@map("REFRESH_TOKENS")
 }

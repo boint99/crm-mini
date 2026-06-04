@@ -61,7 +61,7 @@ class EmployeesServices {
    * Get list of employees
    */
   async lists(data) {
-    const { status, info } = data
+    const { status, info, unitId, unitid, companyId, companyid, branchId, branchid } = data
     const queryStatus = status ? status.toUpperCase() : undefined
 
     if (queryStatus) {
@@ -86,7 +86,13 @@ class EmployeesServices {
       }
     }
 
-    return await employeesModel.listQuery(queryStatus, info)
+    return await employeesModel.listQuery(
+      queryStatus,
+      info,
+      unitId || unitid,
+      companyId || companyid,
+      branchId || branchid
+    )
   }
 
   /**

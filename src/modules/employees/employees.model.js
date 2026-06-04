@@ -9,7 +9,7 @@ class EmployeesModel extends BaseModel {
     return await super.LISTALL()
   }
 
-  async listQuery(status, info) {
+  async listQuery(status, info, unitId, companyId, branchId) {
     const where = {
       ...(status ? { status } : {})
     }
@@ -23,6 +23,14 @@ class EmployeesModel extends BaseModel {
         where.employeeId = Number(info)
       } else {
         where.employeeCode = info
+      }
+    }
+
+    if (unitId || companyId || branchId) {
+      where.orgUnit = {
+        ...(unitId ? { id: unitId } : {}),
+        ...(companyId ? { company: { id: companyId } } : {}),
+        ...(branchId ? { branch: { id: branchId } } : {})
       }
     }
 
@@ -88,8 +96,6 @@ class EmployeesModel extends BaseModel {
       })
     }
 
-    // Đối với hàm super, truyền thêm select nếu hàm cha hỗ trợ,
-    // hoặc kiểm tra lại hàm cha xem có đang bị ẩn employeeId không.
     return await super.LISTQUERY({
       where: Object.keys(where).length ? where : undefined,
       include: {
@@ -100,7 +106,9 @@ class EmployeesModel extends BaseModel {
             orgUnitId: true,
             unitName: true,
             unitType: true,
-            parentUnit: { select: { id: true, orgUnitId: true, unitName: true, unitType: true } }
+            parentUnit: { select: { id: true, orgUnitId: true, unitName: true, unitType: true } },
+            company: { select: { id: true, companyId: true, companyName: true } },
+            branch: { select: { id: true, branchId: true, branchName: true } }
           }
         },
         viettel: { select: { id: true, viettelId: true, viettelEmail: true } }

@@ -3,47 +3,54 @@ import { StatusCodes } from 'http-status-codes'
 import ApiError from '../../utils/ApiError.js'
 import { accountsModel } from '../accounts/accounts.model.js'
 import { employeesModel } from '../employees/employees.model.js'
-import { removeDomain, saltRoundsPassword } from '../../utils/constants.js'
-import { signAccessToken } from '../../utils/jwt.js'
+import { saltRoundsPassword } from '../../utils/constants.js'
+import { signAccessToken, signRefreshToken, verifyRefreshToken, decodeToken } from '../../utils/jwt.js'
 import Serializer from '../../utils/Serializer.js'
+import { refreshTokenModel } from './refreshToken.model.js'
 
 class AuthService {
-  _validateAndNormalize(data) {
-    const { FIRST_NAME, LAST_NAME, EMAIL, PASSWORD, RE_PASSWORD } = data
+  _validateRegister(data) {
+    const { firstName, lastName, email, password, confirmPassword } = data
 
-    if (!FIRST_NAME?.trim()) {
+    if (!firstName?.trim()) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'First name is required!')
     }
 
-    if (!LAST_NAME?.trim()) {
+    if (!lastName?.trim()) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Last name is required!')
     }
 
-    if (!EMAIL?.trim()) {
+    if (!email?.trim()) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Email is required!')
     }
 
-    if (!PASSWORD?.trim()) {
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email.trim())) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid email format!')
+    }
+
+    if (!password?.trim()) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Password is required!')
     }
 
-    if (!RE_PASSWORD?.trim()) {
+    if (!confirmPassword?.trim()) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Confirm password is required!')
     }
 
-    if (PASSWORD !== RE_PASSWORD) {
+    if (password !== confirmPassword) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Password not match!')
     }
 
-    if (PASSWORD.length < 8) {
+    if (password.length < 8) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Password must be >= 8 chars!')
     }
 
     return {
-      FIRST_NAME: FIRST_NAME.trim(),
-      LAST_NAME: LAST_NAME.trim(),
-      EMAIL: EMAIL.trim().toLowerCase(),
-      PASSWORD: PASSWORD.trim()
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email.trim().toLowerCase(),
+      password: password.trim()
     }
   }
 
@@ -54,69 +61,160 @@ class AuthService {
       throw new ApiError(StatusCodes.CONFLICT, 'Email already registered!')
     }
 
-    const existingAccount = await accountsModel.findByUnique(email, 'ACCOUNT_NAME')
+    // accountName lưu email đầy đủ
+    const existingAccount = await accountsModel.findByUnique(email, 'accountName')
     if (existingAccount) {
       throw new ApiError(StatusCodes.CONFLICT, 'Account already exists!')
     }
   }
 
-  // ================= MAIN LOGIC =================
+  // ================= REGISTER =================
   async register(data) {
     // 1. Validate + normalize
-    const cleanData = this._validateAndNormalize(data)
-    const emailRemovedDomain = removeDomain(cleanData.EMAIL)
+    const cleanData = this._validateRegister(data)
 
-    // 2. Check duplicate (business rule)
-    await this._ensureEmailNotExists(cleanData.EMAIL)
+    // 2. Check duplicate
+    await this._ensureEmailNotExists(cleanData.email)
 
-    // 4. Create account
+    // 3. Create account — lưu email đầy đủ làm accountName
     const account = await accountsModel.create({
-      ACCOUNT_NAME: emailRemovedDomain,
-      PASSWORD: await bcrypt.hash(cleanData.PASSWORD, saltRoundsPassword),
-      EMPLOYEE_ID: null,
-      LOGIN: 0,
-      IS_LOGIN: false
+      accountName: cleanData.email,
+      password: await bcrypt.hash(cleanData.password, saltRoundsPassword),
+      employeeId: null,
+      login: 0,
+      isLogin: false
     })
 
     return account
   }
 
+  // ================= LOGIN =================
   async login(data) {
-    const { USERNAME, PASSWORD } = data
-    let accountName = USERNAME.trim().toLowerCase()
-    let password = PASSWORD.trim()
+    const { email, password } = data
 
-    const account = await accountsModel.findByUnique(accountName, 'ACCOUNT_NAME')
-
-    if (!account) {
-      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid username or password!')
+    if (!email?.trim()) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Email is required!')
     }
 
-    if (account.STATUS !== 'ENABLE') {
+    if (!password?.trim()) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Password is required!')
+    }
+
+    const accountEmail = email.trim().toLowerCase()
+
+    // Tìm account bằng email (accountName = email đầy đủ)
+    const account = await accountsModel.findByUnique(accountEmail, 'accountName')
+
+    if (!account) {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid email or password!')
+    }
+
+    if (account.status !== 'ENABLE') {
       throw new ApiError(StatusCodes.UNAUTHORIZED, 'Account is not active!')
     }
 
-    if (!account.IS_LOGIN) {
-      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Account is not logged in!')
+    if (!account.isLogin) {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Account is not activated!')
     }
 
-    const isMatch = await bcrypt.compare(password, account.PASSWORD)
-    console.log('🚀 ~ AuthService ~ login ~ isMatch:', isMatch)
+    const isMatch = await bcrypt.compare(password.trim(), account.password)
     if (!isMatch) {
-      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid username or password!')
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid email or password!')
     }
 
+    // ===== TẠO ACCESS TOKEN =====
     const tokenPayload = {
-      id: account.ACCOUNT_ID,
-      name: account.ACCOUNT_NAME
+      id: account.accountId,
+      email: account.accountName
     }
-
     const accessToken = signAccessToken(tokenPayload)
-    const safeAccount = Serializer.sanitize(account, ['PASSWORD'])
 
-    return { ...safeAccount, accessToken }
+    // ===== TẠO REFRESH TOKEN =====
+    const refreshToken = signRefreshToken({ id: account.accountId })
+
+    // ===== LƯU REFRESH TOKEN VÀO DATABASE =====
+    const decodedRefresh = decodeToken(refreshToken)
+    const expiresAt = new Date(decodedRefresh.exp * 1000)
+
+    await refreshTokenModel.createRefreshToken(
+      account.accountId,
+      refreshToken,
+      expiresAt
+    )
+
+    // ===== TRẢ VỀ RESPONSE =====
+    const safeAccount = Serializer.sanitize(account, ['password', 'deletedAt'])
+
+    return {
+      ...safeAccount,
+      accessToken
+    }
   }
 
+  // ================= REFRESH TOKEN =================
+  async refreshToken(data) {
+    const { refreshToken } = data
+
+    if (!refreshToken) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Refresh token is required!')
+    }
+
+    // ===== VERIFY REFRESH TOKEN =====
+    let decoded
+    try {
+      decoded = verifyRefreshToken(refreshToken)
+    } catch (error) {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Refresh token is invalid or expired!')
+    }
+
+    // ===== KIỂM TRA TOKEN CÓ TRONG DATABASE KHÔNG =====
+    const isValid = await refreshTokenModel.isTokenValid(refreshToken)
+    if (!isValid) {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Refresh token has been revoked or expired!')
+    }
+
+    // ===== LẤY THÔNG TIN ACCOUNT =====
+    const account = await accountsModel.findByUnique(decoded.id, 'accountId')
+    if (!account) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
+    }
+
+    // ===== TẠO ACCESS TOKEN MỚI =====
+    const newAccessToken = signAccessToken({
+      id: account.accountId,
+      email: account.accountName
+    })
+
+    return {
+      accessToken: newAccessToken
+    }
+  }
+
+  // ================= LOGOUT (single device) =================
+  async logout(data) {
+    const { refreshToken } = data
+
+    if (!refreshToken) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Refresh token is required!')
+    }
+
+    const revoked = await refreshTokenModel.revokeToken(refreshToken)
+    if (!revoked) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Cannot revoke token!')
+    }
+
+    return { message: 'Logged out successfully' }
+  }
+
+  // ================= LOGOUT ALL (all devices) =================
+  async logoutAll(accountId) {
+    const revokedCount = await refreshTokenModel.revokeAllAccountTokens(accountId)
+
+    return {
+      message: `Logged out from ${revokedCount} device(s)`,
+      revokedDevices: revokedCount
+    }
+  }
 }
 
 export const authService = new AuthService()

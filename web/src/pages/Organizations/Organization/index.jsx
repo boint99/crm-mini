@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   ChevronRight,
   ChevronDown,
@@ -13,8 +13,12 @@ import {
   Maximize2,
   Minimize2
 } from 'lucide-react'
-import { companiesAPI } from '@/api/companiesAPI'
-import { divisionsAPI } from '@/api/divisionsAPI'
+import { useDispatch, useSelector } from 'react-redux'
+import { useAppDispatch } from '@/hook/useAppDispatch'
+import { getCompanies, selectCompanies } from '@/redux/slice/companiesSilce'
+import { getBranches, selectBranches } from '@/redux/slice/branchesSlice'
+import { getDepartments, selectDepartments } from '@/redux/slice/departmentsSlice'
+import { getEmployees, selectEmployees } from '@/redux/slice/employeesSlice'
 import { employeesAPI } from '@/api/employeesAPI'
 import LoadingItem from '@/components/ui/LoadingItem'
 
@@ -100,111 +104,193 @@ const TreeNode = ({
 }
 
 const Organization = () => {
-  const [treeData, setTreeData] = useState([])
-  const [loading, setLoading] = useState(true)
+  const dispatchAsync = useAppDispatch()
+
+  const companies = useSelector(selectCompanies)
+  const branches = useSelector(selectBranches)
+  const departments = useSelector(selectDepartments)
+  const employees = useSelector(selectEmployees)
+
+  const companiesLoading = useSelector((state) => state.companies.loading)
+  const branchesLoading = useSelector((state) => state.branches.loading)
+  const departmentsLoading = useSelector((state) => state.departments.loading)
+  const employeesLoading = useSelector((state) => state.employees.loading)
+  const loading = companiesLoading || branchesLoading || departmentsLoading || employeesLoading
+
+  const [selectedCompanyId, setSelectedCompanyId] = useState('')
+  const [selectedBranchId, setSelectedBranchId] = useState('')
   const [selectedNode, setSelectedNode] = useState(null)
   const [expandedIds, setExpandedIds] = useState(new Set())
   const [searchQuery, setSearchQuery] = useState('')
+  const [deptEmployees, setDeptEmployees] = useState([])
+  const [deptEmployeesLoading, setDeptEmployeesLoading] = useState(false)
 
-  const loadData = async () => {
-    try {
-      setLoading(true)
-      const [compRes, orgRes, empRes] = await Promise.all([
-        companiesAPI.getLists(),
-        divisionsAPI.getLists(),
-        employeesAPI.getLists()
-      ])
+  // 1. Fetch companies, branches, employees once on mount
+  useEffect(() => {
+    dispatchAsync(getCompanies())
+    dispatchAsync(getBranches())
+    dispatchAsync(getEmployees())
+  }, [dispatchAsync])
 
-      const companies = compRes.data || []
-      const orgUnits = orgRes.data || []
-      const employees = empRes.data || []
+  // 2. Fetch departments tree when company or branch changes
+  useEffect(() => {
+    const params = { tree: '' }
+    if (selectedCompanyId) params.companyid = selectedCompanyId
+    if (selectedBranchId) params.branchid = selectedBranchId
+    dispatchAsync(getDepartments(params))
+  }, [dispatchAsync, selectedCompanyId, selectedBranchId])
 
-      // Build tree
-      const empCountByUnit = {}
-      employees.forEach((emp) => {
-        const uid = emp.UNIT_ID
-        if (uid) {
-          empCountByUnit[uid] = (empCountByUnit[uid] || 0) + 1
-        }
-      })
-
-      const orgNodes = orgUnits.map((org) => ({
-        id: org.DIVISION_ID,
-        name: org.DIVISION_NAME,
-        code: org.DIVISION_CODE || 'ORG',
-        type: org.UNIT_TYPE || 'ORG_UNIT',
-        manager: 'Trưởng bộ phận',
-        companyId: org.COMPANY_ID,
-        parentUnitId: org.PARENT_UNIT?.DIVISION_ID || null,
-        totalEmployees: empCountByUnit[org.DIVISION_ID] || 0,
-        children: []
-      }))
-
-      const orgMap = {}
-      orgNodes.forEach((node) => {
-        orgMap[node.id] = node
-      })
-
-      const rootOrgUnitsByCompany = {}
-      orgNodes.forEach((node) => {
-        if (node.parentUnitId && orgMap[node.parentUnitId]) {
-          orgMap[node.parentUnitId].children.push(node)
-        } else {
-          const cId = node.companyId
-          if (cId) {
-            if (!rootOrgUnitsByCompany[cId]) rootOrgUnitsByCompany[cId] = []
-            rootOrgUnitsByCompany[cId].push(node)
-          }
-        }
-      })
-
-      const calcEmployees = (node) => {
-        let sum = node.totalEmployees || 0
-        node.children.forEach((child) => {
-          sum += calcEmployees(child)
-        })
-        node.totalEmployees = sum
-        return sum
+  // 2b. Fetch employees of the selected node/department
+  useEffect(() => {
+    if (selectedNode && selectedNode.id) {
+      setDeptEmployeesLoading(true)
+      const params = {}
+      if (selectedNode.type === 'COMPANY') {
+        params.companyid = selectedNode.id
+      } else {
+        params.unitid = selectedNode.id
       }
+      if (selectedBranchId) {
+        params.branchid = selectedBranchId
+      }
+      employeesAPI.getLists(params)
+        .then((res) => {
+          setDeptEmployees(res.data || [])
+        })
+        .catch((err) => {
+          console.error(err)
+          setDeptEmployees([])
+        })
+        .finally(() => {
+          setDeptEmployeesLoading(false)
+        })
+    } else {
+      setDeptEmployees([])
+    }
+  }, [selectedNode, selectedBranchId])
 
-      orgNodes.forEach((node) => {
-        if (!node.parentUnitId) {
-          calcEmployees(node)
+  // 3. Process flat/tree backend response & map to frontend UI nodes (enriching with employee counts)
+  const treeData = useMemo(() => {
+    // Count employees per unit
+    const empCountByUnit = {}
+    employees.forEach((emp) => {
+      const uid = emp.orgUnit?.id || emp.unitId
+      if (uid) {
+        empCountByUnit[uid] = (empCountByUnit[uid] || 0) + 1
+      }
+    })
+
+    // Recursive function to map nodes & compute total employees
+    const enrichTreeWithStats = (nodes) => {
+      if (!Array.isArray(nodes)) return []
+      return nodes.map((node) => {
+        const children = node.children ? enrichTreeWithStats(node.children) : []
+        const directEmployees = empCountByUnit[node.id] || 0
+        const totalEmployees = directEmployees + children.reduce((sum, child) => sum + (child.totalEmployees || 0), 0)
+
+        return {
+          id: node.id,
+          name: node.unitName || node.name || '',
+          code: node.orgUnitCode || node.code || 'ORG',
+          type: node.unitType || node.type || 'ORG_UNIT',
+          manager: node.manager || 'Trưởng bộ phận',
+          totalEmployees,
+          children
         }
       })
+    }
 
-      const companyNodes = companies.map((comp) => {
-        const children = rootOrgUnitsByCompany[comp.COMPANY_ID] || []
-        const totalEmp = children.reduce(
-          (acc, child) => acc + child.totalEmployees,
-          0
-        )
-        return {
-          id: comp.COMPANY_ID,
-          name: comp.COMPANY_NAME,
+    const enrichedDeps = enrichTreeWithStats(departments)
+
+    const selectedCompany = companies.find(c => c.id === selectedCompanyId)
+    if (selectedCompany) {
+      const totalEmp = enrichedDeps.reduce((sum, child) => sum + (child.totalEmployees || 0), 0)
+      return [
+        {
+          id: selectedCompany.id,
+          name: selectedCompany.companyName,
           code: 'COMPANY',
           type: 'COMPANY',
           manager: 'Giám đốc',
           totalEmployees: totalEmp,
-          children
+          children: enrichedDeps
         }
-      })
-
-      setTreeData(companyNodes)
-      // Auto expand top level companies
-      if (companyNodes.length > 0) {
-        setExpandedIds(new Set(companyNodes.map((c) => c.id)))
-      }
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to load organization tree:', err)
-    } finally {
-      setLoading(false)
+      ]
     }
-  }
 
+    return enrichedDeps
+  }, [companies, departments, employees, selectedCompanyId])
+
+  // 4. Filter tree by searchQuery
+  const filteredTreeData = useMemo(() => {
+    if (!searchQuery.trim()) return treeData
+
+    const filterTree = (nodes, query) => {
+      const lowerQuery = query.toLowerCase()
+      return nodes
+        .map((node) => {
+          const nameMatches = node.name?.toLowerCase().includes(lowerQuery)
+          const codeMatches = node.code?.toLowerCase().includes(lowerQuery)
+
+          if (node.children && node.children.length > 0) {
+            const filteredChildren = filterTree(node.children, query)
+            if (filteredChildren.length > 0 || nameMatches || codeMatches) {
+              return { ...node, children: filteredChildren }
+            }
+          }
+
+          if (nameMatches || codeMatches) {
+            return { ...node, children: [] }
+          }
+
+          return null
+        })
+        .filter(Boolean)
+    }
+
+    return filterTree(treeData, searchQuery.trim())
+  }, [treeData, searchQuery])
+
+  // 5. Auto expand top level nodes when tree data changes
   useEffect(() => {
-    loadData()
+    if (filteredTreeData.length > 0) {
+      setExpandedIds((prev) => {
+        if (prev.size > 0) return prev
+        return new Set(filteredTreeData.map((node) => node.id))
+      })
+    }
+  }, [filteredTreeData])
+
+  // 6. Dynamic layout adjustments for MainLayout wrapper to prevent page-level scrollbars
+  useEffect(() => {
+    const contentArea = document.querySelector('.content-area')
+    const layoutMain = document.querySelector('.layout-main')
+    let innerDiv = null
+
+    if (contentArea) {
+      innerDiv = contentArea.querySelector('.flex.min-h-full.flex-col') || contentArea.firstElementChild
+      contentArea.style.overflow = 'hidden'
+    }
+    if (innerDiv) {
+      innerDiv.style.height = '100%'
+      innerDiv.style.minHeight = 'auto'
+    }
+    if (layoutMain) {
+      layoutMain.style.height = '100%'
+    }
+
+    return () => {
+      if (contentArea) {
+        contentArea.style.overflow = ''
+      }
+      if (innerDiv) {
+        innerDiv.style.height = ''
+        innerDiv.style.minHeight = ''
+      }
+      if (layoutMain) {
+        layoutMain.style.height = ''
+      }
+    }
   }, [])
 
   const toggleExpand = (id) => {
@@ -220,7 +306,7 @@ const Organization = () => {
       ids.add(node.id)
       if (node.children) node.children.forEach(traverse)
     }
-    treeData.forEach(traverse)
+    filteredTreeData.forEach(traverse)
     setExpandedIds(ids)
   }
 
@@ -228,8 +314,42 @@ const Organization = () => {
     setExpandedIds(new Set())
   }
 
+  const handleRefresh = () => {
+    dispatchAsync(getCompanies())
+    dispatchAsync(getBranches())
+    dispatchAsync(getEmployees())
+
+    const params = { tree: '' }
+    if (selectedCompanyId) params.companyid = selectedCompanyId
+    if (selectedBranchId) params.branchid = selectedBranchId
+    dispatchAsync(getDepartments(params))
+
+    if (selectedNode && selectedNode.id) {
+      setDeptEmployeesLoading(true)
+      const params = {}
+      if (selectedNode.type === 'COMPANY') {
+        params.companyid = selectedNode.id
+      } else {
+        params.unitid = selectedNode.id
+      }
+      if (selectedBranchId) {
+        params.branchid = selectedBranchId
+      }
+      employeesAPI.getLists(params)
+        .then((res) => {
+          setDeptEmployees(res.data || [])
+        })
+        .catch((err) => {
+          console.error(err)
+        })
+        .finally(() => {
+          setDeptEmployeesLoading(false)
+        })
+    }
+  }
+
   return (
-    <div className="flex h-screen bg-[#F8FAFC] text-slate-900 font-sans overflow-hidden">
+    <div className="flex h-full bg-[#F8FAFC] text-slate-900 font-sans overflow-hidden">
       {/* Sidebar - Org Tree */}
       <div className="w-80 bg-white border-r border-slate-200 flex flex-col shadow-sm">
         <div className="p-4 border-b border-slate-100">
@@ -252,6 +372,49 @@ const Organization = () => {
               </button>
             </div>
           </div>
+
+          {/* Company & Branch Select Filters */}
+          <div className="space-y-3 mb-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                Công ty
+              </label>
+              <select
+                value={selectedCompanyId}
+                onChange={(e) => {
+                  setSelectedCompanyId(e.target.value)
+                  setSelectedBranchId('')
+                }}
+                className="w-full bg-slate-100 border-none rounded-lg text-sm px-3 py-2 text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer"
+              >
+                <option value="">-- Tất cả --</option>
+                {companies.map((comp) => (
+                  <option key={comp.id} value={comp.id}>
+                    {comp.companyName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                Chi nhánh
+              </label>
+              <select
+                value={selectedBranchId}
+                onChange={(e) => setSelectedBranchId(e.target.value)}
+                className="w-full bg-slate-100 border-none rounded-lg text-sm px-3 py-2 text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer"
+              >
+                <option value="">-- Tất cả chi nhánh --</option>
+                {branches.map((branch) => (
+                  <option key={branch.id} value={branch.id}>
+                    {branch.branchName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
@@ -268,7 +431,7 @@ const Organization = () => {
           {loading ? (
             <LoadingItem />
           ) : (
-            treeData.map((node) => (
+            filteredTreeData.map((node) => (
               <TreeNode
                 key={node.id}
                 node={node}
@@ -283,7 +446,7 @@ const Organization = () => {
 
         <div className="p-4 border-t border-slate-100 bg-slate-50">
           <button
-            onClick={loadData}
+            onClick={handleRefresh}
             className="flex items-center justify-center w-full gap-2 py-2 px-4 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-blue-300 transition-all shadow-sm cursor-pointer"
           >
             Làm mới sơ đồ
@@ -358,7 +521,7 @@ const Organization = () => {
             </div>
 
             {/* Info and Sub-units */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
               <div className="lg:col-span-1 space-y-6">
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                   <h3 className="font-bold text-slate-800 mb-6">
@@ -394,55 +557,86 @@ const Organization = () => {
                 </div>
               </div>
 
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-3">
+                {/* Danh sách nhân viên */}
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                   <div className="p-6 border-b border-slate-100 flex justify-between items-center">
                     <h3 className="font-bold text-slate-800">
-                      Cấp dưới trực tiếp
+                      Danh sách nhân viên
                     </h3>
-                    <span className="text-xs font-semibold bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full uppercase">
-                      Danh sách chi tiết
+                    <span className="text-xs font-semibold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full uppercase">
+                      {deptEmployees.length} nhân sự
                     </span>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
                       <thead>
                         <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-bold">
-                          <th className="px-6 py-4">Mã đơn vị</th>
-                          <th className="px-6 py-4">Tên đơn vị</th>
-                          <th className="px-6 py-4">Trưởng đơn vị</th>
-                          <th className="px-6 py-4 text-right">Nhân sự</th>
+                          <th className="px-6 py-4">Mã NV</th>
+                          <th className="px-6 py-4">Họ và tên</th>
+                          <th className="px-6 py-4">Phòng ban</th>
+                          <th className="px-6 py-4">Chi nhánh</th>
+                          <th className="px-6 py-4">Chức vụ</th>
+                          <th className="px-6 py-4">Email</th>
+                          <th className="px-6 py-4">Số điện thoại</th>
+                          <th className="px-6 py-4">Trạng thái</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
-                        {selectedNode.children?.length > 0 ? (
-                          selectedNode.children.map((child) => (
+                        {deptEmployeesLoading ? (
+                          <tr>
+                            <td colSpan="8" className="px-6 py-8 text-center">
+                              <div className="flex justify-center items-center gap-2 text-slate-500">
+                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Đang tải danh sách nhân viên...</span>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : deptEmployees.length > 0 ? (
+                          deptEmployees.map((emp) => (
                             <tr
-                              key={child.id}
-                              className="hover:bg-blue-50/30 transition-colors cursor-pointer group"
-                              onClick={() => setSelectedNode(child)}
+                              key={emp.id}
+                              className="hover:bg-blue-50/10 transition-colors"
                             >
-                              <td className="px-6 py-4 text-sm font-medium text-blue-600">
-                                {child.code}
+                              <td className="px-6 py-4 text-sm font-medium text-slate-600">
+                                {emp.employeeCode}
                               </td>
                               <td className="px-6 py-4 text-sm font-bold text-slate-800">
-                                {child.name}
+                                 {emp.firstName} {emp.lastName}
                               </td>
                               <td className="px-6 py-4 text-sm text-slate-600">
-                                {child.manager}
+                                {emp.orgUnit?.unitName || '—'}
                               </td>
-                              <td className="px-6 py-4 text-sm text-right font-medium text-slate-900">
-                                {child.totalEmployees}
+                              <td className="px-6 py-4 text-sm text-slate-600">
+                                {emp.orgUnit?.branch?.branchName || '—'}
+                              </td>
+                              <td className="px-6 py-4 text-sm text-slate-600">
+                                {emp.position?.positionName || 'Nhân viên'}
+                              </td>
+                              <td className="px-6 py-4 text-sm text-slate-500">
+                                {emp.email || '—'}
+                              </td>
+                              <td className="px-6 py-4 text-sm text-slate-500">
+                                {emp.phone || '—'}
+                              </td>
+                              <td className="px-6 py-4 text-sm">
+                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                                  emp.status === 'ENABLE'
+                                    ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20'
+                                    : 'bg-gray-50 text-gray-700 ring-1 ring-gray-500/20'
+                                }`}>
+                                  {emp.status === 'ENABLE' ? 'Hoạt động' : 'Tạm dừng'}
+                                </span>
                               </td>
                             </tr>
                           ))
                         ) : (
                           <tr>
                             <td
-                              colSpan="4"
+                              colSpan="8"
                               className="px-6 py-12 text-center text-slate-400 italic"
                             >
-                              Không có đơn vị trực thuộc
+                              Không có nhân viên trong đơn vị này
                             </td>
                           </tr>
                         )}

@@ -3,8 +3,8 @@ import { X } from "lucide-react";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import Modal from "react-modal";
-import { divisionsAPI } from "@/api/divisionsAPI";
 import { positionsAPI } from "@/api/positionsAPI";
+import { departmentsAPI } from "@/api/departmentsAPI";
 
 const modalStyles = {
   ...customStyles,
@@ -57,7 +57,7 @@ function SearchableSelect({
         className={`${inputClass} flex items-center justify-between bg-white text-left`}
       >
         <span className={selectedOption ? "text-gray-900" : "text-gray-400"}>
-          {selectedOption ? selectedOption.label : placeholder}
+          {selectedOption ? (selectedOption.cleanLabel || selectedOption.label) : placeholder}
         </span>
         <svg
           className="ml-2 h-4 w-4 text-gray-400 flex-shrink-0"
@@ -149,9 +149,64 @@ export default function EmployeeModel({
   const [units, setUnits] = useState([]);
   const [positions, setPositions] = useState([]);
 
+  const unitOptions = useMemo(() => {
+    if (!units || units.length === 0) return [];
+
+    // Loại bỏ trùng lặp nếu API trả về các phần tử trùng lặp
+    const uniqueUnitsMap = {};
+    units.forEach((u) => {
+      if (u && u.id) {
+        uniqueUnitsMap[u.id] = u;
+      }
+    });
+    const uniqueUnits = Object.values(uniqueUnitsMap);
+
+    const map = {};
+    uniqueUnits.forEach((unit) => {
+      map[unit.id] = { ...unit, children: [] };
+    });
+
+    const roots = [];
+    uniqueUnits.forEach((unit) => {
+      const mapped = map[unit.id];
+      const parentId = unit.parentUnit?.id;
+      if (parentId && map[parentId]) {
+        map[parentId].children.push(mapped);
+      } else {
+        roots.push(mapped);
+      }
+    });
+
+    const options = [];
+    const traverse = (node, depth = 0) => {
+      const indent = "\u00A0\u00A0".repeat(depth);
+      const prefix = depth > 0 ? `${indent}↳ ` : "";
+
+      let extra = "";
+      if (node.company?.companyName && depth === 0) {
+        extra = ` (${node.company.companyName})`;
+      } else if (node.branch?.branchName && depth === 0) {
+        extra = ` (${node.branch.branchName})`;
+      }
+
+      options.push({
+        value: node.id,
+        label: `${prefix}${node.unitName}`,
+        cleanLabel: `${node.unitName}`
+      });
+
+      if (node.children) {
+        node.children.forEach((child) => traverse(child, depth + 1));
+      }
+    };
+
+    roots.forEach((root) => traverse(root, 0));
+    return options;
+  }, [units]);
+
   useEffect(() => {
     if (isOpen) {
-      divisionsAPI
+      departmentsAPI
         .getLists()
         .then((res) => {
           setUnits(res.data || []);
@@ -303,7 +358,7 @@ export default function EmployeeModel({
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className={labelClass}>Mã nhân viên (MaNV) *</label>
+              <label className={labelClass}>Mã nhân viên*</label>
               <input
                 type="text"
                 placeholder="VD: EMP123"
@@ -312,7 +367,7 @@ export default function EmployeeModel({
                 {...register("employeeCode", {
                   required: "Bắt buộc",
                   validate: (v) =>
-                    v.trim().length === 6 || "Mã nhân viên phải đúng 6 ký tự",
+                    v.trim().length >= 6 || "Mã nhân viên phải đúng 6 ký tự",
                 })}
               />
               {errors.employeeCode && (
@@ -323,7 +378,7 @@ export default function EmployeeModel({
             </div>
 
             <div>
-              <label className={labelClass}>Họ (First Name) *</label>
+              <label className={labelClass}>Họ*</label>
               <input
                 type="text"
                 placeholder="VD: Nguyễn"
@@ -338,7 +393,7 @@ export default function EmployeeModel({
             </div>
 
             <div>
-              <label className={labelClass}>Tên (Last Name) *</label>
+              <label className={labelClass}>Tên*</label>
               <input
                 type="text"
                 placeholder="VD: Văn A"
@@ -358,7 +413,7 @@ export default function EmployeeModel({
             </div>
 
             <div>
-              <label className={labelClass}>Số điện thoại (Phone)</label>
+              <label className={labelClass}>Số điện thoại</label>
               <input
                 type="text"
                 placeholder="VD: 0901234567"
@@ -368,7 +423,7 @@ export default function EmployeeModel({
             </div>
 
             <div>
-              <label className={labelClass}>Email (Email)</label>
+              <label className={labelClass}>Email</label>
               <input
                 type="text"
                 placeholder="VD: a.nguyen@company.com"
@@ -388,12 +443,9 @@ export default function EmployeeModel({
             </div>
 
             <div>
-              <label className={labelClass}>Đơn vị (Unit)</label>
+              <label className={labelClass}>Đơn vị/phòng ban</label>
               <SearchableSelect
-                options={units.map((unit) => ({
-                  value: unit.id || "",
-                  label: unit.unitName || "",
-                }))}
+                options={unitOptions}
                 value={unitId}
                 onChange={(val) => setValue("unitId", val)}
                 placeholder="Chọn đơn vị"
@@ -402,7 +454,7 @@ export default function EmployeeModel({
             </div>
 
             <div>
-              <label className={labelClass}>Chức vụ (Position)</label>
+              <label className={labelClass}>Chức vụ</label>
               <SearchableSelect
                 options={positions.map((pos) => ({
                   value: pos.id || "",
