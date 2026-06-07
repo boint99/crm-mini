@@ -52,7 +52,7 @@ class VlansValidate {
   static async create(req, res, next) {
     try {
       const { vlanId, vlanName, network, defaultGateway, status } = req.body
-      ValidateCores.validateId(vlanId, 'Vlan ID is required!')
+      ValidateCores.validateIdNumber(vlanId, 'Vlan ID is required!')
       ValidateCores.validateRequiredString(vlanName, 'Vlan name is required!')
       ValidateCores.validateRequiredString(network, 'Network is required (e.g. 192.168.1.0/24)!')
       ValidateCores.validateRequiredString(defaultGateway, 'Default gateway is required!')

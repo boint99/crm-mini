@@ -18,6 +18,15 @@ class Validate {
     }
   }
 
+  static validateIdNumber(id, message) {
+    if (id) {
+      if (typeof id !== 'number') {
+        throw new ApiError(StatusCodes.BAD_REQUEST, message)
+      }
+    }
+  }
+
+
   static  validateCreate (id, message = 'Invalid') {
     if (!id || isNaN(id)) {
       throw new ApiError(StatusCodes.BAD_REQUEST, message)
