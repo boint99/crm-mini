@@ -1,5 +1,6 @@
 import cors from 'cors'
 import express from 'express'
+import cookieParser from 'cookie-parser'
 import swaggerUi from 'swagger-ui-express'
 import CONNECT_DB from './configs/db.config.js'
 import { environments } from './configs/env.config.js'
@@ -21,6 +22,7 @@ const START_SERVER = async () => {
 
   app.use(cors(corsOptions))
   app.use(express.json())
+  app.use(cookieParser())
 
   app.get('/', (req, res) => {
     res.send('Welcome to the CRM project')

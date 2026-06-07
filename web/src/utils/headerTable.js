@@ -22,9 +22,8 @@ export const headerTableEmployees = {
   name: 'Tên nhân viên',
   email: 'Email',
   birthday: 'Ngày sinh',
-  department: 'Đơn vị/phòng ban',
   position: 'Chức vụ',
-  viettel: 'Mã Viettel',
+  department: 'Đơn vị/phòng ban',
   status: 'Trạng thái',
   createdAt: 'Ngày tạo',
   updatedAt: 'Ngày cập nhật'
@@ -89,9 +88,9 @@ export const headerTableBranch = {
 
 export const headerTableAccounts = {
   index: 'STT',
-  accountName: 'Tài khoản',
-  employee: 'Mã NV',
-  isLogin: 'Đang đăng nhập',
+  accountName: 'Tên tài khoản',
+  employee: 'Họ và tên',
+  isLogin: 'Đăng nhập',
   login: 'Số lần đăng nhập',
   status: 'Trạng thái',
   description: 'Mô tả',

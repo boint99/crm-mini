@@ -108,7 +108,7 @@ const accountsSlice = createSlice({
       .addCase(updateAccount.fulfilled, (state, action) => {
         if (!action.payload) return;
         const index = state.items.findIndex(
-          (item) => item.ACCOUNT_ID === action.payload.ACCOUNT_ID
+          (item) => item.id === action.payload.id
         );
         if (index !== -1) {
           state.items[index] = action.payload;
@@ -119,7 +119,7 @@ const accountsSlice = createSlice({
       .addCase(resetAccountPassword.fulfilled, (state, action) => {
         if (!action.payload) return;
         const index = state.items.findIndex(
-          (item) => item.ACCOUNT_ID === action.payload.ACCOUNT_ID
+          (item) => item.id === action.payload.id
         );
         if (index !== -1) {
           state.items[index] = { ...state.items[index], ...action.payload };
@@ -129,7 +129,7 @@ const accountsSlice = createSlice({
       // DELETE
       .addCase(deleteAccount.fulfilled, (state, action) => {
         state.items = state.items.filter(
-          (item) => Number(item.ACCOUNT_ID) !== Number(action.payload)
+          (item) => item.id !== action.payload
         );
       });
   },

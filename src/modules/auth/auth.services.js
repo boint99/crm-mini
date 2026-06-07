@@ -147,7 +147,8 @@ class AuthService {
 
     return {
       ...safeAccount,
-      accessToken
+      accessToken,
+      refreshToken
     }
   }
 
@@ -177,6 +178,14 @@ class AuthService {
     const account = await accountsModel.findByUnique(decoded.id, 'accountId')
     if (!account) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
+    }
+
+    if (account.status !== 'ENABLE') {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Account is not active!')
+    }
+
+    if (!account.isLogin) {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Account is not activated!')
     }
 
     // ===== TẠO ACCESS TOKEN MỚI =====

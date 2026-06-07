@@ -1,10 +1,12 @@
 import jwt from 'jsonwebtoken'
-import 'dotenv/config'
+import dotenv from 'dotenv'
 
-const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'change_this_secret'
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'change_this_refresh_secret'
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1d'
-const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d'
+dotenv.config({ override: true })
+
+const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN
+const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN
 
 /**
  * Ký Access Token

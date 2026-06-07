@@ -27,10 +27,11 @@ class RefreshTokenModel extends ModelCore {
    * @returns {Object|null}
    */
   async findByToken(token) {
+    // includeDeleted=true vì bảng REFRESH_TOKENS không có cột deletedAt
     return await super.FINDBYFIELD_WHERE({
       token,
       isRevoked: false
-    })
+    }, true)
   }
 
   /**
@@ -39,11 +40,12 @@ class RefreshTokenModel extends ModelCore {
    * @returns {boolean}
    */
   async isTokenValid(token) {
+    // includeDeleted=true vì bảng REFRESH_TOKENS không có cột deletedAt
     const record = await super.FINDBYFIELD_WHERE({
       token,
       isRevoked: false,
       expiresAt: { gt: new Date() }
-    })
+    }, true)
     return !!record
   }
 

@@ -92,8 +92,8 @@ model EMPLOYEES {
   accounts     ACCOUNTS[]
   position     POSITIONS?         @relation(fields: [positionId], references: [positionId])
   orgUnit      ORG_UNITS?         @relation(fields: [unitId], references: [orgUnitId])
-  viettel      VIETTEL_EMPLOYEES?
   ips          IPS[]
+  viettel      VIETTEL_EMPLOYEES?
 
   @@index([unitId])
   @@index([positionId])
@@ -101,22 +101,22 @@ model EMPLOYEES {
 }
 
 model ACCOUNTS {
-  id           String          @unique @map("ID") @db.Uuid
-  accountId    Int             @id @default(autoincrement()) @map("ACCOUNT_ID")
-  accountName  String          @unique(map: "ACCOUNTS_ACCOUNT_CODE_key")
-  password     String?         @map("PASSWORD")
-  isLogin      Boolean         @default(false) @map("IS_LOGIN")
-  login        Int             @default(0) @map("LOGIN")
-  description  String?         @map("DESCRIPTION") @db.VarChar(255)
-  employeeId   Int?            @map("EMPLOYEE_ID")
-  status       ENUMSTATUS      @default(ENABLE) @map("STATUS")
-  createdAt    DateTime        @default(now()) @map("CREATED_AT") @db.Timestamp(6)
-  updatedAt    DateTime?       @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
-  deletedAt    DateTime?       @map("DELETED_AT") @db.Timestamp(6)
-  employee     EMPLOYEES?      @relation(fields: [employeeId], references: [employeeId])
-  accountRoles   ACCOUNT_ROLES[]
-  otpTokens      OTP_TOKENS[]
-  refreshTokens  REFRESH_TOKENS[]
+  id            String           @unique @map("ID") @db.Uuid
+  accountId     Int              @id @default(autoincrement()) @map("ACCOUNT_ID")
+  accountName   String           @unique(map: "ACCOUNTS_ACCOUNT_CODE_key") @map("ACCOUNT_NAME")
+  password      String?          @map("PASSWORD")
+  isLogin       Boolean          @default(false) @map("IS_LOGIN")
+  login         Int              @default(0) @map("LOGIN")
+  description   String?          @map("DESCRIPTION") @db.VarChar(255)
+  employeeId    Int?             @unique @map("EMPLOYEE_ID")
+  status        ENUMSTATUS       @default(ENABLE) @map("STATUS")
+  createdAt     DateTime         @default(now()) @map("CREATED_AT") @db.Timestamp(6)
+  updatedAt     DateTime?        @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
+  deletedAt     DateTime?        @map("DELETED_AT") @db.Timestamp(6)
+  employee      EMPLOYEES?       @relation(fields: [employeeId], references: [employeeId])
+  accountRoles  ACCOUNT_ROLES[]
+  otpTokens     OTP_TOKENS[]
+  refreshTokens REFRESH_TOKENS[]
 
   @@index([employeeId])
   @@map("ACCOUNTS")
@@ -212,20 +212,19 @@ model IPS {
 }
 
 model VIETTEL_EMPLOYEES {
-  id               String          @unique @map("ID") @db.Uuid
-  viettelId        Int             @id @default(autoincrement()) @map("VIETTEL_ID")
-  viettelCode      String          @unique @map("VIETTEL_CODE")
-  viettelEmail     String          @unique @map("VIETTEL_EMAIL")
-  viettelPosition  String?         @map("VIETTEL_POSITION")
-  viettelBranchId  Int?            @map("VIETTEL_BRANCH_ID")
-  employeeId       Int            @unique @map("EMPLOYEE_ID")
-  status           ENUMSTATUS      @default(ENABLE) @map("STATUS")
-  createdAt        DateTime        @default(now()) @map("CREATED_AT") @db.Timestamp(6)
-  updatedAt        DateTime?       @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
-  deletedAt        DateTime?       @map("DELETED_AT") @db.Timestamp(6)
-
-  employee         EMPLOYEES?      @relation(fields: [employeeId], references: [employeeId])
-  viettelBranch    VIETTEL_BRANCH? @relation(fields: [viettelBranchId], references: [viettelBranchId])
+  id              String          @unique @map("ID") @db.Uuid
+  viettelId       Int             @id @default(autoincrement()) @map("VIETTEL_ID")
+  viettelCode     String          @unique @map("VIETTEL_CODE")
+  viettelEmail    String          @unique @map("VIETTEL_EMAIL")
+  viettelPosition String?         @map("VIETTEL_POSITION")
+  viettelBranchId Int?            @map("VIETTEL_BRANCH_ID")
+  employeeId      Int             @unique @map("EMPLOYEE_ID")
+  status          ENUMSTATUS      @default(ENABLE) @map("STATUS")
+  createdAt       DateTime        @default(now()) @map("CREATED_AT") @db.Timestamp(6)
+  updatedAt       DateTime?       @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
+  deletedAt       DateTime?       @map("DELETED_AT") @db.Timestamp(6)
+  employee        EMPLOYEES       @relation(fields: [employeeId], references: [employeeId])
+  viettelBranch   VIETTEL_BRANCH? @relation(fields: [viettelBranchId], references: [viettelBranchId])
 
   @@map("VIETTEL_EMPLOYEES")
 }
@@ -239,12 +238,10 @@ model VIETTEL_BRANCH {
   createdAt         DateTime            @default(now()) @map("CREATED_AT") @db.Timestamp(6)
   updatedAt         DateTime?           @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
   deletedAt         DateTime?           @map("DELETED_AT") @db.Timestamp(6)
-
   viettelEmployees  VIETTEL_EMPLOYEES[]
 
   @@map("VIETTEL_BRANCH")
 }
-
 
 model OTP_TOKENS {
   id        String    @unique @map("ID") @db.Uuid
@@ -263,6 +260,21 @@ model OTP_TOKENS {
   @@map("OTP_TOKENS")
 }
 
+model REFRESH_TOKENS {
+  id        String   @unique @map("ID") @db.Uuid
+  tokenId   Int      @id @default(autoincrement()) @map("TOKEN_ID")
+  token     String   @map("TOKEN")
+  accountId Int      @map("ACCOUNT_ID")
+  isRevoked Boolean  @default(false) @map("IS_REVOKED")
+  expiresAt DateTime @map("EXPIRES_AT") @db.Timestamp(6)
+  createdAt DateTime @default(now()) @map("CREATED_AT") @db.Timestamp(6)
+  account   ACCOUNTS @relation(fields: [accountId], references: [accountId])
+
+  @@index([accountId])
+  @@index([token])
+  @@map("REFRESH_TOKENS")
+}
+
 enum OTP_TYPE {
   REGISTER
   RESET_PASSWORD
@@ -279,20 +291,4 @@ enum NETWORK_STATUS {
   INACTIVE
   DISABLED
   CONFLICT
-}
-
-model REFRESH_TOKENS {
-  id        String   @unique @map("ID") @db.Uuid
-  tokenId   Int      @id @default(autoincrement()) @map("TOKEN_ID")
-  token     String   @map("TOKEN") @db.Text
-  accountId Int      @map("ACCOUNT_ID")
-  isRevoked Boolean  @default(false) @map("IS_REVOKED")
-  expiresAt DateTime @map("EXPIRES_AT") @db.Timestamp(6)
-  createdAt DateTime @default(now()) @map("CREATED_AT") @db.Timestamp(6)
-
-  account   ACCOUNTS @relation(fields: [accountId], references: [accountId])
-
-  @@index([accountId])
-  @@index([token])
-  @@map("REFRESH_TOKENS")
 }

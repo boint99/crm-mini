@@ -29,8 +29,8 @@ class AccountsController {
   // PATCH /api/accounts/reset-password
   async resetPassword(req, res, next) {
     try {
-      const { accountId, password } = req.body
-      const result = await accountsService.resetPassword(Number(accountId), password)
+      const { id, password } = req.body
+      const result = await accountsService.resetPassword(id, password)
       new SuccessResponse({ res, data: result, message: 'Password reset successfully.' })
     } catch (error) { next(error) }
   }

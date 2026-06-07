@@ -35,9 +35,9 @@ class AccountsModel extends ModelCore {
   async lists(where = null, includeDeleted = false) {
     const prismaWhere = {}
     if (where) {
-      if (where.accountName !== undefined) prismaWhere.accountName = where.accountName
+      // if (where.accountName !== undefined) prismaWhere.accountName = where.accountName
       if (where.employeeId !== undefined) prismaWhere.employeeId = Number(where.employeeId)
-      if (where.status !== undefined) prismaWhere.status = where.status
+      // if (where.status !== undefined) prismaWhere.status = where.status
     }
 
     const list = await super.LISTQUERY(
@@ -72,14 +72,31 @@ class AccountsModel extends ModelCore {
     return this._mapResponse(record)
   }
 
-  async findByUnique(id, field = 'accountId', includeDeleted = false) {
-    let prismaField = 'accountId'
+  _resolveFieldAndValue(id, field = null) {
+    let prismaField = field
     let queryVal = id
-    if (field === 'accountName') {
-      prismaField = 'accountName'
+
+    if (!prismaField) {
+      const isUuid = typeof id === 'string' && id.length === 36 && id.includes('-')
+      if (isUuid) {
+        prismaField = 'id'
+      } else if (typeof id === 'string' && isNaN(Number(id))) {
+        prismaField = 'accountName'
+      } else {
+        prismaField = 'accountId'
+        queryVal = Number(id)
+      }
     } else {
-      queryVal = Number(id)
+      if (prismaField === 'accountId') {
+        queryVal = Number(id)
+      }
     }
+
+    return { prismaField, queryVal }
+  }
+
+  async findByUnique(id, field = null, includeDeleted = false) {
+    const { prismaField, queryVal } = this._resolveFieldAndValue(id, field)
 
     const record = await super.FINDBYFIELD_WHERE(
       { [prismaField]: queryVal },
@@ -88,31 +105,34 @@ class AccountsModel extends ModelCore {
     return this._mapResponse(record)
   }
 
-  async updateById(id, updateData, field = 'accountId') {
+  async updateById(id, updateData, field = null) {
     const prismaData = {}
     if (updateData.password !== undefined) prismaData.password = updateData.password
     if (updateData.isLogin !== undefined) prismaData.isLogin = updateData.isLogin
-    if (updateData.login !== undefined) prismaData.login = updateData.login
+    if (updateData.login !== undefined && typeof updateData.login !== 'boolean') prismaData.login = Number(updateData.login)
     if (updateData.description !== undefined) prismaData.description = updateData.description
     if (updateData.employeeId !== undefined) prismaData.employeeId = updateData.employeeId ? Number(updateData.employeeId) : null
     if (updateData.status !== undefined) prismaData.status = updateData.status
 
-    let prismaField = 'accountId'
-    if (field === 'accountName') prismaField = 'accountName'
+    const { prismaField, queryVal } = this._resolveFieldAndValue(id, field)
 
-    const record = await super.UPDATE(Number(id), prismaField, prismaData)
+    const record = await super.UPDATE(queryVal, prismaField, prismaData)
     return this._mapResponse(record)
   }
 
-  async softDeleteById(id, field = 'accountId') {
-    let prismaField = 'accountId'
-    if (field === 'accountName') prismaField = 'accountName'
+  async softDeleteById(id, field = null) {
+    const { prismaField, queryVal } = this._resolveFieldAndValue(id, field)
 
-    const record = await super.UPDATE(Number(id), prismaField, {
+    const record = await super.UPDATE(queryVal, prismaField, {
       deletedAt: new Date(),
       status: 'DISABLED'
     })
     return this._mapResponse(record)
+  }
+
+
+  async findByField(value, field) {
+    return await super.FINDBYFIELD(value, field)
   }
 }
 

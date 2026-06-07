@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import App from './App.jsx'
 import { store } from './redux/store'
 import { ToastContainer } from 'react-toastify';
+import '@/utils/axiosConfig';
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>

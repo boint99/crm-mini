@@ -1,12 +1,13 @@
 import { StatusCodes } from 'http-status-codes'
 import { verifyAccessToken } from '../../utils/jwt.js'
+import { accountsModel } from '../accounts/accounts.model.js'
 
 /**
  * Middleware xác thực JWT Access Token
  * Kiểm tra Authorization header: Bearer <token>
  * Gán req.user = { userId, accountName } nếu hợp lệ
  */
-export const authMiddleware = (req, res, next) => {
+export const authMiddleware = async (req, res, next) => {
   try {
     // ===== TRÍCH XUẤT TOKEN =====
     const authHeader = req.headers.authorization
@@ -19,7 +20,7 @@ export const authMiddleware = (req, res, next) => {
       })
     }
 
-    const token = authHeader.substring(7) // Bỏ "Bearer " (7 ký tự)
+    const token = authHeader.substring(7)
 
     // ===== VERIFY TOKEN =====
     let decoded
@@ -52,6 +53,29 @@ export const authMiddleware = (req, res, next) => {
       })
     }
 
+    // ===== KIỂM TRA TRẠNG THÁI ACCOUNT TRONG DB =====
+    const account = await accountsModel.findByUnique(decoded.id, 'accountId')
+    if (!account) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: 'Tài khoản không tồn tại hoặc đã bị xóa'
+      })
+    }
+
+    if (account.status !== 'ENABLE') {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: 'Tài khoản đang bị vô hiệu hóa'
+      })
+    }
+
+    if (!account.isLogin) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: 'Tài khoản chưa được kích hoạt'
+      })
+    }
+
     // ===== GÁN USER DATA VÀO REQUEST =====
     req.user = {
       userId: decoded.id,
@@ -63,8 +87,7 @@ export const authMiddleware = (req, res, next) => {
     console.error('Auth middleware error:', error)
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: 'Lỗi server khi xác thực',
-      code: 'SERVER_ERROR'
+      message: 'Lỗi server khi xác thực'
     })
   }
 }

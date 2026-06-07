@@ -11,6 +11,7 @@ import { ipsRoutes } from '../modules/network/ips/ips.routes.js'
 import { accountsRoutes } from '../modules/accounts/accounts.routes.js'
 import { otpRoutes } from '../modules/otp/otp.routes.js'
 import { authRoutes } from '../modules/auth/auth.routes.js'
+import { authMiddleware } from '../modules/auth/auth.middleware.js'
 
 const Router = express.Router()
 
@@ -19,26 +20,26 @@ Router.get('/status', (req, res) => {
   res.status(200).json({ message: 'APIs are ready to use.' })
 })
 
-Router.use('/company', companyRoutes)
+Router.use('/company', authMiddleware, companyRoutes)
 
-Router.use('/organizations', organizationRoutes)
+Router.use('/organizations', authMiddleware, organizationRoutes)
 
 
-Router.use('/branches', branchesRoutes)
+Router.use('/branches', authMiddleware, branchesRoutes)
 
-Router.use('/positions', positionsRoutes)
+Router.use('/positions', authMiddleware, positionsRoutes)
 
-Router.use('/employees', employeesRoutes)
+Router.use('/employees', authMiddleware, employeesRoutes)
 
-Router.use('/viettel-employees', employeesViettelRoutes)
+Router.use('/viettel-employees', authMiddleware, employeesViettelRoutes)
 
-Router.use('/viettel-branches', viettelBranchRoutes)
+Router.use('/viettel-branches', authMiddleware, viettelBranchRoutes)
 
-Router.use('/networks', vlansRoutes)
+Router.use('/networks', authMiddleware, vlansRoutes)
 
-Router.use('/networks', ipsRoutes)
+Router.use('/networks', authMiddleware, ipsRoutes)
 
-Router.use('/accounts', accountsRoutes)
+Router.use('/accounts', authMiddleware, accountsRoutes)
 
 Router.use('/otp', otpRoutes)
 

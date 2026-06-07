@@ -15,12 +15,12 @@ import { customStyles } from "@/utils/contants";
 import { dispatchWithToast } from "@/components/ui/dispatchWithToast";
 
 const defaultValues = {
-  ACCOUNT_NAME: "",
-  PASSWORD: "",
-  STATUS: "ENABLE",
-  EMPLOYEE_ID: "",
-  DESCRIPTION: "",
-  LOGIN: "false",
+  accountName: "",
+  password: "",
+  status: "ENABLE",
+  employeeCode: "",
+  description: "",
+  isLogin: "false",
 };
 
 const inputClass =
@@ -54,11 +54,12 @@ function ActionModal({ open, onClose, action, item }) {
       reset(defaultValues);
     } else {
       reset({
-        ACCOUNT_NAME: item?.ACCOUNT_NAME ?? "",
-        PASSWORD: "",
-        STATUS: item?.STATUS ?? "ENABLE",
-        EMPLOYEE_ID: item?.EMPLOYEE_ID ? String(item.EMPLOYEE_ID) : "",
-        DESCRIPTION: item?.DESCRIPTION ?? "",
+        accountName: item?.accountName ?? "",
+        password: "",
+        status: item?.status ?? "ENABLE",
+        employeeCode: item?.employeeCode ? String(item.employeeCode) : "",
+        description: item?.description ?? "",
+        isLogin: item?.isLogin !== undefined ? String(item.isLogin) : "false",
       });
     }
   }, [open, action, item, reset]);
@@ -68,7 +69,7 @@ function ActionModal({ open, onClose, action, item }) {
       await dispatchWithToast({
         dispatch,
         action: deleteAccount,
-        payload: item.ACCOUNT_ID,
+        payload: item.id,
         messages: { success: "Xóa tài khoản thành công!" },
       });
       onClose?.();
@@ -80,12 +81,12 @@ function ActionModal({ open, onClose, action, item }) {
         dispatch,
         action: createAccount,
         payload: {
-          ACCOUNT_NAME: data.ACCOUNT_NAME.trim(),
-          PASSWORD: data.PASSWORD.trim(),
-          STATUS: data.STATUS,
-          EMPLOYEE_ID: data.EMPLOYEE_ID ? Number(data.EMPLOYEE_ID) : null,
-          DESCRIPTION: data.DESCRIPTION?.trim() || null,
-          LOGIN: data.LOGIN === "true",
+          accountName: data.accountName.trim(),
+          password: data.password.trim(),
+          status: data.status,
+          employeeCode: data.employeeCode ? String(data.employeeCode) : null,
+          description: data.description?.trim() || null,
+          isLogin: data.isLogin === "true",
         },
         messages: { success: "Tạo tài khoản thành công!" },
       });
@@ -94,11 +95,11 @@ function ActionModal({ open, onClose, action, item }) {
         dispatch,
         action: updateAccount,
         payload: {
-          ACCOUNT_ID: item.ACCOUNT_ID,
-          STATUS: data.STATUS,
-          EMPLOYEE_ID: data.EMPLOYEE_ID ? Number(data.EMPLOYEE_ID) : null,
-          DESCRIPTION: data.DESCRIPTION?.trim() || null,
-          LOGIN: data.LOGIN === "true",
+          id: item.id,
+          status: data.status,
+          employeeCode: data.employeeCode ? String(data.employeeCode) : null,
+          description: data.description?.trim() || null,
+          isLogin: data.isLogin === "true",
         },
         messages: { success: "Cập nhật tài khoản thành công!" },
       });
@@ -107,8 +108,8 @@ function ActionModal({ open, onClose, action, item }) {
         dispatch,
         action: resetAccountPassword,
         payload: {
-          ACCOUNT_ID: item.ACCOUNT_ID,
-          PASSWORD: data.PASSWORD.trim(),
+          id: item.id,
+          password: data.password.trim(),
         },
         messages: { success: "Đặt lại mật khẩu thành công!" },
       });
@@ -202,15 +203,15 @@ function ActionModal({ open, onClose, action, item }) {
                     type="text"
                     placeholder="VD: admin, nhanvien01"
                     className={inputClass}
-                    {...register("ACCOUNT_NAME", {
+                    {...register("accountName", {
                       required: "Vui lòng nhập tên đăng nhập",
                       validate: (v) =>
                         !!v.trim() || "Vui lòng nhập tên đăng nhập",
                     })}
                   />
-                  {errors.ACCOUNT_NAME && (
+                  {errors.accountName && (
                     <p className="mt-1 text-xs text-rose-500">
-                      {errors.ACCOUNT_NAME.message}
+                      {errors.accountName.message}
                     </p>
                   )}
                 </>
@@ -218,7 +219,7 @@ function ActionModal({ open, onClose, action, item }) {
                 <input
                   type="text"
                   readOnly
-                  value={item?.ACCOUNT_NAME ?? ""}
+                  value={item?.accountName ?? ""}
                   className={inputReadOnlyClass}
                 />
               )}
@@ -234,14 +235,14 @@ function ActionModal({ open, onClose, action, item }) {
                   type="password"
                   placeholder="••••••••"
                   className={inputClass}
-                  {...register("PASSWORD", {
+                  {...register("password", {
                     required: "Vui lòng nhập mật khẩu",
-                    minLength: { value: 6, message: "Tối thiểu 6 ký tự" },
+                    minLength: { value: 8, message: "Tối thiểu 8 ký tự" },
                   })}
                 />
-                {errors.PASSWORD && (
+                {errors.password && (
                   <p className="mt-1 text-xs text-rose-500">
-                    {errors.PASSWORD.message}
+                    {errors.password.message}
                   </p>
                 )}
               </div>
@@ -253,7 +254,7 @@ function ActionModal({ open, onClose, action, item }) {
                 <label className={labelClass}>Trạng thái *</label>
                 <select
                   className={inputClass}
-                  {...register("STATUS", { required: true })}
+                  {...register("status", { required: true })}
                 >
                   <option value="ENABLE">ENABLE (Hoạt động)</option>
                   <option value="DISABLED">DISABLED (Ngừng hoạt động)</option>
@@ -269,7 +270,7 @@ function ActionModal({ open, onClose, action, item }) {
                   type="text"
                   placeholder="Nhập mã nhân viên"
                   className={inputClass}
-                  {...register("EMPLOYEE_ID")}
+                  {...register("employeeCode")}
                 />
               </div>
             )}
@@ -277,7 +278,7 @@ function ActionModal({ open, onClose, action, item }) {
               <label className={labelClass}>Đăng nhập</label>
               <select
                 className={inputClass}
-                {...register("LOGIN", { required: true })}
+                {...register("isLogin", { required: true })}
               >
                 <option value="true">True</option>
                 <option value="false">False</option>
@@ -293,11 +294,10 @@ function ActionModal({ open, onClose, action, item }) {
                 rows={3}
                 placeholder="Ghi chú về tài khoản..."
                 className={`${inputClass} resize-none`}
-                {...register("DESCRIPTION")}
+                {...register("description")}
               />
             </div>
           )}
-
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"

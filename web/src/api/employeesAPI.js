@@ -1,28 +1,27 @@
-import { ROOT_DOMAIN } from '@/utils/contants'
 import axios from 'axios'
 
 export const employeesAPI = {
   // GET list
   getLists: async (params) => {
-    const res = await axios.get(`${ROOT_DOMAIN}/employees`, { params })
+    const res = await axios.get(`/employees`, { params })
     return res.data
   },
 
   // CREATE
   create: async (payload) => {
-    const res = await axios.post(`${ROOT_DOMAIN}/employees/create`, payload)
+    const res = await axios.post(`/employees/create`, payload)
     return res.data
   },
 
   // UPDATE
   update: async (payload) => {
-    const res = await axios.put(`${ROOT_DOMAIN}/employees/update`, payload)
+    const res = await axios.put(`/employees/update`, payload)
     return res.data
   },
 
   // DELETE
   delete: async (payload) => {
-    const res = await axios.delete(`${ROOT_DOMAIN}/employees/delete/${payload}`)
+    const res = await axios.delete(`/employees/delete/${payload}`)
     return res.data
   }
 }

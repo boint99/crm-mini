@@ -5,7 +5,7 @@ import { accountsController } from './accounts.controller.js'
 const Router = express.Router()
 
 // GET /api/accounts/lists
-Router.get('/lists', accountsController.lists)
+Router.get('/', accountsController.lists)
 
 // POST /api/accounts/create
 Router.post('/create', AccountsValidate.create.bind(AccountsValidate), accountsController.create)
@@ -17,6 +17,6 @@ Router.put('/update', AccountsValidate.update.bind(AccountsValidate), accountsCo
 Router.patch('/reset-password', AccountsValidate.resetPassword.bind(AccountsValidate), accountsController.resetPassword)
 
 // DELETE /api/accounts/:id
-Router.delete('/:id', AccountsValidate.delete.bind(AccountsValidate), accountsController.delete)
+Router.delete('/delete/:id', AccountsValidate.delete.bind(AccountsValidate), accountsController.delete)
 
 export const accountsRoutes = Router

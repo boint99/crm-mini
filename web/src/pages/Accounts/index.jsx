@@ -9,6 +9,7 @@ import {
 import { useSelector } from "react-redux";
 import LoadingItem from "@/components/ui/LoadingItem";
 import { formatDateTime } from "@/utils/contants";
+import { headerTableAccounts } from "@/utils/headerTable";
 import {
   Pencil,
   Trash2,
@@ -37,17 +38,6 @@ const STATUS_CONFIG = {
     className: "bg-red-100 text-red-700 border border-red-300",
   },
 };
-
-const TABLE_HEADERS = [
-  { key: "INDEX", label: "STT" },
-  { key: "ACCOUNT_NAME", label: "Tài khoản" },
-  { key: "EMPLOYEE", label: "Mã NV" },
-  { key: "CREATED_AT", label: "Ngày tạo" },
-  { key: "LOGIN", label: "Lượt đăng nhập" },
-  { key: "STATUS", label: "Trạng thái" },
-  { key: "DESCRIPTION", label: "Mô tả" },
-  { key: "IS_LOGIN", label: "Đang đăng nhập" },
-];
 
 function Accounts() {
   const [openModal, setOpenModal] = useState(false);
@@ -82,12 +72,12 @@ function Accounts() {
     return accountItems.filter((acc) => {
       const matchQuery =
         !q ||
-        [acc.ACCOUNT_NAME, acc.EMPLOYEE?.EMPLOYEE_CODE, acc.DESCRIPTION]
+        [acc.accountName, acc.description]
           .filter(Boolean)
           .join(" ")
           .toLowerCase()
           .includes(q);
-      const matchStatus = statusFilter === "ALL" || acc.STATUS === statusFilter;
+      const matchStatus = statusFilter === "ALL" || acc.status === statusFilter;
       return matchQuery && matchStatus;
     });
   }, [accountItems, query, statusFilter]);
@@ -101,12 +91,12 @@ function Accounts() {
 
   const totalAccounts = accountItems.length;
   const activeAccounts = accountItems.filter(
-    (a) => a.STATUS === "ENABLE",
+    (a) => a.status === "ENABLE",
   ).length;
-  const loggedInAccounts = accountItems.filter((a) => a.IS_LOGIN).length;
+  const loggedInAccounts = accountItems.filter((a) => a.isLogin).length;
 
   const maxLogin = Math.max(
-    ...accountItems.map((a) => Number(a.LOGIN) || 0),
+    ...accountItems.map((a) => Number(a.login) || 0),
     1,
   );
 
@@ -129,7 +119,7 @@ function Accounts() {
   const renderCell = (account, key, rowIndex) => {
     const cellClass = "px-4 py-3 text-gray-700 whitespace-nowrap";
     switch (key) {
-      case "INDEX":
+      case "index":
         return (
           <td
             key={key}
@@ -138,42 +128,42 @@ function Accounts() {
             {(currentPage - 1) * PAGE_SIZE + rowIndex + 1}
           </td>
         );
-      case "ACCOUNT_NAME":
+      case "accountName":
         return (
           <td
             key={key}
             className="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap"
           >
-            {account.ACCOUNT_NAME}
+            {account.accountName}
           </td>
         );
-      case "EMPLOYEE":
+      case "employee":
         return (
           <td key={key} className={cellClass}>
-            {account.EMPLOYEE ? (
-              <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
-                {account.EMPLOYEE.EMPLOYEE_CODE}
+            {account.employee ? (
+              <span className="inline-flex items-center rounded-md px-2 py-0.5 text-slate-700">
+                {account.employee.firstName} {account.employee.lastName}
               </span>
             ) : (
               <span className="text-gray-400 italic text-xs">—</span>
             )}
           </td>
         );
-      case "CREATED_AT":
+      case "createdAt":
         return (
           <td key={key} className={cellClass}>
-            {formatDateTime(account.CREATED_AT)}
+            {formatDateTime(account.createdAt)}
           </td>
         );
-      case "LOGIN":
+      case "login":
         return (
           <td key={key} className="px-4 py-3 whitespace-nowrap">
-            {renderLoginBar(account.LOGIN)}
+            {renderLoginBar(account.login)}
           </td>
         );
-      case "STATUS": {
-        const cfg = STATUS_CONFIG[account.STATUS] ?? {
-          label: account.STATUS,
+      case "status": {
+        const cfg = STATUS_CONFIG[account.status] ?? {
+          label: account.status,
           className: "bg-gray-100 text-gray-600 border border-gray-300",
         };
         return (
@@ -186,21 +176,21 @@ function Accounts() {
           </td>
         );
       }
-      case "DESCRIPTION":
+      case "description":
         return (
           <td
             key={key}
             className="px-4 py-3 max-w-[160px] truncate text-gray-600 text-xs"
           >
-            {account.DESCRIPTION || (
+            {account.description || (
               <span className="text-gray-400 italic">—</span>
             )}
           </td>
         );
-      case "IS_LOGIN":
+      case "isLogin":
         return (
           <td key={key} className="px-4 py-3 whitespace-nowrap text-center">
-            {account.IS_LOGIN ? (
+            {account.isLogin ? (
               <CheckCircle2 className="mx-auto h-5 w-5 text-emerald-500" />
             ) : (
               <XCircle className="mx-auto h-5 w-5 text-rose-400" />
@@ -250,12 +240,6 @@ function Accounts() {
           <p className="text-sm font-medium text-emerald-700">Đang hoạt động</p>
           <p className="mt-3 text-3xl font-semibold text-emerald-900">
             {activeAccounts}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-5 shadow-sm sm:col-span-2 xl:col-span-1">
-          <p className="text-sm font-medium text-indigo-700">Đang đăng nhập</p>
-          <p className="mt-3 text-3xl font-semibold text-indigo-900">
-            {loggedInAccounts}
           </p>
         </div>
       </div>
@@ -311,10 +295,12 @@ function Accounts() {
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
-                {TABLE_HEADERS.map(({ key, label }) => (
+                {Object.entries(headerTableAccounts).map(([key, label]) => (
                   <th
                     key={key}
-                    className="px-4 py-3 text-left font-semibold text-gray-700 whitespace-nowrap"
+                    className={`px-4 py-3 font-semibold text-gray-700 whitespace-nowrap ${
+                      key === "isLogin" ? "text-center" : "text-left"
+                    }`}
                   >
                     {label}
                   </th>
@@ -327,7 +313,7 @@ function Accounts() {
             {loading ? (
               <tbody>
                 <tr>
-                  <td colSpan={TABLE_HEADERS.length + 1}>
+                  <td colSpan={Object.keys(headerTableAccounts).length + 1}>
                     <LoadingItem />
                   </td>
                 </tr>
@@ -335,7 +321,7 @@ function Accounts() {
             ) : !pagedItems.length ? (
               <tbody>
                 <tr>
-                  <td colSpan={TABLE_HEADERS.length + 1}>
+                  <td colSpan={Object.keys(headerTableAccounts).length + 1}>
                     <div className="flex h-40 flex-col items-center justify-center gap-2 text-gray-400">
                       <Users className="h-10 w-10" />
                       <p className="text-sm font-medium">
@@ -348,8 +334,8 @@ function Accounts() {
             ) : (
               <tbody className="divide-y divide-gray-200 bg-white">
                 {pagedItems.map((account, rowIndex) => (
-                  <tr key={account.ACCOUNT_ID} className="hover:bg-gray-50">
-                    {TABLE_HEADERS.map(({ key }) =>
+                  <tr key={account.accountId} className="hover:bg-gray-50">
+                    {Object.entries(headerTableAccounts).map(([key]) =>
                       renderCell(account, key, rowIndex),
                     )}
                     <td className="px-4 py-3 whitespace-nowrap text-right">

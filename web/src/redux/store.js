@@ -9,9 +9,11 @@ import employeesViettelReducer from "./slice/employeesViettelSlice";
 import viettelBranchReducer from "./slice/viettelBranchSlice";
 import accountsReducer from "./slice/accountsSlice";
 import departmentsReducer from "./slice/departmentsSlice";
+import authReducer from "./slice/authSlice";
 
 export const store = configureStore({
   reducer: {
+    auth: authReducer,
     companies: companiesReducer,
     employees: employeesReducer,
     employeesViettel: employeesViettelReducer,

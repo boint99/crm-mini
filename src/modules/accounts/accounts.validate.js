@@ -7,7 +7,7 @@ class AccountsValidate extends ValidateCores {
       const data = req.body
       await  this.validateStringLength(data.firstName, 1, 'First name is required!')
       await  this.validateStringLength(data.lastName, 1, 'Last name is required!')
-      await  this.validateEmail(data.email)
+      await  this.validateEmail(data.accountName)
       await  this.validateStringLength(data.password, 8, 'Password is required!')
       await  this.validateStringLength(data.confirmPassword, 8, 'Confirm password is required!')
       await  this.validateStringLength(data.password, 8, 'Password must be at least 8 characters!')
@@ -29,7 +29,7 @@ class AccountsValidate extends ValidateCores {
   static async update(req, _res, next) {
     try {
       const data = req.body
-      await  this.validateId(data.accountId, 'Invalid accountId.')
+      await  this.validateIdUuid(data.id, 'Invalid ID.')
 
       if (data.status !== undefined) {
         await  this.validateEnum(data.status, ALLOWED_STATUS)
@@ -41,7 +41,7 @@ class AccountsValidate extends ValidateCores {
   static async resetPassword(req, _res, next) {
     try {
       const data = req.body
-      await  this.validateId(data.accountId, 'Invalid accountId.')
+      await  this.validateIdUuid(data.id, 'Invalid ID.')
       await  this.validateStringLength(data.password, 8, 'New password must be at least 8 characters!')
       next()
     } catch (error) { next(error) }
@@ -50,7 +50,7 @@ class AccountsValidate extends ValidateCores {
   static async delete(req, _res, next) {
     try {
       const { id } = req.params
-      await  this.validateId(id, 'accountId is required!')
+      await  this.validateIdUuid(id, 'accountId is required!')
       next()
     } catch (error) { next(error) }
   }

@@ -3,6 +3,7 @@ import MainLayout from "@/components/layouts/MainLayout";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 import Loading from "@/components/ui/Loading";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 const Dashboard = lazy(() => import("@/pages/dashboard"));
 const Employees = lazy(() => import("@/pages/Organizations/Employees"));
@@ -28,7 +29,11 @@ const WithSpinner = ({ children }) => (
 const routes = [
   {
     path: "/",
-    element: <MainLayout />,
+    element: (
+      <ProtectedRoute>
+        <MainLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,

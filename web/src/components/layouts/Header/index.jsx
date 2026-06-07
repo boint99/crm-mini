@@ -1,42 +1,57 @@
-import { useEffect, useRef, useState } from "react";
-import { Bell, ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from 'react'
+import { ChevronDown } from 'lucide-react'
+import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { selectUser } from '@/redux/selectors/authSelectors'
+import { logoutThunk } from '@/redux/slice/authSlice'
+import { toast } from 'react-toastify'
 
-function Header({ collapsed, setCollapsed }) {
-  const [open, setOpen] = useState(false);
-  const menuRef = useRef(null);
+function Header({ collapsed: _collapsed, setCollapsed: _setCollapsed }) {
+  const [open, setOpen] = useState(false)
+  const menuRef = useRef(null)
+  
+  const user = useSelector(selectUser)
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   useEffect(() => {
     function onKeyDown(e) {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === 'Escape') setOpen(false)
     }
 
     function onPointerDown(e) {
-      if (!menuRef.current) return;
-      if (!menuRef.current.contains(e.target)) setOpen(false);
+      if (!menuRef.current) return
+      if (!menuRef.current.contains(e.target)) setOpen(false)
     }
 
-    document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener('keydown', onKeyDown)
+    document.addEventListener('pointerdown', onPointerDown)
     return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("pointerdown", onPointerDown);
-    };
-  }, []);
+      document.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('pointerdown', onPointerDown)
+    }
+  }, [])
+
+  const handleLogout = async () => {
+    try {
+      setOpen(false)
+      await dispatch(logoutThunk()).unwrap()
+      toast.success('Đăng xuất thành công!')
+      navigate('/auth/login')
+    } catch {
+      toast.error('Đăng xuất thất bại!')
+    }
+  }
+
+  const avatarLetter = user?.accountName
+    ? user.accountName.charAt(0).toUpperCase()
+    : 'A'
 
   return (
     <header className="header sticky top-0 z-20 h-[60px]">
       <div className="mx-auto flex h-full items-center justify-between px-6">
         {/* Search */}
         <div className="relative">
-          {/* <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-          />
-          <input
-            type="text"
-            placeholder="Search"
-            className="header-search"
-          /> */}
         </div>
 
         {/* Right side */}
@@ -47,8 +62,6 @@ function Header({ collapsed, setCollapsed }) {
             className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg transition-colors cursor-pointer"
             aria-label="Notifications"
           >
-            {/* <Bell size={20} strokeWidth={1.8} /> */}
-            {/* <span className="notification-badge"></span> */}
           </button>
 
           {/* User dropdown */}
@@ -61,10 +74,12 @@ function Header({ collapsed, setCollapsed }) {
               onClick={() => setOpen((v) => !v)}
             >
               <div className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-sm font-semibold text-white">
-                A
+                {avatarLetter}
               </div>
               <div className="hidden sm:block">
-                <div className="text-sm font-medium">Admin</div>
+                <div className="text-sm font-medium text-slate-700">
+                  {user?.accountName || 'Admin'}
+                </div>
               </div>
               <ChevronDown size={14} className="text-slate-400" />
             </button>
@@ -72,21 +87,19 @@ function Header({ collapsed, setCollapsed }) {
             {open ? (
               <div
                 role="menu"
-                className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl shadow-2xl"
+                className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-slate-100 bg-white p-1 shadow-lg z-30"
               >
-                {/* <div className="px-4 py-3">
-                  <div className="text-sm font-semibold text-white">
-                    Admin
+                <div className="border-b border-slate-50 px-4 py-3">
+                  <div className="text-sm font-semibold text-slate-800 truncate">
+                    {user?.accountName || 'Admin'}
                   </div>
-                  <div className="text-xs text-slate-400">Quản trị hệ thống</div>
+                  <div className="text-xs text-slate-400 mt-0.5">Quản trị hệ thống</div>
                 </div>
                 <button
                   type="button"
                   role="menuitem"
-                  className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red-400 cursor-pointer transition-colors"
-                  onClick={() => {
-                    setOpen(false);
-                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-4 py-2.5 text-left text-sm text-red-500 hover:bg-red-50 cursor-pointer transition-colors"
+                  onClick={handleLogout}
                 >
                   <svg
                     viewBox="0 0 24 24"
@@ -101,14 +114,14 @@ function Header({ collapsed, setCollapsed }) {
                     <path d="M21 3v18" />
                   </svg>
                   Đăng xuất
-                </button> */}
+                </button>
               </div>
             ) : null}
           </div>
         </div>
       </div>
     </header>
-  );
+  )
 }
 
-export default Header;
+export default Header
