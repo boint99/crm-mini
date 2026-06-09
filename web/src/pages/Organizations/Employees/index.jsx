@@ -10,29 +10,104 @@ import {
   selectLoading,
   updateEmployee,
 } from "@/redux/slice/employeesSlice";
+import { selectCompanies, getCompanies } from "@/redux/slice/companiesSilce";
 import { formatDateTime } from "@/utils/contants";
 import { CUSTOM_MESSAGES } from "@/utils/contants";
-import { Pencil, Plus, Search, Trash2, Users } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Pencil, Plus, Search, Trash2, Users, ChevronDown } from "lucide-react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { headerTableEmployees } from "@/utils/headerTable";
 
 const employeeColumns = Object.entries(headerTableEmployees);
+
+function FilterSelect({ options, value, onChange, placeholder = "Tất cả" }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find((opt) => opt.value === value);
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-between gap-1 text-sm font-medium text-gray-700 hover:text-indigo-600 transition bg-transparent cursor-pointer outline-none focus:outline-none"
+      >
+        <span className="truncate max-w-[180px]">
+          {selectedOption ? selectedOption.label : placeholder}
+        </span>
+        <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 z-50 mt-2 min-w-[220px] max-h-60 overflow-y-auto rounded-xl border border-gray-100 bg-white p-1.5 shadow-lg ring-1 ring-black/5 animate-in fade-in slide-in-from-top-1 duration-100">
+          <button
+            type="button"
+            onClick={() => {
+              onChange("");
+              setIsOpen(false);
+            }}
+            className={`w-full text-left rounded-lg px-3 py-2 text-sm hover:bg-slate-50 transition cursor-pointer ${
+              value === "" ? "bg-indigo-50 text-indigo-600 font-semibold" : "text-gray-700"
+            }`}
+          >
+            {placeholder}
+          </button>
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => {
+                onChange(opt.value);
+                setIsOpen(false);
+              }}
+              className={`w-full text-left rounded-lg px-3 py-2 text-sm hover:bg-slate-50 transition cursor-pointer ${
+                opt.value === value ? "bg-indigo-50 text-indigo-600 font-semibold" : "text-gray-700"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function Employees() {
   const [openAdd, setOpenAdd] = useState(false);
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState("create");
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [selectedCompany, setSelectedCompany] = useState("");
 
   const dispatchAsync = useAppDispatch();
   const dispatch = useDispatch();
   const employees = useSelector(selectEmployees);
   const loading = useSelector(selectLoading);
+  const companies = useSelector(selectCompanies);
 
   useEffect(() => {
-    dispatchAsync(getEmployees());
+    dispatchAsync(getCompanies());
   }, []);
+
+  useEffect(() => {
+    const params = {};
+    if (selectedCompany) {
+      params.companyId = selectedCompany;
+    }
+    dispatchAsync(getEmployees(params));
+  }, [selectedCompany]);
 
   const filteredRows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -88,6 +163,11 @@ function Employees() {
   };
 
   const handleSubmit = async (payload) => {
+    const params = {};
+    if (selectedCompany) {
+      params.companyId = selectedCompany;
+    }
+
     if (mode === "delete") {
       await dispatchWithToast({
         dispatch,
@@ -95,7 +175,7 @@ function Employees() {
         payload,
         messages: CUSTOM_MESSAGES.delete,
       });
-      dispatchAsync(getEmployees());
+      dispatchAsync(getEmployees(params));
       handleCloseModal();
       return;
     }
@@ -107,7 +187,7 @@ function Employees() {
         payload,
         messages: CUSTOM_MESSAGES.update,
       });
-      dispatchAsync(getEmployees());
+      dispatchAsync(getEmployees(params));
       handleCloseModal();
       return;
     }
@@ -118,7 +198,7 @@ function Employees() {
       payload,
       messages: CUSTOM_MESSAGES.create,
     });
-    dispatchAsync(getEmployees());
+    dispatchAsync(getEmployees(params));
     handleCloseModal();
   };
 
@@ -354,14 +434,25 @@ function Employees() {
             </p>
           </div>
           <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2">
-            <Search className="h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Tìm theo mã, tên, email, điện thoại..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-72 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
-            />
+            <span className="text-sm font-medium text-slate-500 whitespace-nowrap">Công ty</span>
+            <div className="flex items-center border-r border-gray-200 pr-3">
+              <FilterSelect
+                options={companies.map((c) => ({ value: c.id, label: c.companyName }))}
+                value={selectedCompany}
+                onChange={setSelectedCompany}
+                placeholder="Tất cả"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Search className="h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Tìm theo mã, tên, email, điện thoại..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="w-72 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
+              />
+            </div>
           </div>
         </div>
         <div className="overflow-x-auto">

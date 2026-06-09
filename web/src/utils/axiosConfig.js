@@ -91,18 +91,30 @@ axios.interceptors.response.use(
           // Retry original request with the new access token
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
           return axios(originalRequest)
+        } else {
+          throw new Error('Refresh token response failed or token is missing')
         }
       } catch (refreshError) {
         console.error('Refresh token failed:', refreshError)
         processQueue(refreshError, null)
 
         // If refresh token fails, log user out
-        const { store } = await import('../redux/store')
-        const { logout } = await import('../redux/slice/authSlice')
-        store.dispatch(logout())
+        try {
+          const { store } = await import('../redux/store')
+          const { logout } = await import('../redux/slice/authSlice')
+          store.dispatch(logout())
+        } catch (logoutError) {
+          // Fallback: xóa cookie thủ công nếu import store bị lỗi
+          console.error('Logout dispatch failed:', logoutError)
+          const { deleteCookie } = await import('./cookie')
+          deleteCookie('accessToken')
+          localStorage.removeItem('user')
+        }
 
         // Redirect to login page (client-side, không reload)
         navigateTo('/auth/login')
+
+        return Promise.reject(refreshError)
       } finally {
         isRefreshing = false
       }

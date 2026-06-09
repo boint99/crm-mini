@@ -73,7 +73,7 @@ const TreeNode = ({
             <div className="w-4 h-4" />
           )}
         </div>
-        <div className="mr-2">{getIcon(node.type)}</div>
+        {/* <div className="mr-2">{getIcon(node.type)}</div> */}
         <span
           className={`text-sm font-medium truncate ${isSelected ? 'font-semibold' : ''}`}
         >

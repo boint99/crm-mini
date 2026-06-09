@@ -196,7 +196,6 @@ class EmployeesServices {
     if (payload.unitId !== undefined) {
       if (payload.unitId) {
         const findUnit = await organizationModel.findByUnique(payload.unitId, 'id')
-        console.log('🚀 ~ EmployeesServices ~ update ~ findUnit:', findUnit)
         if (!findUnit || findUnit.deletedAt) {
           throw new ApiError(StatusCodes.NOT_FOUND, 'Unit not found!')
         }
