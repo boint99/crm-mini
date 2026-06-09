@@ -1,7 +1,7 @@
 
-import { ALLOWED_EMAIL_DOMAINS, ALLOWED_STATUS } from '../../utils/constants.js'
-import ValidateCore from '../../validates/index.js'
-import ValidateCores from '../../validates/index.js'
+import { ALLOWED_EMAIL_DOMAINS, ALLOWED_STATUS } from '../../../utils/constants.js'
+import ValidateCore from '../../../validates/index.js'
+import ValidateCores from '../../../validates/index.js'
 
 class EmployeesViettelValidate extends ValidateCore {
   // Validate create employee

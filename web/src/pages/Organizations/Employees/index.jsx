@@ -13,8 +13,8 @@ import {
 import { selectCompanies, getCompanies } from "@/redux/slice/companiesSilce";
 import { formatDateTime } from "@/utils/contants";
 import { CUSTOM_MESSAGES } from "@/utils/contants";
-import { Pencil, Plus, Search, Trash2, Users, ChevronDown } from "lucide-react";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { Pencil, Plus, Search, Trash2, Users, ChevronDown, Building2 } from "lucide-react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { headerTableEmployees } from "@/utils/headerTable";
 
@@ -87,6 +87,7 @@ function FilterSelect({ options, value, onChange, placeholder = "Tất cả" }) 
 function Employees() {
   const [openAdd, setOpenAdd] = useState(false);
   const [query, setQuery] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [mode, setMode] = useState("create");
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [selectedCompany, setSelectedCompany] = useState("");
@@ -96,42 +97,42 @@ function Employees() {
   const employees = useSelector(selectEmployees);
   const loading = useSelector(selectLoading);
   const companies = useSelector(selectCompanies);
+  const debounceRef = useRef(null);
 
   useEffect(() => {
     dispatchAsync(getCompanies());
   }, []);
 
-  useEffect(() => {
+  // Fetch employees khi đổi company hoặc search keyword thay đổi
+  const fetchEmployees = useCallback(() => {
     const params = {};
     if (selectedCompany) {
       params.companyId = selectedCompany;
     }
+    if (searchKeyword.trim()) {
+      params.search = searchKeyword.trim();
+    }
     dispatchAsync(getEmployees(params));
-  }, [selectedCompany]);
+  }, [selectedCompany, searchKeyword]);
 
+  useEffect(() => {
+    fetchEmployees();
+  }, [fetchEmployees]);
+
+  // Debounce search input → cập nhật searchKeyword sau 400ms
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setQuery(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setSearchKeyword(value);
+    }, 400);
+  };
+
+  // Client-side filter bổ sung (nếu cần lọc thêm ngoài server-side search)
   const filteredRows = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return employees;
-    return employees.filter((employee) => {
-      const hay = [
-        employee.employeeId,
-        employee.employeeCode,
-        employee.firstName,
-        employee.lastName,
-        employee.email,
-        employee.phone,
-        employee.orgUnit?.unitName,
-        employee.orgUnit?.parentUnit?.unitName,
-        employee.position?.positionName,
-        employee.viettel?.viettelCode,
-        employee.status,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return hay.includes(q);
-    });
-  }, [employees, query]);
+    return employees;
+  }, [employees]);
 
   const totalEmployees = employees.length;
   const activeEmployees = employees.filter(
@@ -163,11 +164,6 @@ function Employees() {
   };
 
   const handleSubmit = async (payload) => {
-    const params = {};
-    if (selectedCompany) {
-      params.companyId = selectedCompany;
-    }
-
     if (mode === "delete") {
       await dispatchWithToast({
         dispatch,
@@ -175,7 +171,7 @@ function Employees() {
         payload,
         messages: CUSTOM_MESSAGES.delete,
       });
-      dispatchAsync(getEmployees(params));
+      fetchEmployees();
       handleCloseModal();
       return;
     }
@@ -187,7 +183,7 @@ function Employees() {
         payload,
         messages: CUSTOM_MESSAGES.update,
       });
-      dispatchAsync(getEmployees(params));
+      fetchEmployees();
       handleCloseModal();
       return;
     }
@@ -198,7 +194,7 @@ function Employees() {
       payload,
       messages: CUSTOM_MESSAGES.create,
     });
-    dispatchAsync(getEmployees(params));
+    fetchEmployees();
     handleCloseModal();
   };
 
@@ -223,7 +219,7 @@ function Employees() {
               <div className="flex h-40 flex-col items-center justify-center gap-2 text-gray-400">
                 <Users className="h-10 w-10" />
                 <p className="text-sm font-medium">
-                  Không có dữ liệu nhân viên
+                  {query ? "Không tìm thấy nhân viên phù hợp" : "Không có dữ liệu nhân viên"}
                 </p>
               </div>
             </td>
@@ -447,9 +443,9 @@ function Employees() {
               <Search className="h-4 w-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Tìm theo mã, tên, email, điện thoại..."
+                placeholder="Tìm theo mã, tên, email..."
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={handleSearchChange}
                 className="w-72 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
               />
             </div>

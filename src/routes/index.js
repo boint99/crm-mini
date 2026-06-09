@@ -4,7 +4,7 @@ import { organizationRoutes } from '../modules/organization/organization.routes.
 import { branchesRoutes } from '../modules/branch/branch.routes.js'
 import { positionsRoutes } from '../modules/positions/positions.routes.js'
 import { employeesRoutes } from '../modules/employees/employees.routes.js'
-import { employeesViettelRoutes } from '../modules/outsources/employees.viettel.routes.js'
+import { employeesViettelRoutes } from '../modules/outsources/viettelEmployees/employees.viettel.routes.js'
 import { viettelBranchRoutes } from '../modules/outsources/viettelBranch/viettelBranch.routes.js'
 import { vlansRoutes } from '../modules/network/vlans/vlans.routes.js'
 import { ipsRoutes } from '../modules/network/ips/ips.routes.js'

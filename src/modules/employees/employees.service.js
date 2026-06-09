@@ -59,15 +59,27 @@ class EmployeesServices {
 
   /**
    * Get list of employees
+   * - Nếu không gửi companyId → trả mảng rỗng (tránh nhầm lẫn giữa các công ty)
+   * - Hỗ trợ search theo employeeCode, firstName, lastName, email
+   * - Hỗ trợ filter theo companyId, unitId, branchId, status
    */
   async lists(data) {
-    const { status, info, unitId, unitid, companyId, companyid, branchId, branchid } = data
+    const {
+      status, info, search,
+      unitId, unitid,
+      companyId, companyid,
+      branchId, branchid
+    } = data
+
+    const resolvedCompanyId = companyId || companyid
+
     const queryStatus = status ? status.toUpperCase() : undefined
 
     if (queryStatus) {
       CHECK_ENUM(queryStatus, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status.')
     }
 
+    // Nếu có info → tìm chính xác 1 employee (giữ logic cũ)
     if (info !== undefined && info !== null && info !== '') {
       const isUuid = typeof info === 'string' && info.length === 36 && info.includes('-')
       const isNumber = !isNaN(Number(info))
@@ -90,8 +102,9 @@ class EmployeesServices {
       queryStatus,
       info,
       unitId || unitid,
-      companyId || companyid,
-      branchId || branchid
+      resolvedCompanyId,
+      branchId || branchid,
+      search
     )
   }
 

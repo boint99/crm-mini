@@ -9,7 +9,7 @@ class EmployeesModel extends BaseModel {
     return await super.LISTALL()
   }
 
-  async listQuery(status, info, unitId, companyId, branchId) {
+  async listQuery(status, info, unitId, companyId, branchId, search) {
     const where = {
       ...(status ? { status } : {})
     }
@@ -26,12 +26,27 @@ class EmployeesModel extends BaseModel {
       }
     }
 
+    // Filter theo company/unit/branch thông qua relation orgUnit
     if (unitId || companyId || branchId) {
       where.orgUnit = {
         ...(unitId ? { id: unitId } : {}),
         ...(companyId ? { company: { id: companyId } } : {}),
         ...(branchId ? { branch: { id: branchId } } : {})
       }
+    }
+
+    // Search theo employeeCode, firstName, lastName, email (case-insensitive)
+    if (search && search.trim()) {
+      const keywords = search.trim().split(/\s+/)
+      const searchConditions = keywords.map(keyword => ({
+        OR: [
+          { employeeCode: { contains: keyword, mode: 'insensitive' } },
+          { firstName: { contains: keyword, mode: 'insensitive' } },
+          { lastName: { contains: keyword, mode: 'insensitive' } },
+          { email: { contains: keyword, mode: 'insensitive' } }
+        ]
+      }))
+      where.AND = [...(where.AND || []), ...searchConditions]
     }
 
     if (info) {

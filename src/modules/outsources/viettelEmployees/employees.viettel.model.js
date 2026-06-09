@@ -1,4 +1,4 @@
-import BaseModel from '../../model/index.js'
+import BaseModel from '../../../model/index.js'
 
 class EmployeesViettelModel extends BaseModel {
   constructor() {

@@ -1,4 +1,4 @@
-import { CreatedResponse, SuccessResponse } from '../../utils/SuccessResponse.js'
+import { CreatedResponse, SuccessResponse } from '../../../utils/SuccessResponse.js'
 import { employeesViettelServices } from './employees.viettel.service.js'
 
 

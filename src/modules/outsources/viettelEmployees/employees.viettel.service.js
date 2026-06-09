@@ -1,10 +1,10 @@
-import { ALLOWED_EMAIL_DOMAINS, ALLOWED_STATUS, CHECK_ENUM } from '../../utils/constants.js'
+import { ALLOWED_EMAIL_DOMAINS, ALLOWED_STATUS, CHECK_ENUM } from '../../../utils/constants.js'
 import { StatusCodes } from 'http-status-codes'
-import ApiError from '../../utils/ApiError.js'
-import ValidateCores from '../../validates/index.js'
+import ApiError from '../../../utils/ApiError.js'
+import ValidateCores from '../../../validates/index.js'
 import { employeesViettelModel } from './employees.viettel.model.js'
-import { employeesModel } from '../employees/employees.model.js'
-import { viettelBranchModel } from './viettelBranch/viettelBranch.model.js'
+import { employeesModel } from '../../employees/employees.model.js'
+import { viettelBranchModel } from '../viettelBranch/viettelBranch.model.js'
 
 class EmployeesViettelServices {
 
