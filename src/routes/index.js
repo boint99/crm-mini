@@ -10,8 +10,12 @@ import { vlansRoutes } from '../modules/network/vlans/vlans.routes.js'
 import { ipsRoutes } from '../modules/network/ips/ips.routes.js'
 import { accountsRoutes } from '../modules/accounts/accounts.routes.js'
 import { otpRoutes } from '../modules/otp/otp.routes.js'
+import { permissionsRoutes } from '../modules/permissions/permissions.routes.js'
+import { rolesRoutes } from '../modules/roles/roles.routes.js'
+import { accountRolesRoutes } from '../modules/accountRoles/accountRoles.routes.js'
 import { authRoutes } from '../modules/auth/auth.routes.js'
 import { authMiddleware } from '../modules/auth/auth.middleware.js'
+import { dynamicPermissionMiddleware } from '../middleware/permission.middleware.js'
 
 const Router = express.Router()
 
@@ -20,26 +24,32 @@ Router.get('/status', (req, res) => {
   res.status(200).json({ message: 'APIs are ready to use.' })
 })
 
-Router.use('/company', authMiddleware, companyRoutes)
+Router.use('/company', authMiddleware, dynamicPermissionMiddleware, companyRoutes)
 
-Router.use('/organizations', authMiddleware, organizationRoutes)
+Router.use('/organizations', authMiddleware, dynamicPermissionMiddleware, organizationRoutes)
 
 
-Router.use('/branches', authMiddleware, branchesRoutes)
+Router.use('/branches', authMiddleware, dynamicPermissionMiddleware, branchesRoutes)
 
-Router.use('/positions', authMiddleware, positionsRoutes)
+Router.use('/positions', authMiddleware, dynamicPermissionMiddleware, positionsRoutes)
 
-Router.use('/employees', authMiddleware, employeesRoutes)
+Router.use('/employees', authMiddleware, dynamicPermissionMiddleware, employeesRoutes)
 
-Router.use('/viettel-employees', authMiddleware, employeesViettelRoutes)
+Router.use('/viettel-employees', authMiddleware, dynamicPermissionMiddleware, employeesViettelRoutes)
 
-Router.use('/viettel-branches', authMiddleware, viettelBranchRoutes)
+Router.use('/viettel-branches', authMiddleware, dynamicPermissionMiddleware, viettelBranchRoutes)
 
-Router.use('/networks', authMiddleware, vlansRoutes)
+Router.use('/networks', authMiddleware, dynamicPermissionMiddleware, vlansRoutes)
 
-Router.use('/networks', authMiddleware, ipsRoutes)
+Router.use('/networks', authMiddleware, dynamicPermissionMiddleware, ipsRoutes)
 
-Router.use('/accounts', authMiddleware, accountsRoutes)
+Router.use('/accounts', authMiddleware, dynamicPermissionMiddleware, accountsRoutes)
+
+Router.use('/permissions', authMiddleware, dynamicPermissionMiddleware, permissionsRoutes)
+
+Router.use('/roles', authMiddleware, dynamicPermissionMiddleware, rolesRoutes)
+
+Router.use('/account-roles', authMiddleware, dynamicPermissionMiddleware, accountRolesRoutes)
 
 Router.use('/otp', otpRoutes)
 

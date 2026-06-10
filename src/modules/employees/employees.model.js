@@ -89,7 +89,11 @@ class EmployeesModel extends BaseModel {
                       roleName: true,
                       description: true,
                       status: true,
-                      permissions: { select: { perId: true, perName: true, status: true, notes: true } }
+                      rolePermissions: {
+                        select: {
+                          permission: { select: { perId: true, perName: true, status: true, notes: true } }
+                        }
+                      }
                     }
                   }
                 }

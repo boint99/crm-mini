@@ -101,22 +101,24 @@ model EMPLOYEES {
 }
 
 model ACCOUNTS {
-  id            String           @unique @map("ID") @db.Uuid
-  accountId     Int              @id @default(autoincrement()) @map("ACCOUNT_ID")
-  accountName   String           @unique(map: "ACCOUNTS_ACCOUNT_CODE_key") @map("ACCOUNT_NAME")
-  password      String?          @map("PASSWORD")
-  isLogin       Boolean          @default(false) @map("IS_LOGIN")
-  login         Int              @default(0) @map("LOGIN")
-  description   String?          @map("DESCRIPTION") @db.VarChar(255)
-  employeeId    Int?             @unique @map("EMPLOYEE_ID")
-  status        ENUMSTATUS       @default(ENABLE) @map("STATUS")
-  createdAt     DateTime         @default(now()) @map("CREATED_AT") @db.Timestamp(6)
-  updatedAt     DateTime?        @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
-  deletedAt     DateTime?        @map("DELETED_AT") @db.Timestamp(6)
-  employee      EMPLOYEES?       @relation(fields: [employeeId], references: [employeeId])
-  accountRoles  ACCOUNT_ROLES[]
-  otpTokens     OTP_TOKENS[]
-  refreshTokens REFRESH_TOKENS[]
+  id          String     @unique @map("ID") @db.Uuid
+  accountId   Int        @id @default(autoincrement()) @map("ACCOUNT_ID")
+  accountName String     @unique(map: "ACCOUNTS_ACCOUNT_CODE_key") @map("ACCOUNT_NAME")
+  password    String?    @map("PASSWORD")
+  isLogin     Boolean    @default(false) @map("IS_LOGIN")
+  login       Int        @default(0) @map("LOGIN")
+  description String?    @map("DESCRIPTION") @db.VarChar(255)
+  employeeId  Int?       @unique @map("EMPLOYEE_ID")
+  status      ENUMSTATUS @default(ENABLE) @map("STATUS")
+  createdAt   DateTime   @default(now()) @map("CREATED_AT") @db.Timestamp(6)
+  updatedAt   DateTime?  @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
+  deletedAt   DateTime?  @map("DELETED_AT") @db.Timestamp(6)
+
+  accountRoles        ACCOUNT_ROLES[]
+  grantedPermissions  ROLE_PERMISSIONS[] @relation("PermissionGranter")
+  employee            EMPLOYEES?         @relation(fields: [employeeId], references: [employeeId])
+  otpTokens           OTP_TOKENS[]
+  refreshTokens       REFRESH_TOKENS[]
 
   @@index([employeeId])
   @@map("ACCOUNTS")
@@ -125,13 +127,14 @@ model ACCOUNTS {
 model ACCOUNT_ROLES {
   id        String    @unique @map("ID") @db.Uuid
   arId      Int       @id @default(autoincrement()) @map("AR_ID")
-  roleId    Int?      @map("ROLE_ID")
-  accountId Int?      @map("ACCOUNT_ID")
+  roleId    Int       @map("ROLE_ID")
+  accountId Int       @map("ACCOUNT_ID")
   createdAt DateTime  @default(now()) @map("CREATED_AT") @db.Timestamp(6)
   updatedAt DateTime? @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
   deletedAt DateTime? @map("DELETED_AT") @db.Timestamp(6)
-  account   ACCOUNTS? @relation(fields: [accountId], references: [accountId])
-  role      ROLES?    @relation(fields: [roleId], references: [roleId])
+
+  account ACCOUNTS @relation(fields: [accountId], references: [accountId])
+  role    ROLES    @relation(fields: [roleId], references: [roleId])
 
   @@index([accountId])
   @@index([roleId])
@@ -139,21 +142,43 @@ model ACCOUNT_ROLES {
 }
 
 model ROLES {
-  id           String          @unique @map("ID") @db.Uuid
-  roleId       Int             @id @default(autoincrement()) @map("ROLE_ID")
-  roleCode     Int             @unique @map("ROLE_CODE")
-  roleName     String          @map("ROLE_NAME")
-  description  String?         @map("DESCRIPTION")
-  createdBy    Int?            @map("CREATED_BY")
-  updatedBy    Int?            @map("UPDATED_BY")
-  status       ENUMSTATUS      @default(ENABLE) @map("STATUS")
-  createdAt    DateTime        @default(now()) @map("CREATED_AT") @db.Timestamp(6)
-  updatedAt    DateTime?       @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
-  deletedAt    DateTime?       @map("DELETED_AT") @db.Timestamp(6)
-  accountRoles ACCOUNT_ROLES[]
-  permissions  PERMISSIONS[]
+  id          String     @unique @map("ID") @db.Uuid
+  roleId      Int        @id @default(autoincrement()) @map("ROLE_ID")
+  roleCode    Int        @unique @map("ROLE_CODE")
+  roleName    String     @map("ROLE_NAME")
+  description String?    @map("DESCRIPTION")
+  createdBy   Int?       @map("CREATED_BY")
+  updatedBy   Int?       @map("UPDATED_BY")
+  status      ENUMSTATUS @default(ENABLE) @map("STATUS")
+  createdAt   DateTime   @default(now()) @map("CREATED_AT") @db.Timestamp(6)
+  updatedAt   DateTime?  @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
+  deletedAt   DateTime?  @map("DELETED_AT") @db.Timestamp(6)
+
+  accountRoles    ACCOUNT_ROLES[]
+  rolePermissions ROLE_PERMISSIONS[]
 
   @@map("ROLES")
+}
+
+model ROLE_PERMISSIONS {
+  id        String    @unique @map("ID") @db.Uuid
+  rpId      Int       @id @default(autoincrement()) @map("RP_ID")
+  roleId    Int       @map("ROLE_ID")
+  perId     Int       @map("PER_ID")
+  grantedBy Int       @map("GRANTED_BY")
+  revokedAt DateTime? @map("REVOKED_AT")
+  createdAt DateTime  @default(now()) @map("CREATED_AT") @db.Timestamp(6)
+  updatedAt DateTime? @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
+  deletedAt DateTime? @map("DELETED_AT") @db.Timestamp(6)
+
+  role       ROLES       @relation(fields: [roleId], references: [roleId])
+  permission PERMISSIONS @relation(fields: [perId], references: [perId])
+  granter    ACCOUNTS    @relation("PermissionGranter", fields: [grantedBy], references: [accountId])
+
+  @@index([roleId])
+  @@index([perId])
+  @@index([grantedBy])
+  @@map("ROLE_PERMISSIONS")
 }
 
 model PERMISSIONS {
@@ -161,17 +186,16 @@ model PERMISSIONS {
   perId     Int        @id @default(autoincrement()) @map("PER_ID")
   perCode   Int        @unique @map("PER_CODE")
   perName   String     @map("PER_NAME")
-  grantedBy DateTime   @map("GRANTED_BY")
-  revokedAt DateTime?  @map("REVOKED_AT")
+  apiPath   String?    @map("API_PATH")
+  method    String?    @map("METHOD")
   notes     String?    @map("NOTES")
-  roleId    Int?       @map("ROLE_ID")
   status    ENUMSTATUS @default(ENABLE) @map("STATUS")
   createdAt DateTime   @default(now()) @map("CREATED_AT") @db.Timestamp(6)
   updatedAt DateTime?  @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
   deletedAt DateTime?  @map("DELETED_AT") @db.Timestamp(6)
-  role      ROLES?     @relation(fields: [roleId], references: [roleId])
 
-  @@index([roleId])
+  rolePermissions ROLE_PERMISSIONS[]
+
   @@map("PERMISSIONS")
 }
 
@@ -280,15 +304,15 @@ enum OTP_TYPE {
   RESET_PASSWORD
 }
 
-enum ENUMSTATUS {
-  ENABLE
-  DISABLED
-}
-
 enum NETWORK_STATUS {
   ASSIGNED
   ACTIVE
   INACTIVE
   DISABLED
   CONFLICT
+}
+
+enum ENUMSTATUS {
+  ENABLE
+  DISABLED
 }
