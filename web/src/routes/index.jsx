@@ -18,6 +18,7 @@ const Accounts = lazy(() => import("@/pages/accounts"));
 const ViettelEmployee = lazy(() => import("@/pages/Viettel/employee"));
 const ViettelBranch = lazy(() => import("@/pages/Viettel/branch"));
 const Permissions = lazy(() => import("@/pages/Permissions"));
+const NotPermistion = lazy(() => import("@/pages/NotPermistion"));
 
 const Login = lazy(() => import("@/pages/auth/login"));
 const Register = lazy(() => import("@/pages/auth/register"));
@@ -139,6 +140,14 @@ const routes = [
         element: (
           <WithSpinner>
             <Permissions />
+          </WithSpinner>
+        ),
+      },
+      {
+        path: "not-permission",
+        element: (
+          <WithSpinner>
+            <NotPermistion />
           </WithSpinner>
         ),
       },

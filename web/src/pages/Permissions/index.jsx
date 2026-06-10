@@ -91,8 +91,9 @@ export default function PermissionsPage() {
       if (assignsRes?.success) setAssignments(assignsRes.data);
       if (accountsRes?.success) setAccounts(accountsRes.data);
     } catch (error) {
-      console.error("Fetch data failed:", error);
-      toast.error("Không thể tải danh sách dữ liệu!");
+      if (error?.response?.status !== 403 && error?.status !== 403) {
+        toast.error("Không thể tải danh sách dữ liệu!");
+      }
     } finally {
       setLoading(false);
     }
@@ -248,7 +249,9 @@ export default function PermissionsPage() {
       setModalOpen(false);
     } catch (error) {
       console.error("Form submit failed:", error);
-      toast.error(error.response?.data?.message || "Đã xảy ra lỗi khi thực hiện!");
+      if (error?.response?.status !== 403 && error?.status !== 403) {
+        toast.error(error.response?.data?.message || "Đã xảy ra lỗi khi thực hiện!");
+      }
     }
   };
 

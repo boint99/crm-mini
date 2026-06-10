@@ -92,7 +92,9 @@ export default function AcctionModal({
 
       onClose?.();
     } catch (error) {
-      toast.error(error || "Có lỗi xảy ra.");
+      if (error?.response?.status !== 403 && error?.status !== 403) {
+        toast.error(error || "Có lỗi xảy ra.");
+      }
     }
   };
 

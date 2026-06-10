@@ -120,6 +120,10 @@ axios.interceptors.response.use(
       }
     }
 
+    if (error.response?.status === 403) {
+      navigateTo('/not-permission')
+    }
+
     return Promise.reject(error)
   }
 )
