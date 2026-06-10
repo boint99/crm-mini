@@ -55,6 +55,12 @@ axios.interceptors.response.use(
     const originalRequest = error.config
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Không gọi refresh token nếu request lỗi là chính API login hoặc refresh-token
+      const isAuthUrl = originalRequest.url?.includes('/auth/login') || originalRequest.url?.includes('/auth/refresh-token')
+      if (isAuthUrl) {
+        return Promise.reject(error)
+      }
+
       // Nếu đang refresh rồi thì xếp hàng chờ
       if (isRefreshing) {
         return new Promise((resolve, reject) => {

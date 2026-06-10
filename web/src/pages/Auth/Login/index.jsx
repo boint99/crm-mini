@@ -8,7 +8,7 @@ import { toast } from 'react-toastify'
 function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-    
+
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const isLoading = useSelector(selectIsAuthLoading)
@@ -38,7 +38,7 @@ function LoginPage() {
       toast.success('Đăng nhập thành công!')
       navigate('/', { replace: true })
     } catch (err) {
-      toast.error(err || 'Đăng nhập thất bại!')
+      // Bỏ qua hiển thị toast lỗi vì lỗi đã được hiển thị trên giao diện qua state error
     }
   }
 
@@ -52,7 +52,7 @@ function LoginPage() {
 
       <div className="space-y-1">
         <label className="block text-sm font-medium text-gray-700" htmlFor="email">
-                    Email
+          Email
         </label>
         <input
           id="email"
@@ -68,7 +68,7 @@ function LoginPage() {
 
       <div className="space-y-1">
         <label className="block text-sm font-medium text-gray-700" htmlFor="password">
-                    Mật khẩu
+          Mật khẩu
         </label>
         <input
           id="password"
@@ -95,15 +95,15 @@ function LoginPage() {
       <button
         type="submit"
         disabled={isLoading}
-        className="mt-2 w-full rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:bg-gray-400 cursor-pointer transition-colors"
+        className="mt-2 w-full rounded-lg bg-gray-900 px-4 py-2 text-base font-medium text-white hover:bg-gray-800 disabled:bg-gray-400 cursor-pointer transition-colors"
       >
         {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
       </button>
 
       <p className="pt-2 text-center text-xs text-gray-600">
-                Chưa có tài khoản?{' '}
+        Chưa có tài khoản?{' '}
         <a href="/auth/register" className="font-medium text-gray-900 hover:underline">
-                    Đăng ký
+          Đăng ký
         </a>
       </p>
     </form>
