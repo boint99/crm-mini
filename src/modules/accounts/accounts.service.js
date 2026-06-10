@@ -82,7 +82,7 @@ class AccountsService {
   async update(dataUpdate) {
     const { id, ...payload } = dataUpdate
 
-    await this._getAccountOrThrow(id)
+    const account = await this._getAccountOrThrow(id)
 
     delete payload.accountName
 
@@ -90,7 +90,7 @@ class AccountsService {
     if (payload.employeeCode) {
       payload.employeeId = await this._getEmployeeIdFromCode(payload.employeeCode, id)
       delete payload.employeeCode
-    } else if (payload.hasOwnProperty('employeeCode')) {
+    } else if (Object.prototype.hasOwnProperty.call(payload, 'employeeCode')) {
       payload.employeeId = null
       delete payload.employeeCode
     }
@@ -98,6 +98,16 @@ class AccountsService {
     if (typeof payload.login === 'boolean') {
       payload.isLogin = payload.login
       delete payload.login
+    }
+
+    // Bảo vệ tài khoản superadmin (accountId = 1) khỏi bị vô hiệu hóa hoặc tắt kích hoạt
+    if (account.accountId === 1) {
+      if (payload.status === 'DISABLED') {
+        throw new ApiError(StatusCodes.FORBIDDEN, 'Không thể vô hiệu hóa tài khoản Superadmin!')
+      }
+      if (payload.isLogin === false) {
+        throw new ApiError(StatusCodes.FORBIDDEN, 'Không thể tắt kích hoạt đăng nhập của tài khoản Superadmin!')
+      }
     }
 
     const updatedAccount = await accountsModel.updateById(id, payload)
@@ -114,9 +124,11 @@ class AccountsService {
 
     await refreshTokenModel.revokeAllAccountTokens(account.accountId)
 
+    const isSuperadmin = account.accountId === 1
+
     return Serializer.sanitize(await accountsModel.updateById(account.id, {
       password: await bcrypt.hash(newPassword.trim(), saltRoundsPassword),
-      isLogin: false,
+      isLogin: isSuperadmin ? true : false, // Giữ kích hoạt cho superadmin để không bị khóa
       login: 0
     }), ['password', 'deletedAt'])
   }
@@ -124,6 +136,12 @@ class AccountsService {
   // Soft delete account by id
   async delete(id) {
     const account = await this._getAccountOrThrow(id)
+
+    // Bảo vệ tài khoản superadmin (accountId = 1) khỏi bị xóa
+    if (account.accountId === 1) {
+      throw new ApiError(StatusCodes.FORBIDDEN, 'Không thể xóa tài khoản Superadmin!')
+    }
+
     await refreshTokenModel.revokeAllAccountTokens(account.accountId)
     return await accountsModel.softDeleteById(account.accountId)
   }

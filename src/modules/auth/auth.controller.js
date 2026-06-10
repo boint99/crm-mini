@@ -67,6 +67,14 @@ class AuthController {
       new SuccessResponse({ res, data: result, message: 'Logged out from all devices.' })
     } catch (error) { next(error) }
   }
+
+  // POST /api/auth/setup-superadmin
+  static async setupSuperAdmin(req, res, next) {
+    try {
+      const result = await authService.setupSuperAdmin(req.body)
+      new CreatedResponse({ res, data: result, message: 'Superadmin account created successfully.' })
+    } catch (error) { next(error) }
+  }
 }
 
 export const authController = AuthController

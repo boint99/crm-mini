@@ -7,6 +7,7 @@ import { saltRoundsPassword } from '../../utils/constants.js'
 import { signAccessToken, signRefreshToken, verifyRefreshToken, decodeToken } from '../../utils/jwt.js'
 import Serializer from '../../utils/Serializer.js'
 import { refreshTokenModel } from './refreshToken.model.js'
+import { PRISMA } from '../../configs/db.config.js'
 
 class AuthService {
   _validateRegister(data) {
@@ -222,6 +223,82 @@ class AuthService {
     return {
       message: `Logged out from ${revokedCount} device(s)`,
       revokedDevices: revokedCount
+    }
+  }
+
+  // ================= SETUP SUPERADMIN =================
+  async setupSuperAdmin(data) {
+    const { email, password } = data
+
+    if (!email?.trim() || !password?.trim()) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Email and Password are required!')
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email.trim())) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid email format!')
+    }
+
+    if (password.trim().length < 8) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Password must be >= 8 chars!')
+    }
+
+    // Check if account ID = 1 already exists
+    const existingSuperAdmin = await PRISMA.aCCOUNTS.findFirst({
+      where: { accountId: 1 }
+    })
+
+    if (existingSuperAdmin) {
+      throw new ApiError(StatusCodes.FORBIDDEN, 'Superadmin account already exists!')
+    }
+
+    const cleanEmail = email.trim().toLowerCase()
+    const duplicateAccount = await PRISMA.aCCOUNTS.findFirst({
+      where: { accountName: cleanEmail }
+    })
+    if (duplicateAccount) {
+      throw new ApiError(StatusCodes.CONFLICT, 'Email already registered!')
+    }
+
+    const hashedPassword = await bcrypt.hash(password.trim(), saltRoundsPassword)
+
+    // Ensure ADMIN_ROLE exists
+    const adminRole = await PRISMA.rOLES.upsert({
+      where: { roleId: 1 },
+      update: {},
+      create: {
+        roleId: 1,
+        roleCode: 1001,
+        roleName: 'ADMIN_ROLE',
+        description: 'Quyền quản trị tối cao của hệ thống (Bypass check)',
+        status: 'ENABLE'
+      }
+    })
+
+    // Create Super Admin Account
+    const superAdmin = await PRISMA.aCCOUNTS.create({
+      data: {
+        accountId: 1,
+        accountName: cleanEmail,
+        password: hashedPassword,
+        isLogin: true,
+        status: 'ENABLE',
+        description: 'Tài khoản Super Admin mặc định'
+      }
+    })
+
+    // Assign Role
+    await PRISMA.aCCOUNT_ROLES.create({
+      data: {
+        accountId: superAdmin.accountId,
+        roleId: adminRole.roleId
+      }
+    })
+
+    return {
+      accountId: superAdmin.accountId,
+      accountName: superAdmin.accountName,
+      role: adminRole.roleName
     }
   }
 }
