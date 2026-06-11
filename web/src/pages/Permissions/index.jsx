@@ -34,9 +34,19 @@ const STATUS_CONFIG = {
   },
 };
 
+const modalStyles = {
+  ...customStyles,
+  content: {
+    ...customStyles.content,
+    maxWidth: "672px",
+    borderRadius: "1rem",
+    overflow: "visible",
+  },
+};
+
 const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 focus:outline-none";
-const labelClass = "block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1.5";
+  "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed bg-white";
+const labelClass = "block text-sm font-medium text-gray-700 mb-1";
 
 export default function PermissionsPage() {
   const [activeTab, setActiveTab] = useState("permissions"); // permissions, roles, assignments
@@ -287,6 +297,15 @@ export default function PermissionsPage() {
         (a.role?.roleName && a.role.roleName.toLowerCase().includes(q))
     );
   }, [assignments, searchQuery]);
+
+  const getSubmitButtonText = () => {
+    if (modalAction === "create") {
+      if (modalType === "permission") return "Tạo quyền hạn";
+      if (modalType === "role") return "Tạo vai trò";
+      if (modalType === "assignment") return "Gán vai trò";
+    }
+    return "Cập nhật";
+  };
 
   return (
     <div className="space-y-4">
@@ -619,47 +638,27 @@ export default function PermissionsPage() {
       <Modal
         isOpen={modalOpen}
         onRequestClose={() => setModalOpen(false)}
-        style={customStyles}
+        style={(modalAction === "delete" || modalAction === "revoke") ? customStyles : modalStyles}
         ariaHideApp={false}
       >
-        <div className="p-6 w-full max-w-md md:max-w-lg mx-auto">
+        <div className="p-6">
           {/* Header */}
-          <div className="flex items-center gap-3 pb-4 mb-4 border-b border-slate-100">
-            <div className={`p-2.5 rounded-xl ${
-              (modalAction === "delete" || modalAction === "revoke")
-                ? "bg-rose-50 text-rose-600"
-                : modalType === "permission"
-                ? "bg-indigo-50 text-indigo-600"
-                : modalType === "role"
-                ? "bg-emerald-50 text-emerald-600"
-                : "bg-violet-50 text-violet-600"
-            }`}>
-              {(modalAction === "delete" || modalAction === "revoke") ? (
-                <Trash2 className="h-5 w-5" />
-              ) : modalType === "permission" ? (
-                <Shield className="h-5 w-5" />
-              ) : modalType === "role" ? (
-                <ShieldCheck className="h-5 w-5" />
-              ) : (
-                <UserCheck className="h-5 w-5" />
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-lg font-semibold text-gray-900">
+              {modalAction === "delete" && "Xác nhận xóa"}
+              {modalAction === "revoke" && "Xác nhận thu hồi vai trò"}
+              {modalAction === "create" && (
+                modalType === "permission" ? "Thêm quyền hạn mới" :
+                modalType === "role" ? "Thêm vai trò mới" :
+                "Gán vai trò mới"
               )}
-            </div>
-            <div className="flex-1">
-              <h3 className="text-base font-bold text-slate-800 leading-tight">
-                {modalAction === "delete" && "Xác nhận xóa"}
-                {modalAction === "revoke" && "Xác nhận thu hồi vai trò"}
-                {modalAction === "create" && `Thêm mới ${modalType === "permission" ? "quyền hạn" : modalType === "role" ? "vai trò" : "liên kết"}`}
-                {modalAction === "edit" && `Cập nhật ${modalType === "permission" ? "quyền hạn" : "vai trò"}`}
-              </h3>
-              <p className="text-[11px] text-slate-400 mt-0.5 font-medium">
-                {(modalAction === "delete" || modalAction === "revoke")
-                  ? "Hành động này yêu cầu xác nhận trước khi thực thi."
-                  : `Điền thông tin bên dưới để ${modalAction === "create" ? "tạo mới" : "cập nhật"} dữ liệu.`}
-              </p>
-            </div>
+              {modalAction === "edit" && (
+                modalType === "permission" ? "Chỉnh sửa quyền hạn" : "Chỉnh sửa vai trò"
+              )}
+            </h3>
             <button
               onClick={() => setModalOpen(false)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition cursor-pointer"
+              className="p-1 rounded-md hover:bg-gray-100 cursor-pointer text-gray-400 hover:text-gray-600 transition"
             >
               <X className="h-5 w-5" />
             </button>
@@ -690,13 +689,13 @@ export default function PermissionsPage() {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 cursor-pointer"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-all duration-200 shadow-sm shadow-rose-100 cursor-pointer"
+                  className="px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-lg hover:bg-rose-700 cursor-pointer"
                 >
                   Xác nhận
                 </button>
@@ -706,71 +705,67 @@ export default function PermissionsPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* 1. PERMISSION FORM */}
               {modalType === "permission" && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelClass}>Mã Quyền *</label>
-                      <input
-                        type="number"
-                        placeholder="Ví dụ: 101"
-                        value={perCode}
-                        onChange={(e) => setPerCode(e.target.value)}
-                        className={`${inputClass} ${modalAction === "edit" ? "bg-slate-50 text-slate-400 cursor-not-allowed border-slate-100 focus:ring-0 focus:border-slate-100" : ""}`}
-                        required
-                        disabled={modalAction === "edit"}
-                      />
-                    </div>
-                    <div>
-                      <label className={labelClass}>Tên Quyền *</label>
-                      <input
-                        type="text"
-                        placeholder="COMPANY_VIEW"
-                        value={perName}
-                        onChange={(e) => setPerName(e.target.value)}
-                        className={inputClass}
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="col-span-2">
-                      <label className={labelClass}>API Path</label>
-                      <input
-                        type="text"
-                        placeholder="/api/company/:id"
-                        value={apiPath}
-                        onChange={(e) => setApiPath(e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
-                    <div>
-                      <label className={labelClass}>HTTP Method</label>
-                      <select
-                        value={method}
-                        onChange={(e) => setMethod(e.target.value)}
-                        className={`${inputClass} bg-white`}
-                      >
-                        <option value="GET">GET</option>
-                        <option value="POST">POST</option>
-                        <option value="PUT">PUT</option>
-                        <option value="DELETE">DELETE</option>
-                        <option value="PATCH">PATCH</option>
-                      </select>
-                    </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className={labelClass}>Mã Quyền *</label>
+                    <input
+                      type="number"
+                      placeholder="VD: 101"
+                      value={perCode}
+                      onChange={(e) => setPerCode(e.target.value)}
+                      className={inputClass}
+                      required
+                      disabled={modalAction === "edit"}
+                    />
                   </div>
                   <div>
-                    <label className={labelClass}>Trạng thái *</label>
+                    <label className={labelClass}>Tên Quyền *</label>
+                    <input
+                      type="text"
+                      placeholder="VD: COMPANY_VIEW"
+                      value={perName}
+                      onChange={(e) => setPerName(e.target.value)}
+                      className={inputClass}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>API Path</label>
+                    <input
+                      type="text"
+                      placeholder="VD: /api/company/:id"
+                      value={apiPath}
+                      onChange={(e) => setApiPath(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>HTTP Method</label>
+                    <select
+                      value={method}
+                      onChange={(e) => setMethod(e.target.value)}
+                      className={inputClass}
+                    >
+                      <option value="GET">GET</option>
+                      <option value="POST">POST</option>
+                      <option value="PUT">PUT</option>
+                      <option value="DELETE">DELETE</option>
+                      <option value="PATCH">PATCH</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Trạng thái (STATUS) *</label>
                     <select
                       value={status}
                       onChange={(e) => setStatus(e.target.value)}
-                      className={`${inputClass} bg-white`}
+                      className={inputClass}
                       required
                     >
                       <option value="ENABLE">ENABLE (Hoạt động)</option>
                       <option value="DISABLED">DISABLED (Khóa)</option>
                     </select>
                   </div>
-                  <div>
+                  <div className="sm:col-span-2">
                     <label className={labelClass}>Ghi chú</label>
                     <textarea
                       rows={2}
@@ -785,45 +780,43 @@ export default function PermissionsPage() {
 
               {/* 2. ROLE FORM */}
               {modalType === "role" && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelClass}>Mã vai trò *</label>
-                      <input
-                        type="number"
-                        placeholder="Ví dụ: 1001"
-                        value={roleCode}
-                        onChange={(e) => setRoleCode(e.target.value)}
-                        className={`${inputClass} ${modalAction === "edit" ? "bg-slate-50 text-slate-400 cursor-not-allowed border-slate-100 focus:ring-0 focus:border-slate-100" : ""}`}
-                        required
-                        disabled={modalAction === "edit"}
-                      />
-                    </div>
-                    <div>
-                      <label className={labelClass}>Tên vai trò *</label>
-                      <input
-                        type="text"
-                        placeholder="ADMIN_ROLE"
-                        value={roleName}
-                        onChange={(e) => setRoleName(e.target.value)}
-                        className={inputClass}
-                        required
-                      />
-                    </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className={labelClass}>Mã vai trò *</label>
+                    <input
+                      type="number"
+                      placeholder="VD: 1001"
+                      value={roleCode}
+                      onChange={(e) => setRoleCode(e.target.value)}
+                      className={inputClass}
+                      required
+                      disabled={modalAction === "edit"}
+                    />
                   </div>
                   <div>
-                    <label className={labelClass}>Trạng thái *</label>
+                    <label className={labelClass}>Tên vai trò *</label>
+                    <input
+                      type="text"
+                      placeholder="VD: ADMIN_ROLE"
+                      value={roleName}
+                      onChange={(e) => setRoleName(e.target.value)}
+                      className={inputClass}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Trạng thái (STATUS) *</label>
                     <select
                       value={status}
                       onChange={(e) => setStatus(e.target.value)}
-                      className={`${inputClass} bg-white`}
+                      className={inputClass}
                       required
                     >
                       <option value="ENABLE">ENABLE (Hoạt động)</option>
                       <option value="DISABLED">DISABLED (Khóa)</option>
                     </select>
                   </div>
-                  <div>
+                  <div className="sm:col-span-2">
                     <label className={labelClass}>Mô tả vai trò</label>
                     <textarea
                       rows={3}
@@ -838,13 +831,13 @@ export default function PermissionsPage() {
 
               {/* 3. ASSIGNMENT FORM */}
               {modalType === "assignment" && (
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <label className={labelClass}>Chọn tài khoản *</label>
                     <select
                       value={assignAccountId}
                       onChange={(e) => setAssignAccountId(e.target.value)}
-                      className={`${inputClass} bg-white`}
+                      className={inputClass}
                       required
                     >
                       <option value="" disabled>-- Chọn tài khoản --</option>
@@ -862,7 +855,7 @@ export default function PermissionsPage() {
                     <select
                       value={assignRoleId}
                       onChange={(e) => setAssignRoleId(e.target.value)}
-                      className={`${inputClass} bg-white`}
+                      className={inputClass}
                       required
                     >
                       <option value="" disabled>-- Chọn vai trò --</option>
@@ -878,19 +871,19 @@ export default function PermissionsPage() {
                 </div>
               )}
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 mt-5">
+              <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 cursor-pointer"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 text-sm font-semibold text-white bg-primary hover:opacity-90 rounded-xl transition-all duration-200 shadow-sm shadow-indigo-100/50 cursor-pointer"
+                  className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
                 >
-                  Lưu
+                  {getSubmitButtonText()}
                 </button>
               </div>
             </form>
