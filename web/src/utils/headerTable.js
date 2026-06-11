@@ -90,6 +90,7 @@ export const headerTableAccounts = {
   index: 'STT',
   accountName: 'Tên tài khoản',
   employee: 'Họ và tên',
+  role: 'Vai trò',
   isLogin: 'Đăng nhập',
   login: 'Số lần đăng nhập',
   status: 'Trạng thái',

@@ -1,15 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
-import ActionModal from "./Actions";
-import { useAppDispatch } from "@/hook/useAppDispatch";
+import { useEffect, useMemo, useState } from 'react'
+import ActionModal from './Actions'
+import { useAppDispatch } from '@/hook/useAppDispatch'
 import {
   getAccounts,
   selectAccounts,
-  selectAccountsLoading,
-} from "@/redux/slice/accountsSlice";
-import { useSelector } from "react-redux";
-import LoadingItem from "@/components/ui/LoadingItem";
-import { formatDateTime } from "@/utils/contants";
-import { headerTableAccounts } from "@/utils/headerTable";
+  selectAccountsLoading
+} from '@/redux/slice/accountsSlice'
+import { useSelector } from 'react-redux'
+import LoadingItem from '@/components/ui/LoadingItem'
+import { formatDateTime } from '@/utils/contants'
+import { headerTableAccounts } from '@/utils/headerTable'
 import {
   Pencil,
   Trash2,
@@ -23,86 +23,86 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Plus,
-  Users,
-} from "lucide-react";
+  Users
+} from 'lucide-react'
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10
 
 const STATUS_CONFIG = {
   ENABLE: {
-    label: "Hoạt động",
-    className: "bg-green-100 text-green-700 border border-green-300",
+    label: 'Hoạt động',
+    className: 'bg-green-100 text-green-700 border border-green-300'
   },
   DISABLED: {
-    label: "Vô hiệu hóa",
-    className: "bg-red-100 text-red-700 border border-red-300",
-  },
-};
+    label: 'Vô hiệu hóa',
+    className: 'bg-red-100 text-red-700 border border-red-300'
+  }
+}
 
 function Accounts() {
-  const [openModal, setOpenModal] = useState(false);
-  const [action, setAction] = useState(null);
-  const [selectItem, setSelectItem] = useState(null);
-  const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
-  const [page, setPage] = useState(1);
+  const [openModal, setOpenModal] = useState(false)
+  const [action, setAction] = useState(null)
+  const [selectItem, setSelectItem] = useState(null)
+  const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('ALL')
+  const [page, setPage] = useState(1)
 
-  const accountItems = useSelector(selectAccounts);
-  const loading = useSelector(selectAccountsLoading);
-  const dispatchAsync = useAppDispatch();
+  const accountItems = useSelector(selectAccounts)
+  const loading = useSelector(selectAccountsLoading)
+  const dispatchAsync = useAppDispatch()
 
   useEffect(() => {
-    dispatchAsync(getAccounts());
-  }, []);
+    dispatchAsync(getAccounts())
+  }, [])
 
   const handleAction = (actionType, item = null) => {
-    setAction(actionType);
-    setSelectItem(item);
-    setOpenModal(true);
-  };
+    setAction(actionType)
+    setSelectItem(item)
+    setOpenModal(true)
+  }
 
   const handleClear = () => {
-    setQuery("");
-    setStatusFilter("ALL");
-    setPage(1);
-  };
+    setQuery('')
+    setStatusFilter('ALL')
+    setPage(1)
+  }
 
   const filteredItems = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = query.trim().toLowerCase()
     return accountItems.filter((acc) => {
       const matchQuery =
         !q ||
         [acc.accountName, acc.description]
           .filter(Boolean)
-          .join(" ")
+          .join(' ')
           .toLowerCase()
-          .includes(q);
-      const matchStatus = statusFilter === "ALL" || acc.status === statusFilter;
-      return matchQuery && matchStatus;
-    });
-  }, [accountItems, query, statusFilter]);
+          .includes(q)
+      const matchStatus = statusFilter === 'ALL' || acc.status === statusFilter
+      return matchQuery && matchStatus
+    })
+  }, [accountItems, query, statusFilter])
 
-  const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
-  const currentPage = Math.min(page, totalPages);
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
   const pagedItems = filteredItems.slice(
     (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
+    currentPage * PAGE_SIZE
+  )
 
-  const totalAccounts = accountItems.length;
+  const totalAccounts = accountItems.length
   const activeAccounts = accountItems.filter(
-    (a) => a.status === "ENABLE",
-  ).length;
-  const loggedInAccounts = accountItems.filter((a) => a.isLogin).length;
+    (a) => a.status === 'ENABLE'
+  ).length
+  const loggedInAccounts = accountItems.filter((a) => a.isLogin).length
 
   const maxLogin = Math.max(
     ...accountItems.map((a) => Number(a.login) || 0),
-    1,
-  );
+    1
+  )
 
   const renderLoginBar = (loginCount) => {
-    const count = Number(loginCount) || 0;
-    const pct = Math.round((count / maxLogin) * 100);
+    const count = Number(loginCount) || 0
+    const pct = Math.round((count / maxLogin) * 100)
     return (
       <div className="flex items-center gap-2 min-w-[110px]">
         <div className="flex-1 h-1.5 rounded-full bg-gray-200">
@@ -113,98 +113,117 @@ function Accounts() {
         </div>
         <span className="text-xs text-gray-500 w-6 text-right">{count}</span>
       </div>
-    );
-  };
+    )
+  }
 
   const renderCell = (account, key, rowIndex) => {
-    const cellClass = "px-4 py-3 text-gray-700 whitespace-nowrap";
+    const cellClass = 'px-4 py-3 text-gray-700 whitespace-nowrap'
     switch (key) {
-      case "index":
-        return (
-          <td
-            key={key}
-            className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap"
-          >
-            {(currentPage - 1) * PAGE_SIZE + rowIndex + 1}
-          </td>
-        );
-      case "accountName":
-        return (
-          <td
-            key={key}
-            className="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap"
-          >
-            {account.accountName}
-          </td>
-        );
-      case "employee":
-        return (
-          <td key={key} className={cellClass}>
-            {account.employee ? (
-              <span className="inline-flex items-center rounded-md px-2 py-0.5 text-slate-700">
-                {account.employee.firstName} {account.employee.lastName}
-              </span>
-            ) : (
-              <span className="text-gray-400 italic text-xs">—</span>
-            )}
-          </td>
-        );
-      case "createdAt":
-        return (
-          <td key={key} className={cellClass}>
-            {formatDateTime(account.createdAt)}
-          </td>
-        );
-      case "login":
-        return (
-          <td key={key} className="px-4 py-3 whitespace-nowrap">
-            {renderLoginBar(account.login)}
-          </td>
-        );
-      case "status": {
-        const cfg = STATUS_CONFIG[account.status] ?? {
-          label: account.status,
-          className: "bg-gray-100 text-gray-600 border border-gray-300",
-        };
-        return (
-          <td key={key} className="px-4 py-3 whitespace-nowrap">
-            <span
-              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide ${cfg.className}`}
-            >
-              {cfg.label}
+    case 'index':
+      return (
+        <td
+          key={key}
+          className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap"
+        >
+          {(currentPage - 1) * PAGE_SIZE + rowIndex + 1}
+        </td>
+      )
+    case 'accountName':
+      return (
+        <td
+          key={key}
+          className="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap"
+        >
+          {account.accountName}
+        </td>
+      )
+    case 'employee':
+      return (
+        <td key={key} className={cellClass}>
+          {account.employee ? (
+            <span className="inline-flex items-center rounded-md px-2 py-0.5 text-slate-700">
+              {account.employee.firstName} {account.employee.lastName}
             </span>
-          </td>
-        );
+          ) : (
+            <span className="text-gray-400 italic text-xs">—</span>
+          )}
+        </td>
+      )
+    case 'role':
+      return (
+        <td key={key} className={cellClass}>
+          {account.roles && account.roles.length > 0 ? (
+            <div className="flex flex-wrap gap-1">
+              {account.roles.map((r) => (
+                <span
+                  key={r.roleId}
+                  className="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-700/10"
+                >
+                  {r.roleName}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <span className="text-gray-400 italic text-xs">—</span>
+          )}
+        </td>
+      )
+    case 'createdAt':
+      return (
+        <td key={key} className={cellClass}>
+          {formatDateTime(account.createdAt)}
+        </td>
+      )
+    case 'login':
+      return (
+        <td key={key} className="px-4 py-3 whitespace-nowrap">
+          {renderLoginBar(account.login)}
+        </td>
+      )
+    case 'status': {
+      const cfg = STATUS_CONFIG[account.status] ?? {
+        label: account.status,
+        className: 'bg-gray-100 text-gray-600 border border-gray-300'
       }
-      case "description":
-        return (
-          <td
-            key={key}
-            className="px-4 py-3 max-w-[160px] truncate text-gray-600 text-xs"
+      return (
+        <td key={key} className="px-4 py-3 whitespace-nowrap">
+          <span
+            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide ${cfg.className}`}
           >
-            {account.description || (
-              <span className="text-gray-400 italic">—</span>
-            )}
-          </td>
-        );
-      case "isLogin":
-        return (
-          <td key={key} className="px-4 py-3 whitespace-nowrap text-center">
-            {account.isLogin ? (
-              <CheckCircle2 className="mx-auto h-5 w-5 text-emerald-500" />
-            ) : (
-              <XCircle className="mx-auto h-5 w-5 text-rose-400" />
-            )}
-          </td>
-        );
-      default:
-        return (
-          <td key={key} className={cellClass}>
-            {account[key]}
-          </td>
-        );
+            {cfg.label}
+          </span>
+        </td>
+      )
     }
-  };
+    case 'description':
+      return (
+        <td
+          key={key}
+          className="px-4 py-3 max-w-[160px] truncate text-gray-600 text-xs"
+        >
+          {account.description || (
+            <span className="text-gray-400 italic">—</span>
+          )}
+        </td>
+      )
+    case 'isLogin':
+      return (
+        <td key={key} className="px-4 py-3 whitespace-nowrap text-center">
+          {account.isLogin ? (
+            <CheckCircle2 className="mx-auto h-5 w-5 text-emerald-500" />
+          ) : (
+            <XCircle className="mx-auto h-5 w-5 text-rose-400" />
+          )}
+        </td>
+      )
+    default:
+      return (
+        <td key={key} className={cellClass}>
+          {account[key]}
+        </td>
+      )
+    }
+  }
 
   return (
     <div>
@@ -220,7 +239,7 @@ function Accounts() {
         </div>
         <button
           type="button"
-          onClick={() => handleAction("create")}
+          onClick={() => handleAction('create')}
           className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 cursor-pointer"
         >
           <Plus className="mr-2 h-4 w-4" />
@@ -263,8 +282,8 @@ function Accounts() {
             <select
               value={statusFilter}
               onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
+                setStatusFilter(e.target.value)
+                setPage(1)
               }}
               className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700 outline-none focus:border-indigo-400 cursor-pointer"
             >
@@ -280,8 +299,8 @@ function Accounts() {
               placeholder="Keyword Search"
               value={query}
               onChange={(e) => {
-                setQuery(e.target.value);
-                setPage(1);
+                setQuery(e.target.value)
+                setPage(1)
               }}
               className="w-60 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
             />
@@ -299,7 +318,7 @@ function Accounts() {
                   <th
                     key={key}
                     className={`px-4 py-3 font-semibold text-gray-700 whitespace-nowrap ${
-                      key === "isLogin" ? "text-center" : "text-left"
+                      key === 'isLogin' ? 'text-center' : 'text-left'
                     }`}
                   >
                     {label}
@@ -336,12 +355,12 @@ function Accounts() {
                 {pagedItems.map((account, rowIndex) => (
                   <tr key={account.accountId} className="hover:bg-gray-50">
                     {Object.entries(headerTableAccounts).map(([key]) =>
-                      renderCell(account, key, rowIndex),
+                      renderCell(account, key, rowIndex)
                     )}
                     <td className="px-4 py-3 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
-                          onClick={() => handleAction("edit", account)}
+                          onClick={() => handleAction('edit', account)}
                           type="button"
                           title="Chỉnh sửa"
                           className="rounded-md p-2 text-indigo-600 transition hover:bg-indigo-50 cursor-pointer"
@@ -350,7 +369,7 @@ function Accounts() {
                         </button>
                         <button
                           onClick={() =>
-                            handleAction("reset-password", account)
+                            handleAction('reset-password', account)
                           }
                           type="button"
                           title="Đặt lại mật khẩu"
@@ -361,7 +380,7 @@ function Accounts() {
                         <button
                           type="button"
                           title="Xóa"
-                          onClick={() => handleAction("delete", account)}
+                          onClick={() => handleAction('delete', account)}
                           className="rounded-md p-2 text-rose-600 transition hover:bg-rose-50 cursor-pointer"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -380,7 +399,7 @@ function Accounts() {
           <div className="border-t border-gray-100 px-4 py-3 flex items-center justify-between">
             <p className="text-xs text-gray-500">
               Hiển thị {(currentPage - 1) * PAGE_SIZE + 1}–
-              {Math.min(currentPage * PAGE_SIZE, filteredItems.length)} /{" "}
+              {Math.min(currentPage * PAGE_SIZE, filteredItems.length)} /{' '}
               {filteredItems.length} tài khoản
             </p>
             <div className="flex items-center gap-1">
@@ -406,8 +425,8 @@ function Accounts() {
                     onClick={() => setPage(p)}
                     className={`min-w-[32px] rounded-md px-2.5 py-1 text-xs font-semibold transition cursor-pointer ${
                       p === currentPage
-                        ? "bg-primary text-white"
-                        : "text-gray-700 hover:bg-gray-100"
+                        ? 'bg-primary text-white'
+                        : 'text-gray-700 hover:bg-gray-100'
                     }`}
                   >
                     {p}
@@ -435,15 +454,15 @@ function Accounts() {
       <ActionModal
         open={openModal}
         onClose={() => {
-          setOpenModal(false);
-          setSelectItem(null);
-          setAction(null);
+          setOpenModal(false)
+          setSelectItem(null)
+          setAction(null)
         }}
         action={action}
         item={selectItem}
       />
     </div>
-  );
+  )
 }
 
-export default Accounts;
+export default Accounts

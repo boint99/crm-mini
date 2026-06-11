@@ -57,6 +57,39 @@ class RolesController {
       next(error)
     }
   }
+
+  // Lấy danh sách các quyền hạn đã gán cho vai trò này
+  async getPermissions(req, res, next) {
+    try {
+      const { id } = req.params
+      const result = await rolesServices.getPermissions(id)
+      new SuccessResponse({
+        res: res,
+        data: result,
+        message: 'Lấy danh sách quyền hạn của vai trò thành công.'
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  // Cập nhật danh sách các quyền hạn cho vai trò này
+  async assignPermissions(req, res, next) {
+    try {
+      const { id } = req.params
+      const { perIds } = req.body
+      const grantedBy = req.user.userId
+      
+      const result = await rolesServices.assignPermissions(id, perIds, grantedBy)
+      new SuccessResponse({
+        res: res,
+        data: result,
+        message: 'Cập nhật phân quyền vai trò thành công.'
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
 }
 
 export const rolesController = new RolesController()

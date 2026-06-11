@@ -16,4 +16,10 @@ Router.put('/update', RolesValidate.update, rolesController.update)
 // DELETE - Xóa mềm một vai trò
 Router.delete('/delete/:id', RolesValidate.delete, rolesController.delete)
 
+// GET - Lấy danh sách các quyền hạn đã gán cho vai trò này
+Router.get('/:id/permissions', RolesValidate.getPermissions, rolesController.getPermissions)
+
+// POST - Cập nhật danh sách các quyền hạn cho vai trò này
+Router.post('/:id/permissions', RolesValidate.assignPermissions, rolesController.assignPermissions)
+
 export const rolesRoutes = Router

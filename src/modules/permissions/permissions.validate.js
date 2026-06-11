@@ -10,9 +10,8 @@ class PermissionsValidate extends ValidateCore {
       PermissionsValidate.validateRequiredString(data.perName, 'perName is required!')
       PermissionsValidate.validateStringLength(data.perName, 3, 'perName must be 3 characters or more!')
       
-      if (data.perCode === undefined || data.perCode === null || isNaN(Number(data.perCode))) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'perCode must be a valid number!')
-      }
+      PermissionsValidate.validateRequiredString(data.perCode, 'perCode is required!')
+      PermissionsValidate.validateStringLength(data.perCode, 3, 'perCode must be 3 characters or more!')
 
       if (data.status !== undefined) {
         PermissionsValidate.validateEnum(data.status, ALLOWED_STATUS)
@@ -33,8 +32,9 @@ class PermissionsValidate extends ValidateCore {
         PermissionsValidate.validateStringLength(data.perName, 3, 'perName must be 3 characters or more!')
       }
 
-      if (data.perCode !== undefined && isNaN(Number(data.perCode))) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'perCode must be a valid number!')
+      if (data.perCode !== undefined) {
+        PermissionsValidate.validateRequiredString(data.perCode, 'perCode cannot be empty!')
+        PermissionsValidate.validateStringLength(data.perCode, 3, 'perCode must be 3 characters or more!')
       }
 
       if (data.status !== undefined) {

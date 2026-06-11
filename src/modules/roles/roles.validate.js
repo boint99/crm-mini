@@ -10,9 +10,8 @@ class RolesValidate extends ValidateCore {
       RolesValidate.validateRequiredString(data.roleName, 'roleName is required!')
       RolesValidate.validateStringLength(data.roleName, 3, 'roleName must be 3 characters or more!')
 
-      if (data.roleCode === undefined || data.roleCode === null || isNaN(Number(data.roleCode))) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'roleCode must be a valid number!')
-      }
+      RolesValidate.validateRequiredString(data.roleCode, 'roleCode is required!')
+      RolesValidate.validateStringLength(data.roleCode, 3, 'roleCode must be 3 characters or more!')
 
       if (data.status !== undefined) {
         RolesValidate.validateEnum(data.status, ALLOWED_STATUS)
@@ -33,8 +32,9 @@ class RolesValidate extends ValidateCore {
         RolesValidate.validateStringLength(data.roleName, 3, 'roleName must be 3 characters or more!')
       }
 
-      if (data.roleCode !== undefined && isNaN(Number(data.roleCode))) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'roleCode must be a valid number!')
+      if (data.roleCode !== undefined) {
+        RolesValidate.validateRequiredString(data.roleCode, 'roleCode cannot be empty!')
+        RolesValidate.validateStringLength(data.roleCode, 3, 'roleCode must be 3 characters or more!')
       }
 
       if (data.status !== undefined) {
@@ -51,6 +51,38 @@ class RolesValidate extends ValidateCore {
     try {
       const { id } = req.params
       RolesValidate.validateIdUuid(id, 'Role ID (UUIDv7) is required!')
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  static getPermissions(req, res, next) {
+    try {
+      const { id } = req.params
+      RolesValidate.validateIdUuid(id, 'Role ID (UUIDv7) is required!')
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  static assignPermissions(req, res, next) {
+    try {
+      const { id } = req.params
+      RolesValidate.validateIdUuid(id, 'Role ID (UUIDv7) is required!')
+      
+      const { perIds } = req.body
+      if (!perIds || !Array.isArray(perIds)) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Danh sách perIds phải là một mảng!')
+      }
+
+      for (const perId of perIds) {
+        if (typeof perId !== 'number') {
+          throw new ApiError(StatusCodes.BAD_REQUEST, 'ID quyền hạn phải là kiểu số!')
+        }
+      }
+
       next()
     } catch (error) {
       next(error)

@@ -16,7 +16,7 @@ class PermissionsServices {
     const { perCode, perName, apiPath, method, status, notes } = data
 
     // 1. Kiểm tra mã quyền duy nhất
-    const codeExisted = await permissionsModel.findByField(Number(perCode), 'perCode')
+    const codeExisted = await permissionsModel.findByField(perCode.trim(), 'perCode')
     if (codeExisted) {
       throw new ApiError(StatusCodes.CONFLICT, 'Mã quyền (perCode) này đã tồn tại!')
     }
@@ -34,7 +34,7 @@ class PermissionsServices {
 
     const createData = {
       id: uuidv7(),
-      perCode: Number(perCode),
+      perCode: perCode.trim(),
       perName: perName.trim(),
       apiPath: apiPath ? apiPath.trim() : null,
       method: method ? method.trim().toUpperCase() : null,
@@ -59,11 +59,15 @@ class PermissionsServices {
 
     // 2. Kiểm tra tính duy nhất nếu thay đổi mã quyền (perCode)
     if (payload.perCode !== undefined) {
-      const codeExisted = await permissionsModel.findByField(Number(payload.perCode), 'perCode')
+      const trimmedCode = payload.perCode.trim()
+      if (!trimmedCode) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Mã quyền không được để trống!')
+      }
+      const codeExisted = await permissionsModel.findByField(trimmedCode, 'perCode')
       if (codeExisted && codeExisted.id !== id) {
         throw new ApiError(StatusCodes.CONFLICT, 'Mã quyền (perCode) này đã tồn tại!')
       }
-      payload.perCode = Number(payload.perCode)
+      payload.perCode = trimmedCode
     }
 
     // 3. Kiểm tra tính duy nhất nếu thay đổi tên quyền (perName)

@@ -7,6 +7,8 @@ import Serializer from '../../utils/Serializer.js'
 import { v7 as uuidv7 } from 'uuid'
 import { employeesModel } from '../employees/employees.model.js'
 import { refreshTokenModel } from '../auth/refreshToken.model.js'
+import { PRISMA } from '../../configs/db.config.js'
+
 class AccountsService {
 
   async _getAccountOrThrow(id) {
@@ -75,12 +77,33 @@ class AccountsService {
 
     payload.password = await bcrypt.hash(data.password.trim(), saltRoundsPassword)
 
-    return await accountsModel.create(payload)
+    const record = await accountsModel.create(payload)
+
+    // Assign role if provided
+    if (data.roleId) {
+      const rId = Number(data.roleId)
+      // Reset sequence
+      await PRISMA.$executeRawUnsafe(
+        'SELECT setval(pg_get_serial_sequence(\'"ACCOUNT_ROLES"\', \'AR_ID\'), COALESCE(MAX("AR_ID"), 1)) FROM "ACCOUNT_ROLES";'
+      )
+      // Create role mapping
+      await PRISMA.aCCOUNT_ROLES.create({
+        data: {
+          id: uuidv7(),
+          accountId: record.accountId,
+          roleId: rId
+        }
+      })
+    }
+
+    // Fetch full account details including roles and employee info
+    const fullAccount = await accountsModel.findByUnique(record.id)
+    return Serializer.sanitize(fullAccount, ['password', 'deletedAt'])
   }
 
   // Update account info (except accountName and password)
   async update(dataUpdate) {
-    const { id, ...payload } = dataUpdate
+    const { id, roleId, ...payload } = dataUpdate
 
     const account = await this._getAccountOrThrow(id)
 
@@ -110,7 +133,69 @@ class AccountsService {
       }
     }
 
-    const updatedAccount = await accountsModel.updateById(id, payload)
+    // Handle role updating if roleId is explicitly passed (even if undefined/null)
+    if (roleId !== undefined) {
+      const targetRoleId = roleId ? Number(roleId) : null
+
+      const activeRoles = await PRISMA.aCCOUNT_ROLES.findMany({
+        where: {
+          accountId: account.accountId,
+          deletedAt: null
+        }
+      })
+
+      const currentRoleId = activeRoles.length > 0 ? activeRoles[0].roleId : null
+
+      if (currentRoleId !== targetRoleId) {
+        // Soft-delete current active roles
+        if (activeRoles.length > 0) {
+          await PRISMA.aCCOUNT_ROLES.updateMany({
+            where: {
+              accountId: account.accountId,
+              deletedAt: null
+            },
+            data: {
+              deletedAt: new Date()
+            }
+          })
+        }
+
+        // Assign new role if provided
+        if (targetRoleId !== null) {
+          const existingMapping = await PRISMA.aCCOUNT_ROLES.findFirst({
+            where: {
+              accountId: account.accountId,
+              roleId: targetRoleId
+            }
+          })
+
+          if (existingMapping) {
+            await PRISMA.aCCOUNT_ROLES.update({
+              where: { arId: existingMapping.arId },
+              data: { deletedAt: null }
+            })
+          } else {
+            await PRISMA.$executeRawUnsafe(
+              'SELECT setval(pg_get_serial_sequence(\'"ACCOUNT_ROLES"\', \'AR_ID\'), COALESCE(MAX("AR_ID"), 1)) FROM "ACCOUNT_ROLES";'
+            )
+            await PRISMA.aCCOUNT_ROLES.create({
+              data: {
+                id: uuidv7(),
+                accountId: account.accountId,
+                roleId: targetRoleId
+              }
+            })
+          }
+        }
+
+        // Revoke tokens because roles/permissions changed
+        await refreshTokenModel.revokeAllAccountTokens(account.accountId)
+      }
+    }
+
+    await accountsModel.updateById(id, payload)
+    const updatedAccount = await accountsModel.findByUnique(id)
+
     if (updatedAccount.status !== 'ENABLE' || !updatedAccount.isLogin) {
       await refreshTokenModel.revokeAllAccountTokens(updatedAccount.accountId)
     }

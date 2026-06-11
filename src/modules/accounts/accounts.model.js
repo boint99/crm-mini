@@ -28,7 +28,14 @@ class AccountsModel extends ModelCore {
         employeeId: record.employee.employeeId,
         firstName: record.employee.firstName,
         lastName: record.employee.lastName
-      } : undefined
+      } : undefined,
+      roles: record.accountRoles ? record.accountRoles
+        .filter(ar => ar.deletedAt === null && ar.role !== null)
+        .map(ar => ({
+          roleId: ar.role.roleId,
+          roleName: ar.role.roleName,
+          roleCode: ar.role.roleCode
+        })) : []
     }
   }
 
@@ -49,6 +56,12 @@ class AccountsModel extends ModelCore {
               employeeId: true,
               firstName: true,
               lastName: true
+            }
+          },
+          accountRoles: {
+            where: { deletedAt: null },
+            include: {
+              role: true
             }
           }
         }
@@ -98,10 +111,24 @@ class AccountsModel extends ModelCore {
   async findByUnique(id, field = null, includeDeleted = false) {
     const { prismaField, queryVal } = this._resolveFieldAndValue(id, field)
 
-    const record = await super.FINDBYFIELD_WHERE(
-      { [prismaField]: queryVal },
-      includeDeleted
-    )
+    const record = await this.model.findFirst({
+      where: this._buildWhere({ [prismaField]: queryVal }, includeDeleted),
+      include: {
+        employee: {
+          select: {
+            employeeId: true,
+            firstName: true,
+            lastName: true
+          }
+        },
+        accountRoles: {
+          where: { deletedAt: null },
+          include: {
+            role: true
+          }
+        }
+      }
+    })
     return this._mapResponse(record)
   }
 

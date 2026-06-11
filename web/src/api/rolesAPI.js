@@ -16,5 +16,13 @@ export const rolesAPI = {
   delete: async (id) => {
     const res = await axios.delete(`/roles/delete/${id}`)
     return res.data
+  },
+  getPermissions: async (id) => {
+    const res = await axios.get(`/roles/${id}/permissions`)
+    return res.data
+  },
+  assignPermissions: async (id, perIds) => {
+    const res = await axios.post(`/roles/${id}/permissions`, { perIds })
+    return res.data
   }
 }

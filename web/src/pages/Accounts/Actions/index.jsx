@@ -1,82 +1,103 @@
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { useDispatch, useSelector } from "react-redux";
-import Modal from "react-modal";
-import { X } from "lucide-react";
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useDispatch, useSelector } from 'react-redux'
+import Modal from 'react-modal'
+import { X } from 'lucide-react'
 import {
   createAccount,
   updateAccount,
   deleteAccount,
-  resetAccountPassword,
-} from "@/redux/slice/accountsSlice";
-import { getEmployees } from "@/redux/slice/employeesSlice";
-import { useAppDispatch } from "@/hook/useAppDispatch";
-import { customStyles } from "@/utils/contants";
-import { dispatchWithToast } from "@/components/ui/dispatchWithToast";
+  resetAccountPassword
+} from '@/redux/slice/accountsSlice'
+import { getEmployees } from '@/redux/slice/employeesSlice'
+import { useAppDispatch } from '@/hook/useAppDispatch'
+import { customStyles } from '@/utils/contants'
+import { dispatchWithToast } from '@/components/ui/dispatchWithToast'
+import { rolesAPI } from '@/api/rolesAPI'
 
 const defaultValues = {
-  accountName: "",
-  password: "",
-  status: "ENABLE",
-  employeeCode: "",
-  description: "",
-  isLogin: "false",
-};
+  accountName: '',
+  password: '',
+  status: 'ENABLE',
+  employeeCode: '',
+  description: '',
+  isLogin: 'false',
+  roleId: ''
+}
 
 const inputClass =
-  "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none";
+  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none'
 const inputReadOnlyClass =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-500 bg-gray-50 cursor-not-allowed outline-none";
-const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+  'w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-500 bg-gray-50 cursor-not-allowed outline-none'
+const selectClass =
+  'w-full appearance-none rounded-lg border border-gray-300 px-3 py-2 pr-10 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none bg-no-repeat bg-[position:right_0.75rem_center] bg-[size:1.25rem_1.25rem] bg-[url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 20%22 fill=%22none%22%3E%3Cpath d=%22M7 9l3 3 3-3%22 stroke=%22%234b5563%22 stroke-width=%221.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E")]'
+const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
 
 function ActionModal({ open, onClose, action, item }) {
-  const dispatch = useDispatch();
-  const dispatchAsync = useAppDispatch();
+  const dispatch = useDispatch()
+  const dispatchAsync = useAppDispatch()
 
-  const employeeItems = useSelector((state) => state.employees?.items || []);
+  const employeeItems = useSelector((state) => state.employees?.items || [])
+  const [rolesList, setRolesList] = useState([])
 
   useEffect(() => {
     if (open && employeeItems.length === 0) {
-      dispatchAsync(getEmployees());
+      dispatchAsync(getEmployees())
     }
-  }, [open]);
+  }, [open])
+
+  useEffect(() => {
+    if (open) {
+      rolesAPI
+        .getLists()
+        .then((res) => {
+          if (res && res.data) {
+            setRolesList(res.data)
+          }
+        })
+        .catch((err) => {
+          console.error('Lỗi khi tải danh sách vai trò:', err)
+        })
+    }
+  }, [open])
 
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isValid },
-  } = useForm({ defaultValues, mode: "onTouched" });
+    formState: { errors, isValid }
+  } = useForm({ defaultValues, mode: 'onTouched' })
 
   useEffect(() => {
-    if (!open) return;
-    if (action === "create") {
-      reset(defaultValues);
+    if (!open) return
+    if (action === 'create') {
+      reset(defaultValues)
     } else {
       reset({
-        accountName: item?.accountName ?? "",
-        password: "",
-        status: item?.status ?? "ENABLE",
-        employeeCode: item?.employeeCode ? String(item.employeeCode) : "",
-        description: item?.description ?? "",
-        isLogin: item?.isLogin !== undefined ? String(item.isLogin) : "false",
-      });
+        accountName: item?.accountName ?? '',
+        password: '',
+        status: item?.status ?? 'ENABLE',
+        employeeCode: item?.employeeCode ? String(item.employeeCode) : '',
+        description: item?.description ?? '',
+        isLogin: item?.isLogin !== undefined ? String(item.isLogin) : 'false',
+        roleId: item?.roles?.[0]?.roleId ? String(item.roles[0].roleId) : ''
+      })
     }
-  }, [open, action, item, reset]);
+  }, [open, action, item, reset])
 
   const handleFormSubmit = async (data) => {
-    if (action === "delete") {
+    if (action === 'delete') {
       await dispatchWithToast({
         dispatch,
         action: deleteAccount,
         payload: item.id,
-        messages: { success: "Xóa tài khoản thành công!" },
-      });
-      onClose?.();
-      return;
+        messages: { success: 'Xóa tài khoản thành công!' }
+      })
+      onClose?.()
+      return
     }
 
-    if (action === "create") {
+    if (action === 'create') {
       await dispatchWithToast({
         dispatch,
         action: createAccount,
@@ -86,11 +107,12 @@ function ActionModal({ open, onClose, action, item }) {
           status: data.status,
           employeeCode: data.employeeCode ? String(data.employeeCode) : null,
           description: data.description?.trim() || null,
-          isLogin: data.isLogin === "true",
+          isLogin: data.isLogin === 'true',
+          roleId: data.roleId ? Number(data.roleId) : null
         },
-        messages: { success: "Tạo tài khoản thành công!" },
-      });
-    } else if (action === "edit") {
+        messages: { success: 'Tạo tài khoản thành công!' }
+      })
+    } else if (action === 'edit') {
       await dispatchWithToast({
         dispatch,
         action: updateAccount,
@@ -99,28 +121,29 @@ function ActionModal({ open, onClose, action, item }) {
           status: data.status,
           employeeCode: data.employeeCode ? String(data.employeeCode) : null,
           description: data.description?.trim() || null,
-          isLogin: data.isLogin === "true",
+          isLogin: data.isLogin === 'true',
+          roleId: data.roleId ? Number(data.roleId) : null
         },
-        messages: { success: "Cập nhật tài khoản thành công!" },
-      });
-    } else if (action === "reset-password") {
+        messages: { success: 'Cập nhật tài khoản thành công!' }
+      })
+    } else if (action === 'reset-password') {
       await dispatchWithToast({
         dispatch,
         action: resetAccountPassword,
         payload: {
           id: item.id,
-          password: data.password.trim(),
+          password: data.password.trim()
         },
-        messages: { success: "Đặt lại mật khẩu thành công!" },
-      });
+        messages: { success: 'Đặt lại mật khẩu thành công!' }
+      })
     }
 
-    onClose?.();
-  };
+    onClose?.()
+  }
 
-  const isDelete = action === "delete";
-  const isResetPwd = action === "reset-password";
-  const isCreate = action === "create";
+  const isDelete = action === 'delete'
+  const isResetPwd = action === 'reset-password'
+  const isCreate = action === 'create'
 
   if (isDelete) {
     return (
@@ -143,8 +166,8 @@ function ActionModal({ open, onClose, action, item }) {
             </button>
           </div>
           <p className="text-sm text-gray-600 mb-6">
-            Bạn có chắc muốn xóa tài khoản{" "}
-            <span className="font-semibold">"{item?.ACCOUNT_NAME}"</span>? Thao
+            Bạn có chắc muốn xóa tài khoản{' '}
+            <span className="font-semibold">&quot;{item?.accountName || item?.ACCOUNT_NAME}&quot;</span>? Thao
             tác này không thể hoàn tác.
           </p>
           <div className="flex justify-end gap-3">
@@ -163,7 +186,7 @@ function ActionModal({ open, onClose, action, item }) {
           </div>
         </div>
       </Modal>
-    );
+    )
   }
 
   return (
@@ -177,10 +200,10 @@ function ActionModal({ open, onClose, action, item }) {
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-semibold text-gray-900">
             {isResetPwd
-              ? "Đặt lại mật khẩu"
+              ? 'Đặt lại mật khẩu'
               : isCreate
-                ? "Thêm tài khoản"
-                : "Chỉnh sửa tài khoản"}
+                ? 'Thêm tài khoản'
+                : 'Chỉnh sửa tài khoản'}
           </h3>
           <button
             onClick={onClose}
@@ -195,7 +218,7 @@ function ActionModal({ open, onClose, action, item }) {
             {/* ACCOUNT_NAME */}
             <div>
               <label className={labelClass}>
-                Tên đăng nhập {isCreate && "*"}
+                Tên đăng nhập {isCreate && '*'}
               </label>
               {isCreate ? (
                 <>
@@ -203,10 +226,10 @@ function ActionModal({ open, onClose, action, item }) {
                     type="text"
                     placeholder="VD: admin, nhanvien01"
                     className={inputClass}
-                    {...register("accountName", {
-                      required: "Vui lòng nhập tên đăng nhập",
+                    {...register('accountName', {
+                      required: 'Vui lòng nhập tên đăng nhập',
                       validate: (v) =>
-                        !!v.trim() || "Vui lòng nhập tên đăng nhập",
+                        !!v.trim() || 'Vui lòng nhập tên đăng nhập'
                     })}
                   />
                   {errors.accountName && (
@@ -219,7 +242,7 @@ function ActionModal({ open, onClose, action, item }) {
                 <input
                   type="text"
                   readOnly
-                  value={item?.accountName ?? ""}
+                  value={item?.accountName ?? ''}
                   className={inputReadOnlyClass}
                 />
               )}
@@ -229,15 +252,15 @@ function ActionModal({ open, onClose, action, item }) {
             {(isCreate || isResetPwd) && (
               <div>
                 <label className={labelClass}>
-                  {isResetPwd ? "Mật khẩu mới *" : "Mật khẩu *"}
+                  {isResetPwd ? 'Mật khẩu mới *' : 'Mật khẩu *'}
                 </label>
                 <input
                   type="password"
                   placeholder="••••••••"
                   className={inputClass}
-                  {...register("password", {
-                    required: "Vui lòng nhập mật khẩu",
-                    minLength: { value: 8, message: "Tối thiểu 8 ký tự" },
+                  {...register('password', {
+                    required: 'Vui lòng nhập mật khẩu',
+                    minLength: { value: 8, message: 'Tối thiểu 8 ký tự' }
                   })}
                 />
                 {errors.password && (
@@ -253,8 +276,8 @@ function ActionModal({ open, onClose, action, item }) {
               <div>
                 <label className={labelClass}>Trạng thái *</label>
                 <select
-                  className={inputClass}
-                  {...register("status", { required: true })}
+                  className={selectClass}
+                  {...register('status', { required: true })}
                 >
                   <option value="ENABLE">ENABLE (Hoạt động)</option>
                   <option value="DISABLED">DISABLED (Ngừng hoạt động)</option>
@@ -270,20 +293,37 @@ function ActionModal({ open, onClose, action, item }) {
                   type="text"
                   placeholder="Nhập mã nhân viên"
                   className={inputClass}
-                  {...register("employeeCode")}
+                  {...register('employeeCode')}
                 />
               </div>
             )}
             <div>
               <label className={labelClass}>Đăng nhập</label>
               <select
-                className={inputClass}
-                {...register("isLogin", { required: true })}
+                className={selectClass}
+                {...register('isLogin', { required: true })}
               >
                 <option value="true">True</option>
                 <option value="false">False</option>
               </select>
             </div>
+            {/* ROLE — hidden when reset-password */}
+            {!isResetPwd && (
+              <div>
+                <label className={labelClass}>Vai trò</label>
+                <select
+                  className={selectClass}
+                  {...register('roleId')}
+                >
+                  <option value="">Chọn vai trò...</option>
+                  {rolesList.map((role) => (
+                    <option key={role.roleId} value={role.roleId}>
+                      {role.roleName} ({role.roleCode})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           {/* DESCRIPTION — ẩn khi reset-password */}
@@ -294,7 +334,7 @@ function ActionModal({ open, onClose, action, item }) {
                 rows={3}
                 placeholder="Ghi chú về tài khoản..."
                 className={`${inputClass} resize-none`}
-                {...register("description")}
+                {...register('description')}
               />
             </div>
           )}
@@ -310,19 +350,19 @@ function ActionModal({ open, onClose, action, item }) {
               type="submit"
               disabled={!isValid}
               className={[
-                "px-4 py-2 text-sm font-medium text-white rounded-lg",
+                'px-4 py-2 text-sm font-medium text-white rounded-lg',
                 isValid
-                  ? "bg-primary hover:opacity-95 cursor-pointer"
-                  : "bg-gray-300 cursor-not-allowed",
-              ].join(" ")}
+                  ? 'bg-primary hover:opacity-95 cursor-pointer'
+                  : 'bg-gray-300 cursor-not-allowed'
+              ].join(' ')}
             >
-              {isResetPwd ? "Đặt lại mật khẩu" : "Lưu"}
+              {isResetPwd ? 'Đặt lại mật khẩu' : 'Lưu'}
             </button>
           </div>
         </form>
       </div>
     </Modal>
-  );
+  )
 }
 
-export default ActionModal;
+export default ActionModal

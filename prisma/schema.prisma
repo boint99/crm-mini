@@ -144,7 +144,7 @@ model ACCOUNT_ROLES {
 model ROLES {
   id          String     @unique @map("ID") @db.Uuid
   roleId      Int        @id @default(autoincrement()) @map("ROLE_ID")
-  roleCode    Int        @unique @map("ROLE_CODE")
+  roleCode    String     @unique @map("ROLE_CODE") @db.VarChar(50)
   roleName    String     @map("ROLE_NAME")
   description String?    @map("DESCRIPTION")
   createdBy   Int?       @map("CREATED_BY")
@@ -184,7 +184,7 @@ model ROLE_PERMISSIONS {
 model PERMISSIONS {
   id        String     @unique @map("ID") @db.Uuid
   perId     Int        @id @default(autoincrement()) @map("PER_ID")
-  perCode   Int        @unique @map("PER_CODE")
+  perCode   String     @unique @map("PER_CODE") @db.VarChar(100)
   perName   String     @map("PER_NAME")
   apiPath   String?    @map("API_PATH")
   method    String?    @map("METHOD")

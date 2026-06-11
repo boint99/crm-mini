@@ -144,7 +144,7 @@ async function createSuperAdmin() {
       update: {},
       create: {
         roleId: 1,
-        roleCode: 1001,
+        roleCode: 'ADMIN_ROLE',
         roleName: 'ADMIN_ROLE',
         description: 'Quyền quản trị tối cao của hệ thống (Bypass check)',
         status: 'ENABLE'
