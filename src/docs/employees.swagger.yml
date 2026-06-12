@@ -195,6 +195,10 @@ components:
           type: integer
           nullable: true
           example: 3
+        DESCRIPTION:
+          type: string
+          nullable: true
+          example: 'Phòng ban công nghệ thông tin'
         STATUS:
           type: string
           enum: [ENABLE, DISABLED]
@@ -273,6 +277,10 @@ components:
           type: integer
           nullable: true
           example: 3
+        DESCRIPTION:
+          type: string
+          nullable: true
+          example: 'Phòng ban công nghệ thông tin'
         STATUS:
           type: string
           enum: [ENABLE, DISABLED]
@@ -320,6 +328,10 @@ components:
           type: integer
           nullable: true
           example: 5
+        DESCRIPTION:
+          type: string
+          nullable: true
+          example: 'Phòng ban công nghệ thông tin'
         STATUS:
           type: string
           enum: [ENABLE, DISABLED]

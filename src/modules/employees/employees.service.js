@@ -155,7 +155,8 @@ class EmployeesServices {
       status: payload.status || 'ENABLE',
       isAccount: isAccount || false,
       unitId: unitId,
-      positionId: positionId
+      positionId: positionId,
+      description: payload.description || null
     }
 
     const createdEmp = await employeesModel.create(prismaPayload)
@@ -243,6 +244,7 @@ class EmployeesServices {
     if (payload.isAccount !== undefined) updateData.isAccount = payload.isAccount
     if (unitId !== undefined) updateData.unitId = unitId
     if (positionId !== undefined) updateData.positionId = positionId
+    if (payload.description !== undefined) updateData.description = payload.description || null
 
 
     if (Object.keys(updateData).length === 0) {

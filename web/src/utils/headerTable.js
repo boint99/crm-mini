@@ -24,6 +24,7 @@ export const headerTableEmployees = {
   birthday: 'Ngày sinh',
   position: 'Chức vụ',
   department: 'Đơn vị/phòng ban',
+  description: 'Mô tả',
   status: 'Trạng thái',
   createdAt: 'Ngày tạo',
   updatedAt: 'Ngày cập nhật'

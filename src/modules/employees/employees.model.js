@@ -56,6 +56,12 @@ class EmployeesModel extends BaseModel {
           id: true,
           employeeId: true,
           employeeCode: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          email: true,
+          birthDate: true,
+          description: true,
           status: true,
           position: { select: { id: true, positionId: true, positionName: true, level: true, status: true } },
           orgUnit: {

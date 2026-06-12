@@ -236,6 +236,7 @@ export default function EmployeeModel({
           viettelCode: data.viettelCode || "",
           positionId: data.position?.id || data.positionId || "",
           status: data.status || "ENABLE",
+          description: data.description || "",
         });
       } else if (mode === "create") {
         reset({
@@ -249,6 +250,7 @@ export default function EmployeeModel({
           viettelCode: "",
           positionId: "",
           status: "ENABLE",
+          description: "",
         });
       }
     }
@@ -269,6 +271,7 @@ export default function EmployeeModel({
       status: formData.status,
       phone: formData.phone?.trim() || null,
       email: formData.email?.trim() || null,
+      description: formData.description?.trim() || null,
     };
 
     if (formData.viettelCode?.trim()) {
@@ -483,6 +486,16 @@ export default function EmployeeModel({
                 <option value="ENABLE">ENABLE (Hoạt động)</option>
                 <option value="DISABLED">DISABLED</option>
               </select>
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className={labelClass}>Mô tả</label>
+              <textarea
+                placeholder="Nhập mô tả nhân viên..."
+                rows={3}
+                className={inputClass}
+                {...register("description")}
+              />
             </div>
           </div>
 

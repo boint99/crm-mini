@@ -84,6 +84,7 @@ model EMPLOYEES {
   birthDate    DateTime?          @map("BIRTH_DATE") @db.Date
   unitId       Int?               @map("UNIT_ID")
   positionId   Int?               @map("POSITION_ID")
+  description  String?            @map("DESCRIPTION")
   status       ENUMSTATUS         @default(ENABLE) @map("STATUS")
   isAccount    Boolean            @default(false) @map("IS_ACCOUNT")
   createdAt    DateTime           @default(now()) @map("CREATED_AT") @db.Timestamp(6)

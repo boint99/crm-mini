@@ -291,7 +291,7 @@ function Employees() {
                     : unitName;
                 return (
                   <td key={key} className={cellClass}>
-                    {hierarchy || employee.orgUnit.unitName || "-" || null}
+                    {hierarchy || employee?.orgUnit?.unitName || "-" || null}
                   </td>
                 );
               }
