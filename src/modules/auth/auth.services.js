@@ -141,7 +141,33 @@ class AuthService {
     }
 
     // ===== TẠO ACCESS TOKEN =====
-    const companyId = account.employee?.orgUnit?.company?.id || null
+    let companyId = account.employee?.orgUnit?.company?.id || null
+
+    // Tự động liên kết tài khoản và nhân viên nếu chưa được liên kết trong DB nhưng trùng Email
+    if (!account.employeeId) {
+      const matchedEmployee = await PRISMA.eMPLOYEES.findFirst({
+        where: { email: account.accountName, deletedAt: null },
+        include: {
+          orgUnit: {
+            include: {
+              company: {
+                select: {
+                  id: true
+                }
+              }
+            }
+          }
+        }
+      })
+      if (matchedEmployee) {
+        companyId = matchedEmployee.orgUnit?.company?.id || null
+        await PRISMA.aCCOUNTS.update({
+          where: { accountId: account.accountId },
+          data: { employeeId: matchedEmployee.employeeId }
+        })
+      }
+    }
+
     const tokenPayload = {
       id: account.accountId,
       email: account.accountName,
@@ -226,7 +252,33 @@ class AuthService {
     }
 
     // ===== TẠO ACCESS TOKEN MỚI =====
-    const companyId = account.employee?.orgUnit?.company?.id || null
+    let companyId = account.employee?.orgUnit?.company?.id || null
+
+    // Tự động liên kết tài khoản và nhân viên nếu chưa được liên kết trong DB nhưng trùng Email
+    if (!account.employeeId) {
+      const matchedEmployee = await PRISMA.eMPLOYEES.findFirst({
+        where: { email: account.accountName, deletedAt: null },
+        include: {
+          orgUnit: {
+            include: {
+              company: {
+                select: {
+                  id: true
+                }
+              }
+            }
+          }
+        }
+      })
+      if (matchedEmployee) {
+        companyId = matchedEmployee.orgUnit?.company?.id || null
+        await PRISMA.aCCOUNTS.update({
+          where: { accountId: account.accountId },
+          data: { employeeId: matchedEmployee.employeeId }
+        })
+      }
+    }
+
     const newAccessToken = signAccessToken({
       id: account.accountId,
       email: account.accountName,
