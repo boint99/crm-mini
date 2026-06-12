@@ -119,7 +119,7 @@ class EmployeesServices {
 
     let emailToAccount = null
     if (isAccount === true) {
-      emailToAccount = payload.email?.includes('@') ? payload.email.split('@')[0] : null
+      emailToAccount = payload.email ? payload.email.toLowerCase() : null
       if (!emailToAccount) {
         throw new ApiError(StatusCodes.BAD_REQUEST, 'A valid EMAIL is required to create an account!')
       }
@@ -243,7 +243,7 @@ class EmployeesServices {
     return await PRISMA.$transaction(async (tx) => {
       // 3. Handle account creation if isAccount is true
       if (isAccount === true && !existing.isAccount) {
-        const emailToAccount = payload.email?.includes('@') ? payload.email.split('@')[0] : existing.email?.split('@')[0]
+        const emailToAccount = payload.email ? payload.email.toLowerCase() : existing.email ? existing.email.toLowerCase() : null
         if (!emailToAccount) {
           throw new ApiError(StatusCodes.BAD_REQUEST, 'A valid EMAIL is required to create an account!')
         }
