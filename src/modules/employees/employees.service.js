@@ -159,19 +159,30 @@ class EmployeesServices {
       description: payload.description || null
     }
 
-    const createdEmp = await employeesModel.create(prismaPayload)
-
-    if (isAccount === true) {
-      await PRISMA.aCCOUNTS.create({
-        data: {
-          accountName: emailToAccount,
-          isLogin: true,
-          employeeId: createdEmp.employeeId
-        }
+    return await PRISMA.$transaction(async (tx) => {
+      const createdEmp = await tx.eMPLOYEES.create({
+        data: prismaPayload
       })
-    }
 
-    return createdEmp
+      if (isAccount === true) {
+        const existingAccount = await tx.aCCOUNTS.findUnique({
+          where: { accountName: emailToAccount }
+        })
+        if (existingAccount) {
+          throw new ApiError(StatusCodes.CONFLICT, `Account name "${emailToAccount}" is already taken!`)
+        }
+
+        await tx.aCCOUNTS.create({
+          data: {
+            accountName: emailToAccount,
+            isLogin: true,
+            employeeId: createdEmp.employeeId
+          }
+        })
+      }
+
+      return createdEmp
+    })
   }
 
   /**
@@ -188,23 +199,6 @@ class EmployeesServices {
 
     // 2. Validate input and unique checks
     await this.checked(payload, id)
-
-    // 3. Handle account creation if isAccount is true
-    if (isAccount === true && !existing.isAccount) {
-      const emailToAccount = payload.email?.includes('@') ? payload.email.split('@')[0] : existing.email?.split('@')[0]
-      if (!emailToAccount) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'A valid EMAIL is required to create an account!')
-      }
-
-      await PRISMA.aCCOUNTS.create({
-        data: {
-          accountName: emailToAccount,
-          isLogin: true,
-          employeeId: existing.employeeId
-        }
-      })
-      payload.isAccount = true
-    }
 
     let unitId = undefined
     if (payload.unitId !== undefined) {
@@ -246,12 +240,40 @@ class EmployeesServices {
     if (positionId !== undefined) updateData.positionId = positionId
     if (payload.description !== undefined) updateData.description = payload.description || null
 
+    return await PRISMA.$transaction(async (tx) => {
+      // 3. Handle account creation if isAccount is true
+      if (isAccount === true && !existing.isAccount) {
+        const emailToAccount = payload.email?.includes('@') ? payload.email.split('@')[0] : existing.email?.split('@')[0]
+        if (!emailToAccount) {
+          throw new ApiError(StatusCodes.BAD_REQUEST, 'A valid EMAIL is required to create an account!')
+        }
 
-    if (Object.keys(updateData).length === 0) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'No data to update!')
-    }
+        const existingAccount = await tx.aCCOUNTS.findUnique({
+          where: { accountName: emailToAccount }
+        })
+        if (existingAccount) {
+          throw new ApiError(StatusCodes.CONFLICT, `Account name "${emailToAccount}" is already taken!`)
+        }
 
-    return await employeesModel.updateById(id, updateData)
+        await tx.aCCOUNTS.create({
+          data: {
+            accountName: emailToAccount,
+            isLogin: true,
+            employeeId: existing.employeeId
+          }
+        })
+        updateData.isAccount = true
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'No data to update!')
+      }
+
+      return await tx.eMPLOYEES.update({
+        where: { id },
+        data: updateData
+      })
+    })
   }
 
   /**

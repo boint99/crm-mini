@@ -145,6 +145,7 @@ export default function EmployeeModel({
 
   const unitId = watch("unitId");
   const positionId = watch("positionId");
+  const watchIsAccount = watch("isAccount");
 
   const [units, setUnits] = useState([]);
   const [positions, setPositions] = useState([]);
@@ -237,6 +238,7 @@ export default function EmployeeModel({
           positionId: data.position?.id || data.positionId || "",
           status: data.status || "ENABLE",
           description: data.description || "",
+          isAccount: data.isAccount || false,
         });
       } else if (mode === "create") {
         reset({
@@ -251,6 +253,7 @@ export default function EmployeeModel({
           positionId: "",
           status: "ENABLE",
           description: "",
+          isAccount: false,
         });
       }
     }
@@ -272,6 +275,7 @@ export default function EmployeeModel({
       phone: formData.phone?.trim() || null,
       email: formData.email?.trim() || null,
       description: formData.description?.trim() || null,
+      isAccount: formData.isAccount || false,
     };
 
     if (formData.viettelCode?.trim()) {
@@ -426,12 +430,13 @@ export default function EmployeeModel({
             </div>
 
             <div>
-              <label className={labelClass}>Email</label>
+              <label className={labelClass}>Email{watchIsAccount ? " *" : ""}</label>
               <input
                 type="text"
                 placeholder="VD: a.nguyen@company.com"
                 className={inputClass}
                 {...register("email", {
+                  required: watchIsAccount ? "Bắt buộc nhập Email khi chọn tạo tài khoản" : false,
                   pattern: {
                     value: /^\S+@\S+\.\S+$/,
                     message: "Email không hợp lệ",
@@ -443,6 +448,19 @@ export default function EmployeeModel({
                   {errors.email.message}
                 </p>
               )}
+            </div>
+
+            <div className="flex items-center gap-2 pt-6">
+              <input
+                id="isAccount"
+                type="checkbox"
+                disabled={isEdit && data?.isAccount}
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                {...register("isAccount")}
+              />
+              <label htmlFor="isAccount" className="text-sm font-medium text-gray-700 cursor-pointer">
+                Tạo tài khoản hệ thống (Lấy từ Email)
+              </label>
             </div>
 
             <div>
