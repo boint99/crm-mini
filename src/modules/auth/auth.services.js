@@ -103,8 +103,25 @@ class AuthService {
 
     const accountEmail = email.trim().toLowerCase()
 
-    // Tìm account bằng email (accountName = email đầy đủ)
-    const account = await accountsModel.findByUnique(accountEmail, 'accountName')
+    // Tìm account bằng email (accountName = email đầy đủ) kèm theo quan hệ để lấy companyId (UUID)
+    const account = await PRISMA.aCCOUNTS.findFirst({
+      where: { accountName: accountEmail },
+      include: {
+        employee: {
+          include: {
+            orgUnit: {
+              include: {
+                company: {
+                  select: {
+                    id: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
 
     if (!account) {
       throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid email or password!')
@@ -124,9 +141,11 @@ class AuthService {
     }
 
     // ===== TẠO ACCESS TOKEN =====
+    const companyId = account.employee?.orgUnit?.company?.id || null
     const tokenPayload = {
       id: account.accountId,
-      email: account.accountName
+      email: account.accountName,
+      companyId: companyId
     }
     const accessToken = signAccessToken(tokenPayload)
 
@@ -176,7 +195,24 @@ class AuthService {
     }
 
     // ===== LẤY THÔNG TIN ACCOUNT =====
-    const account = await accountsModel.findByUnique(decoded.id, 'accountId')
+    const account = await PRISMA.aCCOUNTS.findFirst({
+      where: { accountId: Number(decoded.id) },
+      include: {
+        employee: {
+          include: {
+            orgUnit: {
+              include: {
+                company: {
+                  select: {
+                    id: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
     if (!account) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
     }
@@ -190,9 +226,11 @@ class AuthService {
     }
 
     // ===== TẠO ACCESS TOKEN MỚI =====
+    const companyId = account.employee?.orgUnit?.company?.id || null
     const newAccessToken = signAccessToken({
       id: account.accountId,
-      email: account.accountName
+      email: account.accountName,
+      companyId: companyId
     })
 
     return {
