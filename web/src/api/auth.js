@@ -20,6 +20,12 @@ export const authAPI = {
     return res.data
   },
 
+  // GENERATE OTP
+  generateOtp: async (email) => {
+    const res = await axios.post(`/otp/generate`, { EMAIL: email })
+    return res.data
+  },
+
   // REFRESH TOKEN — dùng axiosClean (không có interceptor) để tránh vòng lặp 401
   refreshToken: async () => {
     const res = await axiosClean.post(`/auth/refresh-token`)

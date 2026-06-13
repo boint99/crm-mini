@@ -22,6 +22,7 @@ const NotPermistion = lazy(() => import("@/pages/NotPermistion"));
 
 const Login = lazy(() => import("@/pages/auth/login"));
 const Register = lazy(() => import("@/pages/auth/register"));
+const ForgotPassword = lazy(() => import("@/pages/Auth/ForgotPassword"));
 
 // Wrapper dùng chung
 const WithSpinner = ({ children }) => (
@@ -173,6 +174,14 @@ const routes = [
         element: (
           <WithSpinner>
             <Register />
+          </WithSpinner>
+        ),
+      },
+      {
+        path: "forgot-password",
+        element: (
+          <WithSpinner>
+            <ForgotPassword />
           </WithSpinner>
         ),
       },

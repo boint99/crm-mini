@@ -87,8 +87,12 @@ function LoginPage() {
           <input type="checkbox" className="h-3 w-3 rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
           <span>Ghi nhớ đăng nhập</span>
         </label>
-        <button type="button" className="text-gray-900 hover:underline">
-                    Quên mật khẩu?
+        <button
+          type="button"
+          onClick={() => navigate('/auth/forgot-password')}
+          className="text-gray-900 hover:underline cursor-pointer"
+        >
+          Quên mật khẩu?
         </button>
       </div>
 
