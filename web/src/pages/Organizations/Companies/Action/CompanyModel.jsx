@@ -3,102 +3,56 @@ import { X } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import Modal from "react-modal";
-import { useDispatch } from "react-redux";
-import {
-  createCompany,
-  updateCompany,
-  deleteCompany,
-} from "@/redux/slice/companiesSilce";
-import { toast } from "react-toastify";
-import { dispatchWithToast } from "@/components/ui/dispatchWithToast";
 
-const defaultValues = {
-  companyName: "",
-  status: "ENABLE",
-};
-
-export default function AcctionModal({
+export default function CompanyModel({
   open,
   isOpen = open,
   onClose,
-  action,
-  mode = action,
-  item,
-  data = item,
+  onSubmit,
+  mode = "create",
+  initialValues,
+  data = initialValues,
 }) {
-  const dispatch = useDispatch();
-
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm({ defaultValues });
-
-  const isDelete = mode === "delete";
-  const isEdit = mode === "edit";
+  } = useForm();
 
   useEffect(() => {
     if (isOpen) {
-      if ((isEdit || isDelete) && data) {
+      if (mode === "edit" && data) {
         reset({
-          companyName: data.companyName ?? "",
-          status: data.status ?? "ENABLE",
+          companyName: data.companyName || "",
+          status: data.status || "ENABLE",
         });
-      } else {
-        reset(defaultValues);
+      } else if (mode === "create") {
+        reset({
+          companyName: "",
+          status: "ENABLE",
+        });
       }
     }
-  }, [isOpen, mode, data, reset, isEdit, isDelete]);
+  }, [isOpen, mode, data, reset]);
 
-  const handleFormSubmit = async (formData) => {
-    try {
-      if (mode === "create") {
-        await dispatchWithToast({
-          dispatch,
-          action: createCompany,
-          payload: {
-            companyName: formData.companyName.trim(),
-            status: formData.status,
-          },
-          messages: {
-            success: "Thêm mới thành công!",
-          },
-        });
-      } else if (isEdit) {
-        await dispatchWithToast({
-          dispatch,
-          action: updateCompany,
-          payload: {
-            id: data.id,
-            companyId: data.companyId,
-            companyName: formData.companyName.trim(),
-            status: formData.status,
-          },
-          messages: {
-            success: "Cập nhật thành công!",
-          },
-        });
-      } else if (isDelete) {
-        await dispatchWithToast({
-          dispatch,
-          action: deleteCompany,
-          payload: data.id || data.companyId,
-          messages: {
-            success: "Xóa thành công!",
-          },
-        });
-      }
-
-      onClose?.();
-    } catch (error) {
-      if (error?.response?.status !== 403 && error?.status !== 403) {
-        toast.error(error || "Có lỗi xảy ra.");
-      }
+  const handleFormSubmit = (formData) => {
+    if (mode === "delete") {
+      onSubmit?.(data?.id || data?.companyId);
+      return;
     }
+    const payload = {
+      companyName: formData.companyName.trim(),
+      status: formData.status,
+    };
+    if (mode === "edit" && data) {
+      payload.id = data.id;
+      payload.companyId = data.companyId;
+    }
+    onSubmit?.(payload);
   };
 
-  if (isDelete) {
+  if (mode === "delete") {
     return (
       <Modal
         isOpen={isOpen}
@@ -156,7 +110,7 @@ export default function AcctionModal({
       <div className="p-6">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-semibold text-gray-900">
-            {isEdit ? "Chỉnh sửa công ty" : "Thêm công ty mới"}
+            {mode === "edit" ? "Chỉnh sửa công ty" : "Thêm công ty mới"}
           </h3>
           <button
             onClick={onClose}
@@ -186,7 +140,7 @@ export default function AcctionModal({
           </div>
 
           <div>
-            <label className={labelClass}>Trạng thái (STATUS) *</label>
+            <label className={labelClass}>Trạng thái *</label>
             <select className={inputClass} {...register("status")}>
               <option value="ENABLE">ENABLE (Hoạt động)</option>
               <option value="DISABLED">DISABLED</option>
@@ -206,7 +160,7 @@ export default function AcctionModal({
               disabled={isSubmitting}
               className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
             >
-              {isEdit ? "Cập nhật" : "Tạo công ty"}
+              {mode === "edit" ? "Cập nhật" : "Tạo công ty"}
             </button>
           </div>
         </form>

@@ -57,7 +57,7 @@ export const headerTableEmployeesViettel = {
 }
 
 export const headerTableViettelBranches = {
-  viettelBranchId: 'STT',
+  // viettelId: 'STT',
   viettelBranchCode: 'Mã chi nhánh',
   viettelBranchName: 'Tên chi nhánh',
   status: 'Trạng thái',
