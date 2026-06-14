@@ -15,13 +15,6 @@ const transporter = nodemailer.createTransport({
   }
 })
 
-// Verify SMTP connection on startup to help debugging
-transporter.verify().then(() => {
-  console.log('SMTP connection verified. Ready to send emails.')
-}).catch(err => {
-  console.error('SMTP verification failed:', err && err.message ? err.message : err)
-})
-
 export const sendMail = async (to, subject, html) => {
   try {
     const info = await transporter.sendMail({
@@ -31,18 +24,8 @@ export const sendMail = async (to, subject, html) => {
       html,
       text: html ? undefined : subject
     })
-
-    // Log and return detailed info for debugging
-    console.log('Email sent:', {
-      accepted: info.accepted,
-      rejected: info.rejected,
-      response: info.response,
-      messageId: info.messageId
-    })
-
     return { success: true, info: { accepted: info.accepted, rejected: info.rejected, response: info.response, messageId: info.messageId } }
   } catch (error) {
-    console.error('Error sending email:', error.message)
     return { success: false, error: error.message }
   }
 }

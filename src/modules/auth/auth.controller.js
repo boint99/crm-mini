@@ -68,6 +68,13 @@ class AuthController {
     } catch (error) { next(error) }
   }
 
+  static async forgotPassword(req, res, next) {
+    try {
+      const result = await authService.forgotPassword(req.body)
+      new SuccessResponse({ res, data: result, message: 'Password reset successfully.' })
+    } catch (error) { next(error) }
+  }
+
   // POST /api/auth/setup-superadmin
   static async setupSuperAdmin(req, res, next) {
     try {

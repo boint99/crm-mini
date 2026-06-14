@@ -17,6 +17,9 @@ Router.post('/refresh-token', authController.refreshToken)
 // POST /api/auth/setup-superadmin
 Router.post('/setup-superadmin', authController.setupSuperAdmin)
 
+// POST /api/auth/forgot-password
+Router.post('/forgot-password', authController.forgotPassword)
+
 // ===== PROTECTED ROUTES (require auth middleware) =====
 // POST /api/auth/logout
 Router.post('/logout', authMiddleware, authController.logout)

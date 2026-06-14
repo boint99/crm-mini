@@ -8,6 +8,7 @@ import { signAccessToken, signRefreshToken, verifyRefreshToken, decodeToken } fr
 import Serializer from '../../utils/Serializer.js'
 import { refreshTokenModel } from './refreshToken.model.js'
 import { PRISMA } from '../../configs/db.config.js'
+import { otpModel } from '../otp/otp.model.js'
 
 class AuthService {
   _validateRegister(data) {
@@ -57,7 +58,7 @@ class AuthService {
 
   // ================= CHECK DB =================
   async _ensureEmailNotExists(email) {
-    const existingEmployee = await employeesModel.findbyField(email, 'EMAIL')
+    const existingEmployee = await employeesModel.findByField(email, 'email')
     if (existingEmployee) {
       throw new ApiError(StatusCodes.CONFLICT, 'Email already registered!')
     }
@@ -210,7 +211,7 @@ class AuthService {
     let decoded
     try {
       decoded = verifyRefreshToken(refreshToken)
-    } catch (error) {
+    } catch {
       throw new ApiError(StatusCodes.UNAUTHORIZED, 'Refresh token is invalid or expired!')
     }
 
@@ -316,6 +317,37 @@ class AuthService {
     }
   }
 
+  async forgotPassword(data) {
+    const { otp, newPassword, reNewPassword } = data
+
+    const checkOtp = await otpModel.findByField(otp, 'otpCode')
+    if (!checkOtp) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'OTP not found!')
+    }
+    if (checkOtp.otpCode !== otp || checkOtp.accountId !== null) {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'OTP is invalid!')
+    }
+
+    if (checkOtp.expiredAt < new Date()) {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'OTP has expired!')
+    }
+
+    if (newPassword !== reNewPassword) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Passwords do not match!')
+    }
+
+    const account = await accountsModel.findByUnique(checkOtp.email, 'accountName')
+    if (!account) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, saltRoundsPassword)
+
+    const result = await accountsModel.updateById(account.accountId, {
+      password: hashedPassword
+    }, 'accountId')
+    return result
+  }
   // ================= SETUP SUPERADMIN =================
   async setupSuperAdmin(data) {
     const { email, password } = data
@@ -334,9 +366,7 @@ class AuthService {
     }
 
     // Check if account ID = 1 already exists
-    const existingSuperAdmin = await PRISMA.aCCOUNTS.findFirst({
-      where: { accountId: 1 }
-    })
+    const existingSuperAdmin = await accountsModel.findByUnique(1, 'accountId')
 
     if (existingSuperAdmin) {
       throw new ApiError(StatusCodes.FORBIDDEN, 'Superadmin account already exists!')
