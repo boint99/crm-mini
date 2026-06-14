@@ -20,9 +20,15 @@ export const authAPI = {
     return res.data
   },
 
+  // FORGOT PASSWORD
+  forgotPassword: async (payload) => {
+    const res = await axios.put(`/auth/forgot-password`, payload)
+    return res.data
+  },
+
   // GENERATE OTP
-  generateOtp: async (email) => {
-    const res = await axios.post(`/otp/generate`, { EMAIL: email })
+  generateOtp: async (email, action) => {
+    const res = await axios.post(`/otp/generate`, { email, action })
     return res.data
   },
 

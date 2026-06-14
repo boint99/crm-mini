@@ -56,7 +56,7 @@ class AuthController {
   // POST /api/auth/logout-all (protected)
   static async logoutAll(req, res, next) {
     try {
-      const result = await authService.logoutAll(req.user.userId)
+      await authService.logoutAll(req.user.userId)
 
       res.clearCookie('refreshToken', {
         httpOnly: true,
@@ -64,14 +64,14 @@ class AuthController {
         sameSite: 'lax'
       })
 
-      new SuccessResponse({ res, data: result, message: 'Logged out from all devices.' })
+      new SuccessResponse({ res, data: [], message: 'Logged out from all devices.' })
     } catch (error) { next(error) }
   }
 
   static async forgotPassword(req, res, next) {
     try {
-      const result = await authService.forgotPassword(req.body)
-      new SuccessResponse({ res, data: result, message: 'Password reset successfully.' })
+      await authService.forgotPassword(req.body)
+      new SuccessResponse({ res, message: 'Password reset successfully.' })
     } catch (error) { next(error) }
   }
 

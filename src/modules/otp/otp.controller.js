@@ -5,7 +5,7 @@ class OtpController {
   static async generateOtp(req, res, next) {
     try {
       const otp = await otpService.generateOtp(req.body)
-      new SuccessResponse({ res, data: otp, message: 'OTP generated successfully.' })
+      new SuccessResponse({ res, data: { expiredAt: otp.expiredAt }, message: 'OTP generated successfully.' })
     }
     catch (error) { next(error) }
   }

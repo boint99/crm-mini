@@ -318,35 +318,39 @@ class AuthService {
   }
 
   async forgotPassword(data) {
-    const { otp, newPassword, reNewPassword } = data
+    const { email, otp, newPassword, reNewPassword, action = null } = data
 
+    let _email = email
     const checkOtp = await otpModel.findByField(otp, 'otpCode')
+
     if (!checkOtp) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'OTP not found!')
     }
-    if (checkOtp.otpCode !== otp || checkOtp.accountId !== null) {
+    if (checkOtp.email !== email) {
       throw new ApiError(StatusCodes.UNAUTHORIZED, 'OTP is invalid!')
+    }
+    const account = await accountsModel.findByUnique(_email, 'accountName')
+    if (!account) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
     }
 
     if (checkOtp.expiredAt < new Date()) {
       throw new ApiError(StatusCodes.UNAUTHORIZED, 'OTP has expired!')
     }
-
     if (newPassword !== reNewPassword) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Passwords do not match!')
     }
 
-    const account = await accountsModel.findByUnique(checkOtp.email, 'accountName')
-    if (!account) {
-      throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
+    if (action === checkOtp.otpType) {
+      const hashedPassword = await bcrypt.hash(newPassword, saltRoundsPassword)
+      const result = await accountsModel.updateById(account.accountId, {
+        accountName: account.accountName,
+        password: hashedPassword
+      }, 'accountId')
+      return result
+    } else {
+      return false
     }
-
-    const hashedPassword = await bcrypt.hash(newPassword, saltRoundsPassword)
-
-    const result = await accountsModel.updateById(account.accountId, {
-      password: hashedPassword
-    }, 'accountId')
-    return result
   }
   // ================= SETUP SUPERADMIN =================
   async setupSuperAdmin(data) {
