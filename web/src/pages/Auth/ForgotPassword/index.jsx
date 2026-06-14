@@ -1,21 +1,36 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
 import { authAPI } from '@/api/auth'
 import { toast } from 'react-toastify'
 import { ArrowLeft } from 'lucide-react'
 
 export default function ForgotPasswordPage() {
   const [step, setStep] = useState(1)
-  const [email, setEmail] = useState('')
-  const [otp, setOtp] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-
-  const [generatedOtp, setGeneratedOtp] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [timer, setTimer] = useState(0)
 
   const navigate = useNavigate()
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    trigger,
+    getValues,
+    formState: { errors }
+  } = useForm({
+    defaultValues: {
+      email: '',
+      otp: '',
+      password: '',
+      confirmPassword: ''
+    },
+    mode: 'onTouched'
+  })
+
+  const emailValue = watch('email')
+  const passwordValue = watch('password')
 
   // Handle countdown for resending OTP
   useEffect(() => {
@@ -30,34 +45,15 @@ export default function ForgotPasswordPage() {
     return () => clearInterval(interval)
   }, [timer])
 
-
-
   const handleSendOtp = async (e) => {
-    e.preventDefault()
-    if (!email.trim()) {
-      toast.error('Vui lòng nhập Email!')
-      return
-    }
+    if (e) e.preventDefault()
+    const isValidEmail = await trigger('email')
+    if (!isValidEmail) return
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email.trim())) {
-      toast.error('Định dạng email không hợp lệ!')
-      return
-    }
-
+    const email = getValues('email')
     setIsLoading(true)
     try {
-      const res = await authAPI.generateOtp(email.trim(), 'RESET_PASSWORD')
-      const code = res?.data?.otpCode || res?.data?.OTP_CODE || res?.otpCode || res?.OTP_CODE
-      if (code) {
-        setGeneratedOtp(code)
-      } else {
-        const mockCode = Math.floor(100000 + Math.random() * 900000).toString()
-        setGeneratedOtp(mockCode)
-      }
-
-
-
+      await authAPI.generateOtp(email.trim(), 'RESET_PASSWORD')
       setStep(2)
       setTimer(30)
     } catch (err) {
@@ -68,32 +64,8 @@ export default function ForgotPasswordPage() {
     }
   }
 
-  const handleResetPassword = async (e) => {
-    e.preventDefault()
-    if (!otp.trim()) {
-      toast.error('Vui lòng nhập mã OTP!')
-      return
-    }
-
-    if (generatedOtp && otp.trim() !== generatedOtp) {
-      toast.error('Mã OTP không chính xác!')
-      return
-    }
-
-    if (!password.trim() || !confirmPassword.trim()) {
-      toast.error('Vui lòng điền mật khẩu mới!')
-      return
-    }
-
-    if (password.length < 8) {
-      toast.error('Mật khẩu mới phải có tối thiểu 8 ký tự!')
-      return
-    }
-
-    if (password !== confirmPassword) {
-      toast.error('Nhập lại mật khẩu không trùng khớp!')
-      return
-    }
+  const handleResetPassword = async (data) => {
+    const { email, otp, password, confirmPassword } = data
 
     setIsLoading(true)
     try {
@@ -146,13 +118,20 @@ export default function ForgotPasswordPage() {
             <input
               id="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
               className={inputClass}
               placeholder="you@example.com"
-              required
+              {...register('email', {
+                required: 'Vui lòng nhập Email!',
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: 'Định dạng email không hợp lệ!'
+                }
+              })}
             />
+            {errors.email && (
+              <p className="text-xs text-rose-500 mt-1">{errors.email.message}</p>
+            )}
           </div>
 
           <button
@@ -164,7 +143,7 @@ export default function ForgotPasswordPage() {
           </button>
         </form>
       ) : (
-        <form onSubmit={handleResetPassword} className="space-y-4">
+        <form onSubmit={handleSubmit(handleResetPassword)} className="space-y-4">
           <div className="flex items-center gap-2 mb-2">
             <button
               type="button"
@@ -179,7 +158,7 @@ export default function ForgotPasswordPage() {
 
           <div className="rounded-lg bg-blue-50 border border-blue-100 p-4 text-xs text-blue-800 space-y-2">
             <p className="font-semibold">Mã OTP đã được gửi về Email.</p>
-            <p>Hệ thống đã gửi mã OTP về Email: <strong>{email}</strong></p>
+            <p>Hệ thống đã gửi mã OTP về Email: <strong>{emailValue}</strong></p>
           </div>
 
           <div className="space-y-1">
@@ -190,13 +169,23 @@ export default function ForgotPasswordPage() {
               id="otp"
               type="text"
               maxLength={6}
-              value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
               disabled={isLoading}
               className={`${inputClass} text-center tracking-widest font-bold text-lg`}
               placeholder="000000"
-              required
+              {...register('otp', {
+                required: 'Vui lòng nhập mã OTP!',
+                onChange: (e) => {
+                  e.target.value = e.target.value.replace(/\D/g, '')
+                },
+                pattern: {
+                  value: /^[0-9]{6}$/,
+                  message: 'Mã OTP phải gồm 6 chữ số!'
+                }
+              })}
             />
+            {errors.otp && (
+              <p className="text-xs text-rose-500 mt-1">{errors.otp.message}</p>
+            )}
           </div>
 
           <div className="space-y-1">
@@ -206,13 +195,20 @@ export default function ForgotPasswordPage() {
             <input
               id="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
               className={inputClass}
               placeholder="••••••••"
-              required
+              {...register('password', {
+                required: 'Vui lòng điền mật khẩu mới!',
+                minLength: {
+                  value: 8,
+                  message: 'Mật khẩu mới phải có tối thiểu 8 ký tự!'
+                }
+              })}
             />
+            {errors.password && (
+              <p className="text-xs text-rose-500 mt-1">{errors.password.message}</p>
+            )}
           </div>
 
           <div className="space-y-1">
@@ -222,13 +218,18 @@ export default function ForgotPasswordPage() {
             <input
               id="confirmPassword"
               type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={isLoading}
               className={inputClass}
               placeholder="••••••••"
-              required
+              {...register('confirmPassword', {
+                required: 'Vui lòng nhập lại mật khẩu mới!',
+                validate: (value) =>
+                  value === passwordValue || 'Nhập lại mật khẩu không trùng khớp!'
+              })}
             />
+            {errors.confirmPassword && (
+              <p className="text-xs text-rose-500 mt-1">{errors.confirmPassword.message}</p>
+            )}
           </div>
 
           <button

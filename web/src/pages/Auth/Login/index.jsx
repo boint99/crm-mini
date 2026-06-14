@@ -104,12 +104,13 @@ function LoginPage() {
         {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
       </button>
 
-      <p className="pt-2 text-center text-xs text-gray-600">
-        Chưa có tài khoản?{' '}
-        <a href="/auth/register" className="font-medium text-gray-900 hover:underline">
-          Đăng ký
-        </a>
-      </p>
+      <div className="pt-2 text-center text-xs text-gray-600">
+        {/* Chưa có tài khoản?{' '} */}
+        <span className="font-medium text-gray-900">
+          {/* Đăng ký */}
+          Hiện chưa hỗ trợ đăng ký tài khoản.
+        </span>
+      </div>
     </form>
   )
 }
