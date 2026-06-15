@@ -78,7 +78,7 @@ export const headerTableOrgUnits = {
 }
 
 export const headerTableBranch = {
-  index: 'viettelBranchId',
+  index: 'STT',
   branchCode: 'ID',
   branchName: 'Tên chi nhánh',
   location: 'Địa điểm',

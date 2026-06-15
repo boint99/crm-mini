@@ -32,8 +32,8 @@ export const updateCompany = createAsyncThunk(
   "companies/updateCompany",
   async (payload , { rejectWithValue }) => {
     try {
-      const data = await companiesAPI.update(payload);
-      return data.data;
+      await companiesAPI.update(payload);
+      return payload;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -90,14 +90,17 @@ const companiesSlice = createSlice({
           (item) => item.id === action.payload.id
         );
         if (index !== -1) {
-          state.items[index] = action.payload;
+          state.items[index] = {
+            ...state.items[index],
+            ...action.payload,
+          };
         }
       })
 
       // DELETE
       .addCase(deleteCompany.fulfilled, (state, action) => {
           state.items = state.items.filter(
-          (item) => Number(item.id) !== Number(action.payload)
+          (item) => item.id !== action.payload
         );
       });
   },

@@ -123,7 +123,7 @@ const branchesSlice = createSlice({
       // DELETE
       .addCase(deleteBranch.fulfilled, (state, action) => {
           state.items = state.items.filter(
-          (item) => Number(item.id) !== Number(action.payload)
+          (item) => item.id !== action.payload
         );
         state.message = CUSTOM_MESSAGES.delete.success;
       })
