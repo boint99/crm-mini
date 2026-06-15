@@ -108,7 +108,6 @@ class CompanyService {
     const { id, ...payload } = data
 
     const findCompany = await companyModel.findByUnique(id, 'id')
-    console.log('🚀 ~ CompanyService ~ update ~ findCompany:', findCompany)
 
     const companyId = findCompany?.companyId || null
 
