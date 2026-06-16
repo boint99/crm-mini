@@ -23,22 +23,22 @@ export const NAV_GROUPS = [
       { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/" },
     ],
   },
-  {
-    group: "HOME",
-    items: [
-      { id: "tasklist", label: "Task List", icon: CheckSquare, path: "/tasklist" },
-      { id: "chat", label: "Chat", icon: MessageCircle, path: "/chat" },
-      { id: "files", label: "Files", icon: Folder, path: "/files" },
-      { id: "group", label: "Group Mail", icon: Group, path: "/group" },
-      {
-        id: "mail", label: "Mail", icon: Mail,
-        children: [
-          { id: "mail-inbox", label: "Inbox", icon: Mail, path: "/mail/inbox" },
-          { id: "mail-sent", label: "Sent", icon: Mail, path: "/mail/sent" },
-        ],
-      },
-    ],
-  },
+  // {
+  //   group: "HOME",
+  //   items: [
+  //     { id: "tasklist", label: "Task List", icon: CheckSquare, path: "/tasklist" },
+  //     { id: "chat", label: "Chat", icon: MessageCircle, path: "/chat" },
+  //     { id: "files", label: "Files", icon: Folder, path: "/files" },
+  //     { id: "group", label: "Group Mail", icon: Group, path: "/group" },
+  //     {
+  //       id: "mail", label: "Mail", icon: Mail,
+  //       children: [
+  //         { id: "mail-inbox", label: "Inbox", icon: Mail, path: "/mail/inbox" },
+  //         { id: "mail-sent", label: "Sent", icon: Mail, path: "/mail/sent" },
+  //       ],
+  //     },
+  //   ],
+  // },
   {
     group: "NETWORKS",
     items: [
@@ -48,12 +48,12 @@ export const NAV_GROUPS = [
   {
     group: "Organizations",
 items: [
-  {
-    id: "organizations",
-    label: "Organization",
-    icon: FolderTree,
-    path: "/organizations/organization",
-  },
+  // {
+  //   id: "organizations",
+  //   label: "Organization",
+  //   icon: FolderTree,
+  //   path: "/organizations/organization",
+  // },
 
   {
     id: "employees",

@@ -41,7 +41,7 @@ Ensures that Express controllers, services, authentication middleware, and RBAC 
     {
       "success": true,
       "message": "Retrieval successful",
-      "data": { ... }
+      "data": [...]
     }
     ```
   - **Failure (4xx/5xx)**:

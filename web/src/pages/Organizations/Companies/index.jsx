@@ -222,12 +222,9 @@ function Companies() {
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900">
-            Quản lý công ty
+          <h2 className="text-2xl font-bold text-gray-900">
+            DANH SÁCH CÔNG TY
           </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Dữ liệu hiển thị tất cả công ty.
-          </p>
         </div>
         <button
           type="button"
@@ -238,43 +235,9 @@ function Companies() {
           Thêm
         </button>
       </div>
-
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition">
-          <p className="text-sm font-medium text-slate-500">Tổng công ty</p>
-          <p className="mt-3 text-3xl font-semibold text-slate-900">
-            {totalCompanies}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm hover:shadow-md transition">
-          <p className="text-sm font-medium text-emerald-700">Đang hoạt động</p>
-          <p className="mt-3 text-3xl font-semibold text-emerald-900">
-            {activeCompanies}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm sm:col-span-2 xl:col-span-1 hover:shadow-md transition">
-          <p className="text-sm font-medium text-amber-700">Kết quả lọc</p>
-          <p className="mt-3 text-3xl font-semibold text-amber-900">
-            {filteredRows.length}
-          </p>
-        </div>
-      </div>
-
       <div className="mt-6 rounded-lg border border-gray-200 bg-white shadow-sm">
         <div className="border-b border-gray-200 px-4 py-3 sm:px-6 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-lg font-medium text-gray-900">
-              Danh sách công ty
-            </p>
-          </div>
-          <div className="flex items-center gap-1">
-            <div
-              onClick={() => setOpenUploadModal(true)}
-              className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2 cursor-pointer hover:bg-gray-50 transition"
-              title="Import Excel"
-            >
-              <Upload className="h-6 w-6 text-gray-400 hover:text-primary transition" />
-            </div>
+          <div className="flex items-center gap-3">
           <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2">
             <Search className="h-4 w-4 text-gray-400" />
             <input
@@ -285,9 +248,16 @@ function Companies() {
               className="w-64 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
             />
           </div>
+          <div
+              onClick={() => setOpenUploadModal(true)}
+              className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2 cursor-pointer hover:bg-gray-50 transition"
+              title="Import Excel"
+            >
+              <Upload className="h-6 w-6 text-gray-400 hover:text-primary transition" />
+            </div>
           </div>
+        <div>Tổng: {filteredRows.length}</div>
         </div>
-
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
@@ -297,7 +267,7 @@ function Companies() {
                     key={key}
                     className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap"
                   >
-                    {label === "index" ? "STT" : label}
+                    {label}
                   </th>
                 ))}
                 <th className="px-4 py-2 text-right font-semibold text-gray-700 whitespace-nowrap">

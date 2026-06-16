@@ -3,12 +3,9 @@ import { companyModel } from './company.model.js'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '../../utils/ApiError.js'
 import { v7 as uuidv7 } from 'uuid'
+import { organizationModel } from '../organization/organization.model.js'
 
 class CompanyService {
-  // =========================
-  // check data
-  // =========================
-
   static checkRequiredFields(data) {
     if (!data) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Data is required!')
@@ -116,11 +113,7 @@ class CompanyService {
     }
 
     // 2. Normalize update data
-    const updateData = CompanyService.normalizeUpdateData(payload)
-
-    if (Object.keys(updateData).length === 0) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'No data to update!')
-    }
+    const updateData = CompanyService.normalizeUpdateData(payload.companyName)
 
     // 3. Check enum
     CompanyService.checkEnumStatus(updateData.status)
@@ -133,11 +126,16 @@ class CompanyService {
   }
 
   async delete(id) {
-    // 1. Check tồn tại
     const findCompany = await companyModel.findByUnique(id, 'id')
+
+    const companyKey = await organizationModel.findByUnique(findCompany.companyId, 'companyId')
 
     if (!findCompany || findCompany.deletedAt) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Company not found!')
+    }
+
+    if (companyKey) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Company has organization!')
     }
 
     // 2. Soft delete

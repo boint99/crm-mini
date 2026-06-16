@@ -142,8 +142,8 @@ export default function CompanyModel({
           <div>
             <label className={labelClass}>Trạng thái *</label>
             <select className={inputClass} {...register("status")}>
-              <option value="ENABLE">ENABLE (Hoạt động)</option>
-              <option value="DISABLED">DISABLED</option>
+              <option value="ENABLE">Enable</option>
+              <option value="DISABLED">Disable</option>
             </select>
           </div>
 

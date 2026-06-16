@@ -1,5 +1,4 @@
 export const headerTableCompany = {
-  index: 'STT',
   companyName: 'Tên công ty',
   status: 'Trạng thái',
   createdAt: 'Ngày tạo',

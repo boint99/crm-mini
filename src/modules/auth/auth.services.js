@@ -9,6 +9,7 @@ import Serializer from '../../utils/Serializer.js'
 import { refreshTokenModel } from './refreshToken.model.js'
 import { PRISMA } from '../../configs/db.config.js'
 import { otpModel } from '../otp/otp.model.js'
+import { v7 as uuidv7 } from 'uuid'
 
 class AuthService {
   _validateRegister(data) {
@@ -66,28 +67,97 @@ class AuthService {
     // accountName lưu email đầy đủ
     const existingAccount = await accountsModel.findByUnique(email, 'accountName')
     if (existingAccount) {
-      throw new ApiError(StatusCodes.CONFLICT, 'Account already exists!')
+      throw new ApiError(StatusCodes.CONFLICT, 'Account already registered!')
     }
   }
 
   // ================= REGISTER =================
   async register(data) {
-    // 1. Validate + normalize
-    const cleanData = this._validateRegister(data)
+    const { email, password, user_name, empolyeeCode, is_login, otp } = data
 
-    // 2. Check duplicate
-    await this._ensureEmailNotExists(cleanData.email)
+    // 1. Verify OTP
+    const cleanEmail = email.trim().toLowerCase()
+    const cleanOtp = String(otp).trim()
 
-    // 3. Create account — lưu email đầy đủ làm accountName
-    const account = await accountsModel.create({
-      accountName: cleanData.email,
-      password: await bcrypt.hash(cleanData.password, saltRoundsPassword),
-      employeeId: null,
-      login: 0,
-      isLogin: false
+    const checkOtp = await otpModel.model.findFirst({
+      where: {
+        email: cleanEmail,
+        otpCode: cleanOtp,
+        otpType: 'REGISTER',
+        expiredAt: { gt: new Date() }
+      }
     })
 
-    return account
+    if (!checkOtp) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'OTP is invalid or has expired!')
+    }
+
+    // Delete the verified OTP
+    await otpModel.model.deleteMany({
+      where: {
+        email: cleanEmail,
+        otpType: 'REGISTER'
+      }
+    })
+
+    // 2. Check duplicate email
+    await this._ensureEmailNotExists(cleanEmail)
+
+    // 3. Resolve employee link if employeeCode or email matches
+    let employeeId = null
+    let matchedEmployee = null
+
+    if (empolyeeCode?.trim()) {
+      matchedEmployee = await employeesModel.findByField(empolyeeCode.trim(), 'employeeCode')
+    }
+    if (!matchedEmployee) {
+      matchedEmployee = await employeesModel.findByField(cleanEmail, 'email')
+    }
+
+    if (matchedEmployee) {
+      employeeId = matchedEmployee.employeeId
+    }
+
+    // 4. Create account - save full email as accountName
+    const account = await PRISMA.aCCOUNTS.create({
+      data: {
+        id: uuidv7(),
+        accountName: cleanEmail,
+        password: await bcrypt.hash(password.trim(), saltRoundsPassword),
+        employeeId: employeeId,
+        isLogin: is_login !== undefined ? is_login : true,
+        status: 'ENABLE',
+        login: 0,
+        description: `Registered: ${user_name?.trim()}`
+      }
+    })
+
+    // 5. Generate and save tokens
+    const companyId = matchedEmployee?.orgUnit?.company?.id || null
+    const tokenPayload = {
+      id: account.accountId,
+      email: account.accountName,
+      companyId: companyId
+    }
+    const accessToken = signAccessToken(tokenPayload)
+    const refreshToken = signRefreshToken({ id: account.accountId })
+
+    const decodedRefresh = decodeToken(refreshToken)
+    const expiresAt = new Date(decodedRefresh.exp * 1000)
+
+    await refreshTokenModel.createRefreshToken(
+      account.accountId,
+      refreshToken,
+      expiresAt
+    )
+
+    return {
+      accessToken,
+      refreshToken,
+      id: account.accountId,
+      username: cleanEmail.split('@')[0],
+      email: account.accountName
+    }
   }
 
   // ================= LOGIN =================
@@ -189,13 +259,12 @@ class AuthService {
       expiresAt
     )
 
-    // ===== TRẢ VỀ RESPONSE =====
-    const safeAccount = Serializer.sanitize(account, ['password', 'deletedAt'])
-
     return {
-      ...safeAccount,
       accessToken,
-      refreshToken
+      refreshToken,
+      id: account.accountId,
+      username: account.accountName.split('@')[0],
+      email: account.accountName
     }
   }
 

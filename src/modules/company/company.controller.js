@@ -7,7 +7,7 @@ class CompanyController {
     try {
       const result = await companyService.lists()
 
-      const sanitizedResult = await  Serializer.sanitize(result, ['companyId', 'deletedAt'])
+      const sanitizedResult = await Serializer.sanitize(result, ['companyId', 'deletedAt'])
       new SuccessResponse({
         res: res,
         data: sanitizedResult,

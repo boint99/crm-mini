@@ -4,7 +4,7 @@ import { SuccessResponse } from '../../utils/SuccessResponse.js'
 
 class AuthController {
   // POST /api/auth/register
-  static async register(req, res, next) {
+  async register(req, res, next) {
     try {
       const result = await authService.register(req.body)
       new CreatedResponse({ res, data: result, message: 'Account registered successfully.' })
@@ -12,7 +12,7 @@ class AuthController {
   }
 
   // POST /api/auth/login
-  static async login(req, res, next) {
+  async login(req, res, next) {
     try {
       const result = await authService.login(req.body)
       const { refreshToken, ...data } = result
@@ -29,7 +29,7 @@ class AuthController {
   }
 
   // POST /api/auth/refresh-token
-  static async refreshToken(req, res, next) {
+  async refreshToken(req, res, next) {
     try {
       const token = req.cookies?.refreshToken || req.body?.refreshToken
       const result = await authService.refreshToken({ refreshToken: token })
@@ -38,7 +38,7 @@ class AuthController {
   }
 
   // POST /api/auth/logout (protected)
-  static async logout(req, res, next) {
+  async logout(req, res, next) {
     try {
       const token = req.cookies?.refreshToken || req.body?.refreshToken
       const result = await authService.logout({ refreshToken: token })
@@ -54,7 +54,7 @@ class AuthController {
   }
 
   // POST /api/auth/logout-all (protected)
-  static async logoutAll(req, res, next) {
+  async logoutAll(req, res, next) {
     try {
       await authService.logoutAll(req.user.userId)
 
@@ -68,7 +68,7 @@ class AuthController {
     } catch (error) { next(error) }
   }
 
-  static async forgotPassword(req, res, next) {
+  async forgotPassword(req, res, next) {
     try {
       await authService.forgotPassword(req.body)
       new SuccessResponse({ res, message: 'Password reset successfully.' })
@@ -76,7 +76,7 @@ class AuthController {
   }
 
   // POST /api/auth/setup-superadmin
-  static async setupSuperAdmin(req, res, next) {
+  async setupSuperAdmin(req, res, next) {
     try {
       const result = await authService.setupSuperAdmin(req.body)
       new CreatedResponse({ res, data: result, message: 'Superadmin account created successfully.' })
@@ -84,4 +84,4 @@ class AuthController {
   }
 }
 
-export const authController = AuthController
+export const authController = new AuthController()
