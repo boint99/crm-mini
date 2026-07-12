@@ -1,37 +1,38 @@
-import { lazy, Suspense } from "react";
-import MainLayout from "@/components/layouts/MainLayout";
-import Auth from "@/pages/Auth";
-import NotFound from "@/pages/NotFound";
-import Loading from "@/components/ui/Loading";
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { lazy, Suspense } from 'react'
+import MainLayout from '@/components/layouts/MainLayout'
+import Auth from '@/pages/Auth'
+import NotFound from '@/pages/NotFound'
+import Loading from '@/components/ui/Loading'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
 
-const Dashboard = lazy(() => import("@/pages/dashboard"));
-const Employees = lazy(() => import("@/pages/Organizations/Employees"));
-const Organizations = lazy(() => import("@/pages/Organizations"));
-const Organization = lazy(() => import("@/pages/Organizations/Organization"));
-const Companies = lazy(() => import("@/pages/Organizations/Companies"));
-const Positions = lazy(() => import("@/pages/Organizations/Positions"));
-const Branches = lazy(() => import("@/pages/Organizations/Branches"));
-const Departments = lazy(() => import("@/pages/Organizations/Departments"));
-const Networks = lazy(() => import("@/pages/networks"));
-const Accounts = lazy(() => import("@/pages/accounts"));
-const ViettelEmployee = lazy(() => import("@/pages/Viettel/employee"));
-const ViettelBranch = lazy(() => import("@/pages/Viettel/branch"));
-const Permissions = lazy(() => import("@/pages/Permissions"));
-const NotPermistion = lazy(() => import("@/pages/NotPermistion"));
+const Dashboard = lazy(() => import('@/pages/dashboard'))
+const Employees = lazy(() => import('@/pages/Organizations/Employees'))
+const Organizations = lazy(() => import('@/pages/Organizations'))
+const Organization = lazy(() => import('@/pages/Organizations/Organization'))
+const Companies = lazy(() => import('@/pages/Organizations/Companies'))
+const Positions = lazy(() => import('@/pages/Organizations/Positions'))
+const Branches = lazy(() => import('@/pages/Organizations/Branches'))
+const Departments = lazy(() => import('@/pages/Organizations/Departments'))
+const Networks = lazy(() => import('@/pages/networks'))
+const Accounts = lazy(() => import('@/pages/accounts'))
+const ViettelEmployee = lazy(() => import('@/pages/Viettel/employee'))
+const ViettelBranch = lazy(() => import('@/pages/Viettel/branch'))
+const Permissions = lazy(() => import('@/pages/Permissions'))
+const NotPermistion = lazy(() => import('@/pages/NotPermistion'))
+const Profile = lazy(() => import('@/pages/Profile'))
 
-const Login = lazy(() => import("@/pages/auth/login"));
-const Register = lazy(() => import("@/pages/auth/register"));
-const ForgotPassword = lazy(() => import("@/pages/Auth/ForgotPassword"));
+const Login = lazy(() => import('@/pages/auth/login'))
+const Register = lazy(() => import('@/pages/auth/register'))
+const ForgotPassword = lazy(() => import('@/pages/Auth/ForgotPassword'))
 
 // Wrapper dùng chung
 const WithSpinner = ({ children }) => (
   <Suspense fallback={<Loading />}>{children}</Suspense>
-);
+)
 
 const routes = [
   {
-    path: "/",
+    path: '/',
     element: (
       <ProtectedRoute>
         <MainLayout />
@@ -44,10 +45,10 @@ const routes = [
           <WithSpinner>
             <Dashboard />
           </WithSpinner>
-        ),
+        )
       },
       {
-        path: "organizations",
+        path: 'organizations',
         element: (
           <WithSpinner>
             <Organizations />
@@ -55,139 +56,147 @@ const routes = [
         ),
         children: [
           {
-            path: "companies",
+            path: 'companies',
             element: (
               <WithSpinner>
                 <Companies />
               </WithSpinner>
-            ),
+            )
           },
           {
-            path: "positions",
+            path: 'positions',
             element: (
               <WithSpinner>
                 <Positions />
               </WithSpinner>
-            ),
+            )
           },
           {
-            path: "employees",
+            path: 'employees',
             element: (
               <WithSpinner>
                 <Employees />
               </WithSpinner>
-            ),
+            )
           },
           {
-            path: "branches",
+            path: 'branches',
             element: (
               <WithSpinner>
                 <Branches />
               </WithSpinner>
-            ),
+            )
           },
           {
-            path: "organization",
+            path: 'organization',
             element: (
               <WithSpinner>
                 <Organization />
               </WithSpinner>
-            ),
+            )
           },
           {
-            path: "departments",
+            path: 'departments',
             element: (
               <WithSpinner>
                 <Departments />
               </WithSpinner>
-            ),
-          },
-        ],
+            )
+          }
+        ]
       },
       {
-        path: "viettel-employees",
+        path: 'viettel-employees',
         element: (
           <WithSpinner>
             <ViettelEmployee />
           </WithSpinner>
-        ),
+        )
       },
       {
-        path: "viettel-branches",
+        path: 'viettel-branches',
         element: (
           <WithSpinner>
             <ViettelBranch />
           </WithSpinner>
-        ),
+        )
       },
       {
-        path: "network-management",
+        path: 'network-management',
         element: (
           <WithSpinner>
             <Networks />
           </WithSpinner>
-        ),
+        )
       },
       {
-        path: "accounts",
+        path: 'accounts',
         element: (
           <WithSpinner>
             <Accounts />
           </WithSpinner>
-        ),
+        )
       },
       {
-        path: "permissions",
+        path: 'permissions',
         element: (
           <WithSpinner>
             <Permissions />
           </WithSpinner>
-        ),
+        )
       },
       {
-        path: "not-permission",
+        path: 'profile',
+        element: (
+          <WithSpinner>
+            <Profile />
+          </WithSpinner>
+        )
+      },
+      {
+        path: 'not-permission',
         element: (
           <WithSpinner>
             <NotPermistion />
           </WithSpinner>
-        ),
+        )
       },
 
-      { path: "*", element: <NotFound /> },
-    ],
+      { path: '*', element: <NotFound /> }
+    ]
   },
 
   {
-    path: "/auth",
+    path: '/auth',
     element: <Auth />,
     children: [
       {
-        path: "login",
+        path: 'login',
         element: (
           <WithSpinner>
             <Login />
           </WithSpinner>
-        ),
+        )
       },
       {
-        path: "register",
+        path: 'register',
         element: (
           <WithSpinner>
             <Register />
           </WithSpinner>
-        ),
+        )
       },
       {
-        path: "forgot-password",
+        path: 'forgot-password',
         element: (
           <WithSpinner>
             <ForgotPassword />
           </WithSpinner>
-        ),
+        )
       },
-      { path: "*", element: <NotFound /> },
-    ],
-  },
-];
+      { path: '*', element: <NotFound /> }
+    ]
+  }
+]
 
-export default routes;
+export default routes

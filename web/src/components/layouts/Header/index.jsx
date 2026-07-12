@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, User } from 'lucide-react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { selectUser } from '@/redux/selectors/authSelectors'
@@ -95,6 +95,18 @@ function Header({ collapsed: _collapsed, setCollapsed: _setCollapsed }) {
                   </div>
                   <div className="text-xs text-slate-400 mt-0.5">Quản trị hệ thống</div>
                 </div>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="flex w-full items-center gap-2 rounded-lg px-4 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors"
+                  onClick={() => {
+                    setOpen(false)
+                    navigate('/profile')
+                  }}
+                >
+                  <User size={16} />
+                  Hồ sơ cá nhân
+                </button>
                 <button
                   type="button"
                   role="menuitem"
