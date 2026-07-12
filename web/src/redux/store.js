@@ -11,6 +11,8 @@ import accountsReducer from "./slice/accountsSlice";
 import departmentsReducer from "./slice/departmentsSlice";
 import authReducer from "./slice/authSlice";
 
+const isProduction = import.meta.env.PROD;
+
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -25,4 +27,6 @@ export const store = configureStore({
     accounts: accountsReducer,
     departments: departmentsReducer,
   },
+  // Tắt Redux DevTools khi build production để bảo mật và giảm bundle size
+  devTools: !isProduction,
 });
