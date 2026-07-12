@@ -39,17 +39,45 @@ class AccountsModel extends ModelCore {
     }
   }
 
-  async lists(where = null, includeDeleted = false) {
-    const prismaWhere = {}
-    if (where) {
-      // if (where.accountName !== undefined) prismaWhere.accountName = where.accountName
-      if (where.employeeId !== undefined) prismaWhere.employeeId = Number(where.employeeId)
-      // if (where.status !== undefined) prismaWhere.status = where.status
+  async lists(params = {}, includeDeleted = false) {
+    const { page, pageSize, search, status, roleId } = params
+    const pageNum = Number(page) || 1
+    const sizeNum = Number(pageSize) || 10
+    const skip = (pageNum - 1) * sizeNum
+    const take = sizeNum
+
+    const prismaWhere = {
+      deletedAt: includeDeleted ? undefined : null
     }
 
-    const list = await super.LISTQUERY(
-      {
-        where: Object.keys(prismaWhere).length ? prismaWhere : undefined,
+    if (status) {
+      prismaWhere.status = status
+    }
+
+    if (roleId) {
+      prismaWhere.accountRoles = {
+        some: {
+          roleId: Number(roleId),
+          deletedAt: null
+        }
+      }
+    }
+
+    if (search && search.trim()) {
+      const keyword = search.trim()
+      prismaWhere.OR = [
+        { accountName: { contains: keyword, mode: 'insensitive' } },
+        { description: { contains: keyword, mode: 'insensitive' } }
+      ]
+    }
+
+    const [total, list] = await Promise.all([
+      this.model.count({ where: prismaWhere }),
+      this.model.findMany({
+        where: prismaWhere,
+        skip,
+        take,
+        orderBy: { accountId: 'asc' },
         include: {
           employee: {
             select: {
@@ -65,10 +93,13 @@ class AccountsModel extends ModelCore {
             }
           }
         }
-      },
-      includeDeleted
-    )
-    return list.map(item => this._mapResponse(item))
+      })
+    ])
+
+    return {
+      total,
+      list: list.map(item => this._mapResponse(item))
+    }
   }
 
   async create(createData) {

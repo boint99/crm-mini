@@ -5,7 +5,7 @@ class AccountsController {
   // GET /api/accounts/lists
   async lists(req, res, next) {
     try {
-      const result = await accountsService.lists()
+      const result = await accountsService.lists(req.query)
 
       new SuccessResponse({ res, data: result, message: 'Get accounts list successfully.' })
     } catch (error) { next(error) }

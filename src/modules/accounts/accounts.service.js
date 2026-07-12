@@ -61,8 +61,12 @@ class AccountsService {
   }
 
   // Get list of accounts
-  async lists() {
-    return Serializer.sanitize(await accountsModel.lists(), ['password', 'deletedAt'])
+  async lists(params = {}) {
+    const result = await accountsModel.lists(params)
+    return {
+      total: result.total,
+      list: Serializer.sanitize(result.list, ['password', 'deletedAt'])
+    }
   }
 
   async create(data) {
