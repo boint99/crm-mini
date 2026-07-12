@@ -114,6 +114,8 @@ model ACCOUNTS {
   createdAt   DateTime   @default(now()) @map("CREATED_AT") @db.Timestamp(6)
   updatedAt   DateTime?  @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
   deletedAt   DateTime?  @map("DELETED_AT") @db.Timestamp(6)
+  avatar      String?    @map("AVATAR") @db.VarChar(255)
+  notificationSettings Json? @map("NOTIFICATION_SETTINGS")
 
   accountRoles        ACCOUNT_ROLES[]
   grantedPermissions  ROLE_PERMISSIONS[] @relation("PermissionGranter")
