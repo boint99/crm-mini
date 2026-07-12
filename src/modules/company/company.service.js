@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 import ApiError from '../../utils/ApiError.js'
 import { v7 as uuidv7 } from 'uuid'
 import { organizationModel } from '../organization/organization.model.js'
+import { PRISMA } from '../../configs/db.config.js'
 
 class CompanyService {
   static checkRequiredFields(data) {
@@ -90,7 +91,9 @@ class CompanyService {
     CompanyService.checkEnumStatus(normalized.status)
 
     // 4. Kiểm tra xem tên công ty đã tồn tại chưa (bao gồm cả đã soft-delete)
-    const existingIncDeleted = await companyModel.findByField(normalized.companyName, 'companyName', true)
+    const existingIncDeleted = await PRISMA.cOMPANY.findFirst({
+      where: { companyName: normalized.companyName }
+    })
 
     if (existingIncDeleted) {
       if (existingIncDeleted.deletedAt) {

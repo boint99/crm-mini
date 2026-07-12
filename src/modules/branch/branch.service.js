@@ -110,29 +110,39 @@ class BranchesServices {
     BranchesServices.checkEnumStatus(normalized.status)
 
     // 4. Kiểm tra branchCode đã tồn tại chưa (bao gồm cả soft-deleted)
-    const existingByCode = await branchesModel.findByField(normalized.branchCode, 'branchCode', true)
+    const existingByCode = await PRISMA.bRANCHES.findFirst({
+      where: { branchCode: normalized.branchCode }
+    })
     if (existingByCode) {
       if (existingByCode.deletedAt) {
         // Đã soft-delete → khôi phục, cập nhật thông tin mới
-        return await branchesModel.updateById(existingByCode.id, {
-          deletedAt: null,
-          status: normalized.status || 'ENABLE',
-          branchName: normalized.branchName,
-          location: normalized.location ?? existingByCode.location
+        return await PRISMA.bRANCHES.update({
+          where: { branchId: existingByCode.branchId },
+          data: {
+            deletedAt: null,
+            status: normalized.status || 'ENABLE',
+            branchName: normalized.branchName,
+            location: normalized.location ?? existingByCode.location
+          }
         })
       }
       throw new ApiError(StatusCodes.CONFLICT, 'This branch code is already taken!')
     }
 
     // 5. Kiểm tra branchName đã tồn tại chưa (bao gồm cả soft-deleted)
-    const existingByName = await branchesModel.findByName(normalized.branchName, true)
+    const existingByName = await PRISMA.bRANCHES.findFirst({
+      where: { branchName: normalized.branchName }
+    })
     if (existingByName) {
       if (existingByName.deletedAt) {
-        return await branchesModel.updateById(existingByName.id, {
-          deletedAt: null,
-          status: normalized.status || 'ENABLE',
-          branchCode: normalized.branchCode,
-          location: normalized.location ?? existingByName.location
+        return await PRISMA.bRANCHES.update({
+          where: { branchId: existingByName.branchId },
+          data: {
+            deletedAt: null,
+            status: normalized.status || 'ENABLE',
+            branchCode: normalized.branchCode,
+            location: normalized.location ?? existingByName.location
+          }
         })
       }
       throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken!')
