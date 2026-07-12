@@ -21,7 +21,8 @@ function SearchableSelect({
   value,
   onChange,
   placeholder = 'Chọn...',
-  inputClass
+  inputClass,
+  disabled = false
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -51,9 +52,12 @@ function SearchableSelect({
     <div className="relative" ref={containerRef}>
       <button
         type="button"
+        disabled={disabled}
         onClick={() => {
-          setIsOpen(!isOpen)
-          setSearch('')
+          if (!disabled) {
+            setIsOpen(!isOpen)
+            setSearch('')
+          }
         }}
         className={`${inputClass} flex items-center justify-between bg-white text-left`}
       >
@@ -65,6 +69,7 @@ function SearchableSelect({
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
+          aria-hidden="true"
         >
           <path
             fillRule="evenodd"
@@ -74,7 +79,7 @@ function SearchableSelect({
         </svg>
       </button>
 
-      {isOpen && (
+      {isOpen && !disabled && (
         <div className="absolute z-50 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg">
           <div className="p-2 border-b border-gray-100">
             <input
@@ -224,22 +229,31 @@ export default function EmployeeModel({
           setCompanies(res.data || [])
         })
         .catch((err) => console.error('Failed to load companies:', err))
-
-      departmentsAPI
-        .getLists()
-        .then((res) => {
-          setUnits(res.data || [])
-        })
-        .catch((err) => console.error('Failed to load units:', err))
-
-      positionsAPI
-        .getLists()
-        .then((res) => {
-          setPositions(res.data || [])
-        })
-        .catch((err) => console.error('Failed to load positions:', err))
     }
   }, [isOpen])
+
+  useEffect(() => {
+    if (isOpen) {
+      if (companyId) {
+        departmentsAPI
+          .getLists({ companyid: companyId })
+          .then((res) => {
+            setUnits(res.data || [])
+          })
+          .catch((err) => console.error('Failed to load units:', err))
+
+        positionsAPI
+          .getLists({ companyId: companyId })
+          .then((res) => {
+            setPositions(res.data || [])
+          })
+          .catch((err) => console.error('Failed to load positions:', err))
+      } else {
+        setUnits([])
+        setPositions([])
+      }
+    }
+  }, [isOpen, companyId])
 
   useEffect(() => {
     if (isOpen) {
@@ -509,7 +523,8 @@ export default function EmployeeModel({
                 options={unitOptions}
                 value={unitId}
                 onChange={(val) => setValue('unitId', val)}
-                placeholder="Chọn đơn vị"
+                placeholder={companyId ? 'Chọn đơn vị' : 'Vui lòng chọn công ty trước'}
+                disabled={!companyId}
                 inputClass={inputClass}
               />
             </div>
@@ -523,7 +538,8 @@ export default function EmployeeModel({
                 }))}
                 value={positionId}
                 onChange={(val) => setValue('positionId', val)}
-                placeholder="Chọn chức vụ"
+                placeholder={companyId ? 'Chọn chức vụ' : 'Vui lòng chọn công ty trước'}
+                disabled={!companyId}
                 inputClass={inputClass}
               />
             </div>
