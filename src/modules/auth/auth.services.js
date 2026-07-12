@@ -494,6 +494,92 @@ class AuthService {
       role: adminRole.roleName
     }
   }
+
+  async changePassword(userId, oldPassword, newPassword) {
+    const account = await PRISMA.aCCOUNTS.findFirst({
+      where: { accountId: Number(userId), deletedAt: null }
+    })
+    if (!account) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
+    }
+    const isMatch = await bcrypt.compare(oldPassword.trim(), account.password)
+    if (!isMatch) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Current password is incorrect!')
+    }
+    if (newPassword.trim().length < 8) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'New password must be >= 8 characters!')
+    }
+    const hashedPassword = await bcrypt.hash(newPassword.trim(), saltRoundsPassword)
+    await PRISMA.aCCOUNTS.update({
+      where: { accountId: account.accountId },
+      data: { password: hashedPassword }
+    })
+    await refreshTokenModel.revokeAllAccountTokens(account.accountId)
+    return { success: true }
+  }
+
+  async getProfile(userId) {
+    const profile = await PRISMA.aCCOUNTS.findFirst({
+      where: { accountId: Number(userId), deletedAt: null },
+      include: {
+        employee: {
+          include: {
+            orgUnit: {
+              include: {
+                company: true,
+                branch: true
+              }
+            },
+            position: true
+          }
+        },
+        accountRoles: {
+          where: { deletedAt: null },
+          include: { role: true }
+        }
+      }
+    })
+    if (!profile) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Profile not found!')
+    }
+    delete profile.password
+    return profile
+  }
+
+  async updateProfile(userId, profileData) {
+    const { firstName, lastName, phone, avatar, notificationSettings } = profileData
+    const account = await PRISMA.aCCOUNTS.findFirst({
+      where: { accountId: Number(userId), deletedAt: null }
+    })
+    if (!account) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
+    }
+    
+    await PRISMA.$transaction(async (tx) => {
+      // Update account fields
+      await tx.aCCOUNTS.update({
+        where: { accountId: account.accountId },
+        data: {
+          avatar: avatar || null,
+          notificationSettings: notificationSettings || undefined
+        }
+      })
+
+      // Update employee fields if linked
+      if (account.employeeId) {
+        await tx.eMPLOYEES.update({
+          where: { employeeId: account.employeeId },
+          data: {
+            firstName: firstName || undefined,
+            lastName: lastName || undefined,
+            phone: phone || null
+          }
+        })
+      }
+    })
+
+    return this.getProfile(userId)
+  }
 }
 
 export const authService = new AuthService()

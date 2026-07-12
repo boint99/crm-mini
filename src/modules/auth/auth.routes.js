@@ -28,4 +28,13 @@ Router.post('/logout', authMiddleware, authController.logout.bind(authController
 // POST /api/auth/logout-all
 Router.post('/logout-all', authMiddleware, authController.logoutAll.bind(authController))
 
+// PUT /api/auth/change-password
+Router.put('/change-password', authMiddleware, authController.changePassword.bind(authController))
+
+// GET /api/auth/profile
+Router.get('/profile', authMiddleware, authController.getProfile.bind(authController))
+
+// PUT /api/auth/profile
+Router.put('/profile', authMiddleware, authController.updateProfile.bind(authController))
+
 export const authRoutes = Router

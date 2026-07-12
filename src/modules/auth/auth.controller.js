@@ -82,6 +82,31 @@ class AuthController {
       new CreatedResponse({ res, data: result, message: 'Superadmin account created successfully.' })
     } catch (error) { next(error) }
   }
+
+  async changePassword(req, res, next) {
+    try {
+      const userId = req.user.userId
+      const { oldPassword, newPassword } = req.body
+      await authService.changePassword(userId, oldPassword, newPassword)
+      new SuccessResponse({ res, message: 'Password updated successfully. Please log in again.' })
+    } catch (error) { next(error) }
+  }
+
+  async getProfile(req, res, next) {
+    try {
+      const userId = req.user.userId
+      const data = await authService.getProfile(userId)
+      new SuccessResponse({ res, data, message: 'Get profile successfully.' })
+    } catch (error) { next(error) }
+  }
+
+  async updateProfile(req, res, next) {
+    try {
+      const userId = req.user.userId
+      const data = await authService.updateProfile(userId, req.body)
+      new SuccessResponse({ res, data, message: 'Profile updated successfully.' })
+    } catch (error) { next(error) }
+  }
 }
 
 export const authController = new AuthController()
