@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import ApiError from '../../utils/ApiError.js'
 import { branchesModel } from './branch.model.js'
 import { v7 as uuidv7 } from 'uuid'
+import { PRISMA } from '../../configs/db.config.js'
 
 class BranchesServices {
   static checkRequiredFields(data) {
@@ -153,6 +154,17 @@ class BranchesServices {
 
     if (!findBranch || findBranch.deletedAt) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Branch not found!')
+    }
+
+    // Kiểm tra các phòng ban/đơn vị đang sử dụng chi nhánh này
+    const orgUnitCount = await PRISMA.oRG_UNITS.count({
+      where: { branchId: findBranch.branchId, deletedAt: null }
+    })
+    if (orgUnitCount > 0) {
+      throw new ApiError(
+        StatusCodes.CONFLICT,
+        `Không thể xóa chi nhánh vì hiện có ${orgUnitCount} đơn vị/phòng ban đang liên kết với chi nhánh này!`
+      )
     }
 
     return await branchesModel.updateById(id, {
