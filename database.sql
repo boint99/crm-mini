@@ -1,11 +1,3 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-}
-
 model COMPANY {
   id          String      @unique @map("ID") @db.Uuid
   companyId   Int         @id @default(autoincrement()) @map("COMPANY_ID")
@@ -15,7 +7,6 @@ model COMPANY {
   updatedAt   DateTime    @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
   deletedAt   DateTime?   @map("DELETED_AT") @db.Timestamp(6)
   orgUnits    ORG_UNITS[]
-  positions   POSITIONS[]
 
   @@map("COMPANY")
 }
@@ -65,15 +56,12 @@ model POSITIONS {
   positionId   Int         @id @default(autoincrement()) @map("POSITION_ID")
   positionName String      @map("POSITION_NAME")
   level        String      @map("LEVEL")
-  companyId    Int?        @map("COMPANY_ID")
   status       ENUMSTATUS  @default(ENABLE) @map("STATUS")
   createdAt    DateTime    @default(now()) @map("CREATED_AT") @db.Timestamp(6)
   updatedAt    DateTime?   @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
   deletedAt    DateTime?   @map("DELETED_AT") @db.Timestamp(6)
   employees    EMPLOYEES[]
-  company      COMPANY?    @relation(fields: [companyId], references: [companyId])
 
-  @@index([companyId])
   @@map("POSITIONS")
 }
 
@@ -118,8 +106,6 @@ model ACCOUNTS {
   createdAt   DateTime   @default(now()) @map("CREATED_AT") @db.Timestamp(6)
   updatedAt   DateTime?  @updatedAt @map("UPDATED_AT") @db.Timestamp(6)
   deletedAt   DateTime?  @map("DELETED_AT") @db.Timestamp(6)
-  avatar      String?    @map("AVATAR") @db.VarChar(255)
-  notificationSettings Json? @map("NOTIFICATION_SETTINGS")
 
   accountRoles        ACCOUNT_ROLES[]
   grantedPermissions  ROLE_PERMISSIONS[] @relation("PermissionGranter")

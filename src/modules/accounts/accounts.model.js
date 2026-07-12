@@ -27,7 +27,11 @@ class AccountsModel extends ModelCore {
       employee: record.employee ? {
         employeeId: record.employee.employeeId,
         firstName: record.employee.firstName,
-        lastName: record.employee.lastName
+        lastName: record.employee.lastName,
+        company: record.employee.orgUnit?.company ? {
+          id: record.employee.orgUnit.company.id,
+          companyName: record.employee.orgUnit.company.companyName
+        } : undefined
       } : undefined,
       roles: record.accountRoles ? record.accountRoles
         .filter(ar => ar.deletedAt === null && ar.role !== null)
@@ -41,10 +45,6 @@ class AccountsModel extends ModelCore {
 
   async lists(params = {}, includeDeleted = false) {
     const { page, pageSize, search, status, roleId } = params
-    const pageNum = Number(page) || 1
-    const sizeNum = Number(pageSize) || 10
-    const skip = (pageNum - 1) * sizeNum
-    const take = sizeNum
 
     const prismaWhere = {
       deletedAt: includeDeleted ? undefined : null
@@ -52,6 +52,16 @@ class AccountsModel extends ModelCore {
 
     if (status) {
       prismaWhere.status = status
+    }
+
+    if (params.companyId) {
+      prismaWhere.employee = {
+        orgUnit: {
+          company: {
+            id: params.companyId
+          }
+        }
+      }
     }
 
     if (roleId) {
@@ -71,30 +81,41 @@ class AccountsModel extends ModelCore {
       ]
     }
 
-    const [total, list] = await Promise.all([
-      this.model.count({ where: prismaWhere }),
-      this.model.findMany({
-        where: prismaWhere,
-        skip,
-        take,
-        orderBy: { accountId: 'asc' },
-        include: {
-          employee: {
-            select: {
-              employeeId: true,
-              firstName: true,
-              lastName: true
-            }
-          },
-          accountRoles: {
-            where: { deletedAt: null },
-            include: {
-              role: true
+    const total = await this.model.count({ where: prismaWhere })
+
+    const findOptions = {
+      where: prismaWhere,
+      orderBy: { accountId: 'asc' },
+      include: {
+        employee: {
+          select: {
+            employeeId: true,
+            firstName: true,
+            lastName: true,
+            orgUnit: {
+              select: {
+                company: true
+              }
             }
           }
+        },
+        accountRoles: {
+          where: { deletedAt: null },
+          include: {
+            role: true
+          }
         }
-      })
-    ])
+      }
+    }
+
+    if (page !== undefined || pageSize !== undefined) {
+      const pageNum = Number(page) || 1
+      const sizeNum = Number(pageSize) || 10
+      findOptions.skip = (pageNum - 1) * sizeNum
+      findOptions.take = sizeNum
+    }
+
+    const list = await this.model.findMany(findOptions)
 
     return {
       total,
@@ -149,7 +170,12 @@ class AccountsModel extends ModelCore {
           select: {
             employeeId: true,
             firstName: true,
-            lastName: true
+            lastName: true,
+            orgUnit: {
+              select: {
+                company: true
+              }
+            }
           }
         },
         accountRoles: {

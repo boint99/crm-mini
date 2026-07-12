@@ -2,8 +2,8 @@ import axios from 'axios'
 
 export const accountsAPI = {
   // GET list
-  getLists: async () => {
-    const res = await axios.get(`/accounts/`)
+  getLists: async (params = {}) => {
+    const res = await axios.get(`/accounts/`, { params })
     return res.data
   },
 

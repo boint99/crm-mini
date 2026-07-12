@@ -6,7 +6,7 @@ class PositionsController {
   //  get list
   async lists(req, res, next) {
     try {
-      const result = await positionsServices.lists()
+      const result = await positionsServices.lists(req.query)
       new SuccessResponse({
         res: res,
         data: result,

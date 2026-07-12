@@ -3,28 +3,51 @@ import { StatusCodes } from 'http-status-codes'
 import ApiError from '../../utils/ApiError.js'
 import { positionsModel } from './postisions.model.js'
 import { v7 as uuidv7 } from 'uuid'
+import { PRISMA } from '../../configs/db.config.js'
 
 class PositionsServices {
 
-  async lists() {
-    return await positionsModel.lists()
+  async lists(params = {}) {
+    const { companyId } = params
+    const query = {}
+    if (companyId) {
+      query.companyId = companyId
+    }
+    return await positionsModel.lists(query)
   }
 
   /**
    * Create a new position
    */
   async create(data) {
-    const { positionName, level, status } = data
+    const { positionName, level, status, companyId } = data
     // 1. Check required fields
     if (!positionName || !positionName.trim()) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'The name cannot be left blank!')
     }
 
-    // 2. Check existence
-    const isExisted = await positionsModel.findByField(positionName.trim(), 'positionName')
+    // 2. Check existence within same company (if company is linked)
+    let companyIdDb = null
+    if (companyId) {
+      const company = await PRISMA.cOMPANY.findUnique({
+        where: { id: companyId }
+      })
+      if (!company || company.deletedAt) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'Company not found!')
+      }
+      companyIdDb = company.companyId
+    }
+
+    const isExisted = await PRISMA.pOSITIONS.findFirst({
+      where: {
+        positionName: positionName.trim(),
+        companyId: companyIdDb,
+        deletedAt: null
+      }
+    })
 
     if (isExisted) {
-      throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken!')
+      throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken in this company!')
     }
 
     // 3. Check status enum
@@ -32,8 +55,9 @@ class PositionsServices {
 
     const createData = {
       id: uuidv7(),
-      positionName: positionName,
-      level: level,
+      positionName: positionName.trim(),
+      level: level || '',
+      companyId: companyIdDb,
       status: status || 'ENABLE'
     }
     return await positionsModel.create(createData)
@@ -43,7 +67,7 @@ class PositionsServices {
    * Update Position details
    */
   async update(data) {
-    const { id, ...payload } = data
+    const { id, companyId, ...payload } = data
 
     // 1. Verify existence
     const existing = await positionsModel.findByUnique(id, 'id')
@@ -51,18 +75,42 @@ class PositionsServices {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Position is not found!')
     }
 
-    // 2. Logic check for Position Name
-    if (payload.positionName) {
-      const trimmedName = payload.positionName.trim()
-      if (!trimmedName) {
+    let companyIdDb = undefined
+    if (companyId !== undefined) {
+      if (companyId) {
+        const company = await PRISMA.cOMPANY.findUnique({
+          where: { id: companyId }
+        })
+        if (!company || company.deletedAt) {
+          throw new ApiError(StatusCodes.NOT_FOUND, 'Company not found!')
+        }
+        companyIdDb = company.companyId
+      } else {
+        companyIdDb = null
+      }
+    }
+
+    // 2. Logic check for Position Name within same company
+    const checkName = payload.positionName !== undefined ? payload.positionName.trim() : existing.positionName
+    const checkCompanyId = companyIdDb !== undefined ? companyIdDb : existing.companyId
+
+    if (payload.positionName !== undefined) {
+      if (!checkName) {
         throw new ApiError(StatusCodes.BAD_REQUEST, 'The Position name cannot be left blank!')
       }
+    }
 
-      const isExisted = await positionsModel.findByField(trimmedName, 'positionName')
+    if (payload.positionName !== undefined || companyIdDb !== undefined) {
+      const isExisted = await PRISMA.pOSITIONS.findFirst({
+        where: {
+          positionName: checkName,
+          companyId: checkCompanyId,
+          deletedAt: null
+        }
+      })
       if (isExisted && isExisted.id !== id) {
-        throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken!')
+        throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken in this company!')
       }
-      payload.positionName = trimmedName
     }
 
     // 3. Check status enum
@@ -72,9 +120,10 @@ class PositionsServices {
 
     // 4. Normalize update data
     const updateData = {}
-    if (payload.positionName !== undefined) updateData.positionName = payload.positionName
+    if (payload.positionName !== undefined) updateData.positionName = checkName
     if (payload.level !== undefined) updateData.level = payload.level
     if (payload.status !== undefined) updateData.status = payload.status
+    if (companyIdDb !== undefined) updateData.companyId = companyIdDb
 
     if (Object.keys(updateData).length === 0) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'No data to update!')

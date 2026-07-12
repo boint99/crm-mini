@@ -1,62 +1,63 @@
-import { customStyles } from "@/utils/contants";
-import { X } from "lucide-react";
-import { useEffect, useState, useMemo, useRef } from "react";
-import { useForm } from "react-hook-form";
-import Modal from "react-modal";
-import { positionsAPI } from "@/api/positionsAPI";
-import { departmentsAPI } from "@/api/departmentsAPI";
+import { customStyles } from '@/utils/contants'
+import { X } from 'lucide-react'
+import { useEffect, useState, useMemo, useRef } from 'react'
+import { useForm } from 'react-hook-form'
+import Modal from 'react-modal'
+import { positionsAPI } from '@/api/positionsAPI'
+import { departmentsAPI } from '@/api/departmentsAPI'
+import { companiesAPI } from '@/api/companiesAPI'
 
 const modalStyles = {
   ...customStyles,
   content: {
     ...customStyles.content,
-    maxWidth: "672px",
-    overflow: "visible",
-  },
-};
+    maxWidth: '672px',
+    overflow: 'visible'
+  }
+}
 
 function SearchableSelect({
   options,
   value,
   onChange,
-  placeholder = "Chọn...",
-  inputClass,
+  placeholder = 'Chọn...',
+  inputClass
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const containerRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const containerRef = useRef(null)
 
   useEffect(() => {
     function handleClickOutside(event) {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
-        setIsOpen(false);
+        setIsOpen(false)
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const filteredOptions = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) return options;
+    const query = search.trim().toLowerCase()
+    if (!query) return options
     return options.filter((opt) =>
       opt.label?.toLowerCase().includes(query)
-    );
-  }, [options, search]);
+    )
+  }, [options, search])
 
-  const selectedOption = options.find((opt) => opt.value === value);
+  const selectedOption = options.find((opt) => opt.value === value)
 
   return (
     <div className="relative" ref={containerRef}>
       <button
         type="button"
         onClick={() => {
-          setIsOpen(!isOpen);
-          setSearch("");
+          setIsOpen(!isOpen)
+          setSearch('')
         }}
         className={`${inputClass} flex items-center justify-between bg-white text-left`}
       >
-        <span className={selectedOption ? "text-gray-900" : "text-gray-400"}>
+        <span className={selectedOption ? 'text-gray-900' : 'text-gray-400'}>
           {selectedOption ? (selectedOption.cleanLabel || selectedOption.label) : placeholder}
         </span>
         <svg
@@ -82,8 +83,8 @@ function SearchableSelect({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
+                if (e.key === 'Enter') {
+                  e.preventDefault()
                 }
               }}
               className="w-full rounded-md border border-gray-200 px-2 py-1 text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary"
@@ -96,11 +97,11 @@ function SearchableSelect({
                 <li
                   key={opt.value}
                   onClick={() => {
-                    onChange(opt.value);
-                    setIsOpen(false);
+                    onChange(opt.value)
+                    setIsOpen(false)
                   }}
                   className={`px-3 py-2 hover:bg-slate-100 cursor-pointer ${
-                    opt.value === value ? "bg-blue-50 text-blue-600 font-medium" : ""
+                    opt.value === value ? 'bg-blue-50 text-blue-600 font-medium' : ''
                   }`}
                 >
                   {opt.label}
@@ -115,7 +116,7 @@ function SearchableSelect({
         </div>
       )}
     </div>
-  );
+  )
 }
 
 export default function EmployeeModel({
@@ -123,9 +124,9 @@ export default function EmployeeModel({
   isOpen = open,
   onClose,
   onSubmit,
-  mode = "create",
+  mode = 'create',
   initialValues,
-  data = initialValues,
+  data = initialValues
 }) {
   const {
     register,
@@ -133,136 +134,155 @@ export default function EmployeeModel({
     reset,
     setValue,
     watch,
-    formState: { errors, isSubmitting },
-  } = useForm();
+    formState: { errors, isSubmitting }
+  } = useForm()
 
-  const isEdit = mode === "edit";
+  const isEdit = mode === 'edit'
 
   useEffect(() => {
-    register("unitId");
-    register("positionId");
-  }, [register]);
+    register('companyId')
+    register('unitId')
+    register('positionId')
+  }, [register])
 
-  const unitId = watch("unitId");
-  const positionId = watch("positionId");
-  const watchIsAccount = watch("isAccount");
+  const companyId = watch('companyId')
+  const unitId = watch('unitId')
+  const positionId = watch('positionId')
+  const watchIsAccount = watch('isAccount')
 
-  const [units, setUnits] = useState([]);
-  const [positions, setPositions] = useState([]);
+  const [companies, setCompanies] = useState([])
+  const [units, setUnits] = useState([])
+  const [positions, setPositions] = useState([])
 
   const unitOptions = useMemo(() => {
-    if (!units || units.length === 0) return [];
+    if (!units || units.length === 0) return []
 
-    // Loại bỏ trùng lặp nếu API trả về các phần tử trùng lặp
-    const uniqueUnitsMap = {};
+    // Loại bỏ trùng lặp nếu API trả về các phần tử trùng lặp và lọc theo companyId
+    const uniqueUnitsMap = {}
     units.forEach((u) => {
       if (u && u.id) {
-        uniqueUnitsMap[u.id] = u;
+        if (!companyId || u.company?.id === companyId) {
+          uniqueUnitsMap[u.id] = u
+        }
       }
-    });
-    const uniqueUnits = Object.values(uniqueUnitsMap);
+    })
+    const uniqueUnits = Object.values(uniqueUnitsMap)
 
-    const map = {};
+    const map = {}
     uniqueUnits.forEach((unit) => {
-      map[unit.id] = { ...unit, children: [] };
-    });
+      map[unit.id] = { ...unit, children: [] }
+    })
 
-    const roots = [];
+    const roots = []
     uniqueUnits.forEach((unit) => {
-      const mapped = map[unit.id];
-      const parentId = unit.parentUnit?.id;
+      const mapped = map[unit.id]
+      const parentId = unit.parentUnit?.id
       if (parentId && map[parentId]) {
-        map[parentId].children.push(mapped);
+        map[parentId].children.push(mapped)
       } else {
-        roots.push(mapped);
+        roots.push(mapped)
       }
-    });
+    })
 
-    const options = [];
+    const options = []
     const traverse = (node, depth = 0) => {
-      const indent = "\u00A0\u00A0".repeat(depth);
-      const prefix = depth > 0 ? `${indent}↳ ` : "";
+      const indent = '\u00A0\u00A0'.repeat(depth)
+      const prefix = depth > 0 ? `${indent}↳ ` : ''
 
-      let extra = "";
+      let extra = ''
       if (node.company?.companyName && depth === 0) {
-        extra = ` (${node.company.companyName})`;
+        extra = ` (${node.company.companyName})`
       } else if (node.branch?.branchName && depth === 0) {
-        extra = ` (${node.branch.branchName})`;
+        extra = ` (${node.branch.branchName})`
       }
 
       options.push({
         value: node.id,
         label: `${prefix}${node.unitName}`,
         cleanLabel: `${node.unitName}`
-      });
+      })
 
       if (node.children) {
-        node.children.forEach((child) => traverse(child, depth + 1));
+        node.children.forEach((child) => traverse(child, depth + 1))
       }
-    };
+    }
 
-    roots.forEach((root) => traverse(root, 0));
-    return options;
-  }, [units]);
+    roots.forEach((root) => traverse(root, 0))
+    return options
+  }, [units, companyId])
+
+  const filteredPositions = useMemo(() => {
+    if (!positions) return []
+    return positions.filter((pos) => !companyId || !pos.company?.id || pos.company?.id === companyId)
+  }, [positions, companyId])
 
   useEffect(() => {
     if (isOpen) {
+      companiesAPI
+        .getLists()
+        .then((res) => {
+          setCompanies(res.data || [])
+        })
+        .catch((err) => console.error('Failed to load companies:', err))
+
       departmentsAPI
         .getLists()
         .then((res) => {
-          setUnits(res.data || []);
+          setUnits(res.data || [])
         })
-        .catch((err) => console.error("Failed to load units:", err));
+        .catch((err) => console.error('Failed to load units:', err))
 
       positionsAPI
         .getLists()
         .then((res) => {
-          setPositions(res.data || []);
+          setPositions(res.data || [])
         })
-        .catch((err) => console.error("Failed to load positions:", err));
+        .catch((err) => console.error('Failed to load positions:', err))
     }
-  }, [isOpen]);
+  }, [isOpen])
 
   useEffect(() => {
     if (isOpen) {
-      if (mode === "edit" && data) {
+      if (mode === 'edit' && data) {
         reset({
-          employeeCode: data.employeeCode || "",
-          firstName: data.firstName || "",
-          lastName: data.lastName || "",
-          phone: data.phone || "",
-          email: data.email || "",
-          birthDate: data.birthDate ? String(data.birthDate).slice(0, 10) : "",
-          unitId: data.orgUnit?.id || data.unitId || "",
-          viettelCode: data.viettelCode || "",
-          positionId: data.position?.id || data.positionId || "",
-          status: data.status || "ENABLE",
-          description: data.description || "",
-          isAccount: data.isAccount || false,
-        });
-      } else if (mode === "create") {
+          employeeCode: data.employeeCode || '',
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
+          phone: data.phone || '',
+          email: data.email || '',
+          birthDate: data.birthDate ? String(data.birthDate).slice(0, 10) : '',
+          companyId: data.orgUnit?.company?.id || data.position?.company?.id || data.companyId || '',
+          unitId: data.orgUnit?.id || data.unitId || '',
+          viettelCode: data.viettelCode || '',
+          positionId: data.position?.id || data.positionId || '',
+          status: data.status || 'ENABLE',
+          description: data.description || '',
+          isAccount: data.isAccount || false
+        })
+      } else if (mode === 'create') {
         reset({
-          employeeCode: "",
-          firstName: "",
-          lastName: "",
-          phone: "",
-          email: "",
-          birthDate: "",
-          unitId: "",
-          viettelCode: "",
-          positionId: "",
-          status: "ENABLE",
-          description: "",
-          isAccount: false,
-        });
+          employeeCode: '',
+          firstName: '',
+          lastName: '',
+          phone: '',
+          email: '',
+          birthDate: '',
+          companyId: '',
+          unitId: '',
+          viettelCode: '',
+          positionId: '',
+          status: 'ENABLE',
+          description: '',
+          isAccount: false
+        })
       }
     }
-  }, [isOpen, mode, data, reset]);
+  }, [isOpen, mode, data, reset])
 
   const handleFormSubmit = (formData) => {
-    if (mode === "delete") {
-      onSubmit?.(data?.id || data?.employeeId);
-      return;
+    if (mode === 'delete') {
+      onSubmit?.(data?.id || data?.employeeId)
+      return
     }
 
     const payload = {
@@ -275,24 +295,24 @@ export default function EmployeeModel({
       phone: formData.phone?.trim() || null,
       email: formData.email?.trim() || null,
       description: formData.description?.trim() || null,
-      isAccount: formData.isAccount || false,
-    };
+      isAccount: formData.isAccount || false
+    }
 
     if (formData.viettelCode?.trim()) {
-      payload.viettelCode = formData.viettelCode.trim();
+      payload.viettelCode = formData.viettelCode.trim()
     }
 
     if (isEdit && data) {
-      if (data.id) payload.id = data.id;
-      if (data.employeeId) payload.employeeId = Number(data.employeeId);
+      if (data.id) payload.id = data.id
+      if (data.employeeId) payload.employeeId = Number(data.employeeId)
     } else {
-      payload.employeeCode = formData.employeeCode.trim();
+      payload.employeeCode = formData.employeeCode.trim()
     }
 
-    onSubmit?.(payload);
-  };
+    onSubmit?.(payload)
+  }
 
-  if (mode === "delete") {
+  if (mode === 'delete') {
     return (
       <Modal
         isOpen={isOpen}
@@ -313,10 +333,10 @@ export default function EmployeeModel({
             </button>
           </div>
           <p className="text-sm text-gray-600 mb-6">
-            Bạn có chắc muốn xóa nhân viên{" "}
+            Bạn có chắc muốn xóa nhân viên{' '}
             <span className="font-semibold">
-              {[data?.firstName, data?.lastName].filter(Boolean).join(" ")}
-            </span>{" "}
+              {[data?.firstName, data?.lastName].filter(Boolean).join(' ')}
+            </span>{' '}
             ({data?.employeeCode})? Thao tác này không thể hoàn tác.
           </p>
           <div className="flex justify-end gap-3">
@@ -335,12 +355,12 @@ export default function EmployeeModel({
           </div>
         </div>
       </Modal>
-    );
+    )
   }
 
   const inputClass =
-    "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed";
-  const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+    'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed'
+  const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
 
   return (
     <Modal
@@ -352,7 +372,7 @@ export default function EmployeeModel({
       <div className="p-6">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-semibold text-gray-900">
-            {isEdit ? "Chỉnh sửa nhân viên" : "Thêm nhân viên mới"}
+            {isEdit ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên mới'}
           </h3>
           <button
             onClick={onClose}
@@ -371,10 +391,10 @@ export default function EmployeeModel({
                 placeholder="VD: EMP123"
                 disabled={isEdit}
                 className={inputClass}
-                {...register("employeeCode", {
-                  required: "Bắt buộc",
+                {...register('employeeCode', {
+                  required: 'Bắt buộc',
                   validate: (v) =>
-                    v.trim().length >= 6 || "Mã nhân viên phải đúng 6 ký tự",
+                    v.trim().length >= 6 || 'Mã nhân viên phải đúng 6 ký tự'
                 })}
               />
               {errors.employeeCode && (
@@ -390,7 +410,7 @@ export default function EmployeeModel({
                 type="text"
                 placeholder="VD: Nguyễn"
                 className={inputClass}
-                {...register("firstName", { required: "Bắt buộc" })}
+                {...register('firstName', { required: 'Bắt buộc' })}
               />
               {errors.firstName && (
                 <p className="mt-1 text-xs text-rose-500">
@@ -405,7 +425,7 @@ export default function EmployeeModel({
                 type="text"
                 placeholder="VD: Văn A"
                 className={inputClass}
-                {...register("lastName", { required: "Bắt buộc" })}
+                {...register('lastName', { required: 'Bắt buộc' })}
               />
               {errors.lastName && (
                 <p className="mt-1 text-xs text-rose-500">
@@ -416,7 +436,7 @@ export default function EmployeeModel({
 
             <div>
               <label className={labelClass}>Ngày sinh (Birth Date)</label>
-              <input type="date" className={inputClass} {...register("birthDate")} />
+              <input type="date" className={inputClass} {...register('birthDate')} />
             </div>
 
             <div>
@@ -425,22 +445,22 @@ export default function EmployeeModel({
                 type="text"
                 placeholder="VD: 0901234567"
                 className={inputClass}
-                {...register("phone")}
+                {...register('phone')}
               />
             </div>
 
             <div>
-              <label className={labelClass}>Email{watchIsAccount ? " *" : ""}</label>
+              <label className={labelClass}>Email{watchIsAccount ? ' *' : ''}</label>
               <input
                 type="text"
                 placeholder="VD: a.nguyen@company.com"
                 className={inputClass}
-                {...register("email", {
-                  required: watchIsAccount ? "Bắt buộc nhập Email khi chọn tạo tài khoản" : false,
+                {...register('email', {
+                  required: watchIsAccount ? 'Bắt buộc nhập Email khi chọn tạo tài khoản' : false,
                   pattern: {
                     value: /^\S+@\S+\.\S+$/,
-                    message: "Email không hợp lệ",
-                  },
+                    message: 'Email không hợp lệ'
+                  }
                 })}
               />
               {errors.email && (
@@ -456,7 +476,7 @@ export default function EmployeeModel({
                 type="checkbox"
                 disabled={isEdit && data?.isAccount}
                 className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
-                {...register("isAccount")}
+                {...register('isAccount')}
               />
               <label htmlFor="isAccount" className="text-sm font-medium text-gray-700 cursor-pointer">
                 Tạo tài khoản hệ thống (Lấy từ Email)
@@ -464,11 +484,31 @@ export default function EmployeeModel({
             </div>
 
             <div>
+              <label className={labelClass}>Công ty *</label>
+              <select
+                className={inputClass}
+                value={companyId}
+                onChange={(e) => {
+                  setValue('companyId', e.target.value)
+                  setValue('unitId', '') // Reset unit when company changes
+                  setValue('positionId', '') // Reset position when company changes
+                }}
+              >
+                <option value="">-- Chọn công ty --</option>
+                {companies.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.companyName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
               <label className={labelClass}>Đơn vị/phòng ban</label>
               <SearchableSelect
                 options={unitOptions}
                 value={unitId}
-                onChange={(val) => setValue("unitId", val)}
+                onChange={(val) => setValue('unitId', val)}
                 placeholder="Chọn đơn vị"
                 inputClass={inputClass}
               />
@@ -477,12 +517,12 @@ export default function EmployeeModel({
             <div>
               <label className={labelClass}>Chức vụ</label>
               <SearchableSelect
-                options={positions.map((pos) => ({
-                  value: pos.id || "",
-                  label: pos.positionName || "",
+                options={filteredPositions.map((pos) => ({
+                  value: pos.id || '',
+                  label: pos.positionName || ''
                 }))}
                 value={positionId}
-                onChange={(val) => setValue("positionId", val)}
+                onChange={(val) => setValue('positionId', val)}
                 placeholder="Chọn chức vụ"
                 inputClass={inputClass}
               />
@@ -494,13 +534,13 @@ export default function EmployeeModel({
                 type="text"
                 placeholder="VD: VT001"
                 className={inputClass}
-                {...register("viettelCode")}
+                {...register('viettelCode')}
               />
             </div>
 
             <div>
               <label className={labelClass}>Trạng thái (STATUS) *</label>
-              <select className={inputClass} {...register("status")}>
+              <select className={inputClass} {...register('status')}>
                 <option value="ENABLE">ENABLE (Hoạt động)</option>
                 <option value="DISABLED">DISABLED</option>
               </select>
@@ -512,7 +552,7 @@ export default function EmployeeModel({
                 placeholder="Nhập mô tả nhân viên..."
                 rows={3}
                 className={inputClass}
-                {...register("description")}
+                {...register('description')}
               />
             </div>
           </div>
@@ -530,11 +570,11 @@ export default function EmployeeModel({
               disabled={isSubmitting}
               className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
             >
-              {isEdit ? "Cập nhật" : "Tạo nhân viên"}
+              {isEdit ? 'Cập nhật' : 'Tạo nhân viên'}
             </button>
           </div>
         </form>
       </div>
     </Modal>
-  );
+  )
 }

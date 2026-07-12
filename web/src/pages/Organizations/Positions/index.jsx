@@ -1,118 +1,128 @@
-import LoadingItem from "@/components/ui/LoadingItem";
-import { dispatchWithToast } from "@/components/ui/dispatchWithToast";
-import { useAppDispatch } from "@/hook/useAppDispatch";
+import LoadingItem from '@/components/ui/LoadingItem'
+import { dispatchWithToast } from '@/components/ui/dispatchWithToast'
+import { useAppDispatch } from '@/hook/useAppDispatch'
 import {
   createPosition,
   deletePosition,
   getPositions,
   selectPositions,
   selectLoading,
-  updatePosition,
-} from "@/redux/slice/positionsSlice";
-import { formatDateTime, CUSTOM_MESSAGES } from "@/utils/contants";
-import { headerTablePositions } from "@/utils/headerTable";
-import { Award, Pencil, Plus, Search, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import PositionModel from "@/pages/Organizations/Positions/Action/PositionModel";
+  updatePosition
+} from '@/redux/slice/positionsSlice'
+import { selectCompanies, getCompanies } from '@/redux/slice/companiesSilce'
+import { formatDateTime, CUSTOM_MESSAGES } from '@/utils/contants'
+import { headerTablePositions } from '@/utils/headerTable'
+import { Award, Pencil, Plus, Search, Trash2 } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import PositionModel from '@/pages/Organizations/Positions/Action/PositionModel'
 
-const positionColumns = Object.entries(headerTablePositions);
+const positionColumns = Object.entries(headerTablePositions)
 
 function Positions() {
-  const [openModal, setOpenModal] = useState(false);
-  const [query, setQuery] = useState("");
-  const [selectedPosition, setSelectedPosition] = useState(null);
-  const [action, setAction] = useState("create");
+  const [openModal, setOpenModal] = useState(false)
+  const [query, setQuery] = useState('')
+  const [selectedPosition, setSelectedPosition] = useState(null)
+  const [action, setAction] = useState('create')
+  const [selectedCompany, setSelectedCompany] = useState('')
 
-  const dispatchAsync = useAppDispatch();
-  const dispatch = useDispatch();
-  const positions = useSelector(selectPositions);
-  const loading = useSelector(selectLoading);
+  const dispatchAsync = useAppDispatch()
+  const dispatch = useDispatch()
+  const positions = useSelector(selectPositions)
+  const loading = useSelector(selectLoading)
+  const companies = useSelector(selectCompanies)
 
   useEffect(() => {
-    dispatchAsync(getPositions());
-  }, []);
+    dispatchAsync(getPositions())
+    dispatchAsync(getCompanies())
+  }, [])
 
   const filteredRows = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return positions;
-    return positions.filter((position) => {
+    const q = query.trim().toLowerCase()
+    let list = positions
+    if (selectedCompany && selectedCompany !== 'ALL') {
+      list = list.filter((pos) => pos.company?.id === selectedCompany)
+    }
+    if (!q) return list
+    return list.filter((position) => {
+      const companyName = position.company?.companyName || ''
       const hay = [
         position.id,
         position.positionCode,
         position.positionName,
         position.level,
-        position.status,
+        companyName,
+        position.status
       ]
         .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return hay.includes(q);
-    });
-  }, [positions, query]);
+        .join(' ')
+        .toLowerCase()
+      return hay.includes(q)
+    })
+  }, [positions, query, selectedCompany])
 
-  const totalPositions = positions.length;
-  const activePositions = positions.filter((p) => p.status === "ENABLE").length;
+  const totalPositions = positions.length
+  const activePositions = positions.filter((p) => p.status === 'ENABLE').length
 
   const handleAction = (action, position = null) => {
     switch (action) {
-      case "edit":
-        setAction("edit");
-        setSelectedPosition(position);
-        setOpenModal(true);
-        break;
-      case "create":
-        setAction("create");
-        setSelectedPosition(null);
-        setOpenModal(true);
-        break;
-      case "delete":
-        setAction("delete");
-        setSelectedPosition(position);
-        setOpenModal(true);
-        break;
-      default:
-        break;
+    case 'edit':
+      setAction('edit')
+      setSelectedPosition(position)
+      setOpenModal(true)
+      break
+    case 'create':
+      setAction('create')
+      setSelectedPosition(null)
+      setOpenModal(true)
+      break
+    case 'delete':
+      setAction('delete')
+      setSelectedPosition(position)
+      setOpenModal(true)
+      break
+    default:
+      break
     }
-  };
+  }
 
   const handleCloseModal = () => {
-    setOpenModal(false);
-    setSelectedPosition(null);
-    setAction("create");
-  };
+    setOpenModal(false)
+    setSelectedPosition(null)
+    setAction('create')
+  }
 
   const handleSubmit = async (payload) => {
-    if (action === "delete") {
+    if (action === 'delete') {
       await dispatchWithToast({
         dispatch,
         action: deletePosition,
         payload,
-        messages: CUSTOM_MESSAGES.delete,
-      });
-      handleCloseModal();
-      return;
+        messages: CUSTOM_MESSAGES.delete
+      })
+      handleCloseModal()
+      return
     }
 
-    if (action === "edit") {
+    if (action === 'edit') {
       await dispatchWithToast({
         dispatch,
         action: updatePosition,
         payload,
-        messages: CUSTOM_MESSAGES.update,
-      });
-      handleCloseModal();
-      return;
+        messages: CUSTOM_MESSAGES.update
+      })
+      handleCloseModal()
+      return
     }
 
     await dispatchWithToast({
       dispatch,
       action: createPosition,
       payload,
-      messages: CUSTOM_MESSAGES.create,
-    });
-    handleCloseModal();
-  };
+      messages: CUSTOM_MESSAGES.create
+    })
+    handleCloseModal()
+  }
 
   const renderTableBody = () => {
     if (loading) {
@@ -124,7 +134,7 @@ function Positions() {
             </td>
           </tr>
         </tbody>
-      );
+      )
     }
 
     if (!filteredRows.length) {
@@ -139,7 +149,7 @@ function Positions() {
             </td>
           </tr>
         </tbody>
-      );
+      )
     }
 
     return (
@@ -147,9 +157,9 @@ function Positions() {
         {filteredRows.map((position, rowIndex) => (
           <tr key={position.id} className="hover:bg-gray-50">
             {positionColumns.map(([key]) => {
-              const cellClass = "px-4 py-3 text-gray-700 whitespace-nowrap";
+              const cellClass = 'px-4 py-3 text-gray-700 whitespace-nowrap'
 
-              if (key === "index") {
+              if (key === 'index') {
                 return (
                   <td
                     key={key}
@@ -157,46 +167,54 @@ function Positions() {
                   >
                     {rowIndex + 1}
                   </td>
-                );
+                )
               }
 
-              if (key === "STATUS") {
+              if (key === 'status') {
                 return (
                   <td key={key} className="px-4 py-3 whitespace-nowrap">
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        position.status === "ENABLE"
-                          ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
-                          : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
+                        position.status === 'ENABLE'
+                          ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20'
+                          : 'bg-gray-50 text-gray-700 ring-1 ring-gray-500/20'
                       }`}
                     >
-                      {position.status === "ENABLE"
-                        ? "Hoạt động"
-                        : "Ngưng hoạt động"}
+                      {position.status === 'ENABLE'
+                        ? 'Hoạt động'
+                        : 'Ngưng hoạt động'}
                     </span>
                   </td>
-                );
+                )
               }
 
-              if (key === "createdAt" || key === "updatedAt") {
+              if (key === 'companyName') {
                 return (
                   <td key={key} className={cellClass}>
-                    {position[key] ? formatDateTime(position[key]) : "-"}
+                    {position.company?.companyName || '-'}
                   </td>
-                );
+                )
+              }
+
+              if (key === 'createdAt' || key === 'updatedAt') {
+                return (
+                  <td key={key} className={cellClass}>
+                    {position[key] ? formatDateTime(position[key]) : '-'}
+                  </td>
+                )
               }
 
               return (
                 <td key={key} className={cellClass}>
-                  {position[key] || "-"}
+                  {position[key] || '-'}
                 </td>
-              );
+              )
             })}
             <td className="px-4 py-3 text-right whitespace-nowrap">
               <div className="flex items-center justify-end gap-1">
                 <button
                   type="button"
-                  onClick={() => handleAction("edit", position)}
+                  onClick={() => handleAction('edit', position)}
                   className="rounded-md p-2 text-indigo-600 transition hover:bg-indigo-50 cursor-pointer"
                   title="Chỉnh sửa"
                   aria-label={`Chỉnh sửa ${position.positionName}`}
@@ -205,7 +223,7 @@ function Positions() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleAction("delete", position)}
+                  onClick={() => handleAction('delete', position)}
                   className="rounded-md p-2 text-rose-600 transition hover:bg-rose-50 cursor-pointer"
                   title="Xóa"
                   aria-label={`Xóa ${position.positionName}`}
@@ -217,8 +235,8 @@ function Positions() {
           </tr>
         ))}
       </tbody>
-    );
-  };
+    )
+  }
 
   return (
     <div>
@@ -233,7 +251,7 @@ function Positions() {
         </div>
         <button
           type="button"
-          onClick={() => handleAction("create")}
+          onClick={() => handleAction('create')}
           className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 cursor-pointer"
         >
           <Plus className="mr-2 h-4 w-4" />
@@ -269,15 +287,29 @@ function Positions() {
               Danh sách chức vụ
             </p>
           </div>
-          <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2">
-            <Search className="h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Tìm theo mã, tên, cấp bậc..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-64 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
-            />
+          <div className="flex items-center gap-4">
+            <select
+              value={selectedCompany}
+              onChange={(e) => setSelectedCompany(e.target.value)}
+              className="rounded-xl border border-gray-200 px-3 py-2 text-sm bg-white outline-none focus:border-indigo-500"
+            >
+              <option value="ALL">Tất cả công ty</option>
+              {companies.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.companyName}
+                </option>
+              ))}
+            </select>
+            <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2">
+              <Search className="h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Tìm theo tên, cấp bậc..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="w-64 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
+              />
+            </div>
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -310,7 +342,7 @@ function Positions() {
         initialValues={selectedPosition}
       />
     </div>
-  );
+  )
 }
 
-export default Positions;
+export default Positions

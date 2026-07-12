@@ -1,75 +1,78 @@
-import { customStyles } from "@/utils/contants";
-import { X } from "lucide-react";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import Modal from "react-modal";
-import { useSelector } from "react-redux";
-import { useAppDispatch } from "@/hook/useAppDispatch";
-import { selectCompanies, getCompanies } from "@/redux/slice/companiesSilce";
-import { selectBranches, getBranches } from "@/redux/slice/branchesSlice";
-import { selectDepartments, getDepartments } from "@/redux/slice/departmentsSlice";
+import { customStyles } from '@/utils/contants'
+import { X } from 'lucide-react'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import Modal from 'react-modal'
+import { useSelector } from 'react-redux'
+import { useAppDispatch } from '@/hook/useAppDispatch'
+import { selectCompanies, getCompanies } from '@/redux/slice/companiesSilce'
+import { selectBranches, getBranches } from '@/redux/slice/branchesSlice'
+import { selectDepartments, getDepartments } from '@/redux/slice/departmentsSlice'
 
 export default function DepartmentModel({
   open,
   isOpen = open,
   onClose,
   onSubmit,
-  mode = "create",
+  mode = 'create',
   initialValues,
-  data = initialValues,
+  data = initialValues
 }) {
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
-  } = useForm();
+    watch,
+    formState: { errors, isSubmitting }
+  } = useForm()
 
-  const isEdit = mode === "edit";
+  const isEdit = mode === 'edit'
 
-  const dispatchAsync = useAppDispatch();
-  const companies = useSelector(selectCompanies);
-  const branches = useSelector(selectBranches);
-  const departments = useSelector(selectDepartments);
+  const dispatchAsync = useAppDispatch()
+  const companies = useSelector(selectCompanies)
+  const branches = useSelector(selectBranches)
+  const departments = useSelector(selectDepartments)
+
+  const watchCompanyId = watch('companyId')
 
   useEffect(() => {
     if (isOpen) {
-      dispatchAsync(getCompanies());
-      dispatchAsync(getBranches());
-      dispatchAsync(getDepartments());
+      dispatchAsync(getCompanies())
+      dispatchAsync(getBranches())
+      dispatchAsync(getDepartments())
     }
-  }, [isOpen]);
+  }, [isOpen])
 
   useEffect(() => {
     if (isOpen) {
-      if (mode === "edit" && data) {
+      if (mode === 'edit' && data) {
         reset({
-          orgUnitCode: data.orgUnitCode || "",
-          unitName: data.unitName || "",
-          unitType: data.unitType || "",
-          companyId: data.company?.id || "",
-          branchId: data.branch?.id || "",
-          parentUnitId: data.parentUnit?.id || "",
-          status: data.status || "ENABLE",
-        });
-      } else if (mode === "create") {
+          orgUnitCode: data.orgUnitCode || '',
+          unitName: data.unitName || '',
+          unitType: data.unitType || '',
+          companyId: data.company?.id || '',
+          branchId: data.branch?.id || '',
+          parentUnitId: data.parentUnit?.id || '',
+          status: data.status || 'ENABLE'
+        })
+      } else if (mode === 'create') {
         reset({
-          orgUnitCode: "",
-          unitName: "",
-          unitType: "Department",
-          companyId: "",
-          branchId: "",
-          parentUnitId: "",
-          status: "ENABLE",
-        });
+          orgUnitCode: '',
+          unitName: '',
+          unitType: 'Department',
+          companyId: '',
+          branchId: '',
+          parentUnitId: '',
+          status: 'ENABLE'
+        })
       }
     }
-  }, [isOpen, mode, data, reset]);
+  }, [isOpen, mode, data, reset])
 
   const handleFormSubmit = (formData) => {
-    if (mode === "delete") {
-      onSubmit?.(data?.id);
-      return;
+    if (mode === 'delete') {
+      onSubmit?.(data?.id)
+      return
     }
 
     const payload = {
@@ -79,17 +82,17 @@ export default function DepartmentModel({
       companyId: formData.companyId,
       branchId: formData.branchId || null,
       parentUnitId: formData.parentUnitId || null,
-      status: formData.status,
-    };
-
-    if (isEdit && data?.id) {
-      payload.id = data.id;
+      status: formData.status
     }
 
-    onSubmit?.(payload);
-  };
+    if (isEdit && data?.id) {
+      payload.id = data.id
+    }
 
-  if (mode === "delete") {
+    onSubmit?.(payload)
+  }
+
+  if (mode === 'delete') {
     return (
       <Modal
         isOpen={isOpen}
@@ -128,20 +131,20 @@ export default function DepartmentModel({
           </div>
         </div>
       </Modal>
-    );
+    )
   }
 
   const inputClass =
-    "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed";
-  const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+    'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed'
+  const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
 
-  // Filter out self and circular reference for parent unit list when editing
+  // Filter out self and circular reference for parent unit list when editing,
+  // and only include parent units belonging to the selected company
   const filteredParents = departments.filter((dept) => {
-    if (isEdit && data) {
-      return dept.id !== data.id; // Exclude itself
-    }
-    return true;
-  });
+    const isNotSelf = !isEdit || !data || dept.id !== data.id
+    const isSameCompany = !watchCompanyId || dept.company?.id === watchCompanyId
+    return isNotSelf && isSameCompany
+  })
 
   return (
     <Modal
@@ -153,7 +156,7 @@ export default function DepartmentModel({
       <div className="p-6">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-semibold text-gray-900">
-            {isEdit ? "Chỉnh sửa phòng ban" : "Thêm phòng ban mới"}
+            {isEdit ? 'Chỉnh sửa phòng ban' : 'Thêm phòng ban mới'}
           </h3>
           <button
             onClick={onClose}
@@ -171,8 +174,8 @@ export default function DepartmentModel({
                 type="text"
                 placeholder="VD: PB001"
                 className={inputClass}
-                {...register("orgUnitCode", {
-                  required: "Mã phòng ban là bắt buộc",
+                {...register('orgUnitCode', {
+                  required: 'Mã phòng ban là bắt buộc'
                 })}
               />
               {errors.orgUnitCode && (
@@ -188,8 +191,8 @@ export default function DepartmentModel({
                 type="text"
                 placeholder="VD: Phòng Hành chính"
                 className={inputClass}
-                {...register("unitName", {
-                  required: "Tên phòng ban là bắt buộc",
+                {...register('unitName', {
+                  required: 'Tên phòng ban là bắt buộc'
                 })}
               />
               {errors.unitName && (
@@ -207,13 +210,13 @@ export default function DepartmentModel({
                 type="text"
                 placeholder="VD: Department, Team..."
                 className={inputClass}
-                {...register("unitType")}
+                {...register('unitType')}
               />
             </div>
 
             <div>
               <label className={labelClass}>Trạng thái</label>
-              <select className={inputClass} {...register("status")}>
+              <select className={inputClass} {...register('status')}>
                 <option value="ENABLE">ENABLE (Hoạt động)</option>
                 <option value="DISABLED">DISABLED (Ngưng hoạt động)</option>
               </select>
@@ -224,7 +227,7 @@ export default function DepartmentModel({
             <label className={labelClass}>Công ty *</label>
             <select
               className={inputClass}
-              {...register("companyId", { required: "Vui lòng chọn công ty" })}
+              {...register('companyId', { required: 'Vui lòng chọn công ty' })}
             >
               <option value="">-- Chọn công ty --</option>
               {companies.map((c) => (
@@ -243,7 +246,7 @@ export default function DepartmentModel({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>Chi nhánh</label>
-              <select className={inputClass} {...register("branchId")}>
+              <select className={inputClass} {...register('branchId')}>
                 <option value="">-- Chọn chi nhánh --</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
@@ -255,14 +258,17 @@ export default function DepartmentModel({
 
             <div>
               <label className={labelClass}>Đơn vị cha</label>
-              <select className={inputClass} {...register("parentUnitId")}>
-                <option value="">-- Chọn đơn vị cha --</option>
+              <select className={inputClass} {...register('parentUnitId')}>
+                <option value="">-- Chọn đơn vị cha (Nếu để trống thì nó là đơn vị cha/gốc) --</option>
                 {filteredParents.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.unitName}
                   </option>
                 ))}
               </select>
+              <p className="text-xs text-gray-400 mt-1">
+                Nếu để trống, phòng ban này sẽ là đơn vị gốc (cha) và chưa có đơn vị con.
+              </p>
             </div>
           </div>
 
@@ -279,11 +285,11 @@ export default function DepartmentModel({
               disabled={isSubmitting}
               className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
             >
-              {isEdit ? "Cập nhật" : "Tạo mới"}
+              {isEdit ? 'Cập nhật' : 'Tạo mới'}
             </button>
           </div>
         </form>
       </div>
     </Modal>
-  );
+  )
 }

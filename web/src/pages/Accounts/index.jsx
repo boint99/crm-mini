@@ -6,6 +6,7 @@ import {
   selectAccounts,
   selectAccountsLoading
 } from '@/redux/slice/accountsSlice'
+import { selectCompanies, getCompanies } from '@/redux/slice/companiesSilce'
 import { useSelector } from 'react-redux'
 import LoadingItem from '@/components/ui/LoadingItem'
 import { formatDateTime } from '@/utils/contants'
@@ -45,15 +46,25 @@ function Accounts() {
   const [selectItem, setSelectItem] = useState(null)
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
+  const [selectedCompany, setSelectedCompany] = useState('')
   const [page, setPage] = useState(1)
 
   const accountItems = useSelector(selectAccounts)
   const loading = useSelector(selectAccountsLoading)
+  const companies = useSelector(selectCompanies)
   const dispatchAsync = useAppDispatch()
 
   useEffect(() => {
-    dispatchAsync(getAccounts())
+    dispatchAsync(getCompanies())
   }, [])
+
+  useEffect(() => {
+    const params = {}
+    if (selectedCompany && selectedCompany !== 'ALL') {
+      params.companyId = selectedCompany
+    }
+    dispatchAsync(getAccounts(params))
+  }, [selectedCompany])
 
   const handleAction = (actionType, item = null) => {
     setAction(actionType)
@@ -64,6 +75,7 @@ function Accounts() {
   const handleClear = () => {
     setQuery('')
     setStatusFilter('ALL')
+    setSelectedCompany('')
     setPage(1)
   }
 
@@ -290,6 +302,21 @@ function Accounts() {
               <option value="ALL">Tất cả trạng thái</option>
               <option value="ENABLE">Hoạt động</option>
               <option value="DISABLED">Vô hiệu hóa</option>
+            </select>
+            <select
+              value={selectedCompany}
+              onChange={(e) => {
+                setSelectedCompany(e.target.value)
+                setPage(1)
+              }}
+              className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700 outline-none focus:border-indigo-400 cursor-pointer bg-white"
+            >
+              <option value="ALL">Tất cả công ty</option>
+              {companies.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.companyName}
+                </option>
+              ))}
             </select>
           </div>
           <div className="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2">

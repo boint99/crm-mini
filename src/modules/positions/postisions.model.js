@@ -1,12 +1,34 @@
 import BaseModel from '../../model/index.js'
+import { PRISMA } from '../../configs/db.config.js'
 
 class PositionsModel extends BaseModel {
   constructor() {
     super('pOSITIONS', 'positionName')
   }
 
-  async lists() {
-    return await super.LISTALL()
+  async lists(where = null) {
+    const prismaWhere = {
+      deletedAt: null
+    }
+    if (where) {
+      if (where.companyId !== undefined) {
+        if (where.companyId) {
+          // If companyId is a UUID string, look up the company record to find its internal integer ID
+          const company = await PRISMA.cOMPANY.findUnique({
+            where: { id: where.companyId }
+          })
+          prismaWhere.companyId = company ? company.companyId : null
+        } else {
+          prismaWhere.companyId = null
+        }
+      }
+    }
+    return await PRISMA.pOSITIONS.findMany({
+      where: prismaWhere,
+      include: {
+        company: true
+      }
+    })
   }
 
   async create(data) {

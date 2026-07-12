@@ -10,6 +10,7 @@ export const headerTablePositions = {
   // positionCode: 'ID',
   positionName: 'Tên chức vụ',
   level: 'Cấp bậc',
+  companyName: 'Công ty',
   status: 'Trạng thái',
   createdAt: 'Ngày tạo',
   updatedAt: 'Ngày cập nhật'

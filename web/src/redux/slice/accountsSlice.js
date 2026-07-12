@@ -9,9 +9,9 @@ const getErrorMessage = (error, fallback = 'Có lỗi xảy ra') => {
 // GET LIST
 export const getAccounts = createAsyncThunk(
   'accounts/getAccounts',
-  async (_, { rejectWithValue }) => {
+  async (params = {}, { rejectWithValue }) => {
     try {
-      const data = await accountsAPI.getLists()
+      const data = await accountsAPI.getLists(params)
       const resData = data.data
       return Array.isArray(resData) ? resData : (resData?.list || [])
     } catch (error) {
