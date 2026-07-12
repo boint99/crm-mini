@@ -125,15 +125,20 @@ class EmployeesServices {
       }
     }
 
-    let unitId = null
-
-    if (payload.unitId) {
-      const findUnit = await organizationModel.findByUnique(payload.unitId, 'id')
-      if (!findUnit || findUnit.deletedAt) {
-        throw new ApiError(StatusCodes.NOT_FOUND, 'Unit not found!')
-      }
-      unitId = findUnit.orgUnitId
+    if (!payload.unitId) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Đơn vị/phòng ban là bắt buộc để xác định vị trí thuộc công ty nào!')
     }
+
+    const findUnit = await organizationModel.findByUnique(payload.unitId, 'id')
+    if (!findUnit || findUnit.deletedAt) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Unit not found!')
+    }
+
+    if (!findUnit.companyId) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Đơn vị/phòng ban đã chọn không thuộc bất kỳ công ty nào!')
+    }
+
+    const unitId = findUnit.orgUnitId
 
     let positionId = null
 
@@ -202,15 +207,17 @@ class EmployeesServices {
 
     let unitId = undefined
     if (payload.unitId !== undefined) {
-      if (payload.unitId) {
-        const findUnit = await organizationModel.findByUnique(payload.unitId, 'id')
-        if (!findUnit || findUnit.deletedAt) {
-          throw new ApiError(StatusCodes.NOT_FOUND, 'Unit not found!')
-        }
-        unitId = findUnit.orgUnitId
-      } else {
-        unitId = null
+      if (!payload.unitId) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Đơn vị/phòng ban là bắt buộc để xác định vị trí thuộc công ty nào!')
       }
+      const findUnit = await organizationModel.findByUnique(payload.unitId, 'id')
+      if (!findUnit || findUnit.deletedAt) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'Unit not found!')
+      }
+      if (!findUnit.companyId) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Đơn vị/phòng ban đã chọn không thuộc bất kỳ công ty nào!')
+      }
+      unitId = findUnit.orgUnitId
     }
 
     let positionId = undefined

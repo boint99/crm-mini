@@ -104,7 +104,6 @@ class AuthService {
     await this._ensureEmailNotExists(cleanEmail)
 
     // 3. Resolve employee link if employeeCode or email matches
-    let employeeId = null
     let matchedEmployee = null
 
     if (empolyeeCode?.trim()) {
@@ -114,9 +113,23 @@ class AuthService {
       matchedEmployee = await employeesModel.findByField(cleanEmail, 'email')
     }
 
-    if (matchedEmployee) {
-      employeeId = matchedEmployee.employeeId
+    if (!matchedEmployee) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Tài khoản đăng ký phải liên kết với nhân sự tồn tại trong hệ thống để xác định công ty!')
     }
+
+    if (!matchedEmployee.unitId) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Nhân sự liên kết không thuộc phòng ban nào, do đó không xác định được công ty!')
+    }
+
+    const employeeUnit = await PRISMA.oRG_UNITS.findUnique({
+      where: { orgUnitId: matchedEmployee.unitId }
+    })
+
+    if (!employeeUnit || !employeeUnit.companyId) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Phòng ban của nhân sự liên kết không thuộc công ty nào!')
+    }
+
+    const employeeId = matchedEmployee.employeeId
 
     // 4. Create account - save full email as accountName
     const account = await PRISMA.aCCOUNTS.create({

@@ -52,6 +52,19 @@ class AccountsService {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Employee is not found!')
     }
 
+    // Check if employee belongs to a company transitively via orgUnit
+    if (!employee.unitId) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Nhân viên này không thuộc phòng ban nào, do đó không xác định được công ty!')
+    }
+
+    const employeeUnit = await PRISMA.oRG_UNITS.findUnique({
+      where: { orgUnitId: employee.unitId }
+    })
+
+    if (!employeeUnit || !employeeUnit.companyId) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Phòng ban của nhân viên này không thuộc công ty nào!')
+    }
+
     const existingAccount = await accountsModel.findByField(employee.employeeId, 'employeeId')
     if (existingAccount && existingAccount.id !== currentAccountId) {
       throw new ApiError(StatusCodes.CONFLICT, 'Employee already has an account!')
@@ -72,10 +85,10 @@ class AccountsService {
   async create(data) {
     await this._checkDuplicateName(data.accountName.trim())
 
-    let employeeId = null
-    if (data.employeeCode) {
-      employeeId = await this._getEmployeeIdFromCode(data.employeeCode)
+    if (!data.employeeCode) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Mã nhân viên (employeeCode) là bắt buộc để xác định tài khoản thuộc công ty nào!')
     }
+    const employeeId = await this._getEmployeeIdFromCode(data.employeeCode)
 
     const payload = this._buildPayload({ ...data, employeeId })
 
@@ -118,8 +131,7 @@ class AccountsService {
       payload.employeeId = await this._getEmployeeIdFromCode(payload.employeeCode, id)
       delete payload.employeeCode
     } else if (Object.prototype.hasOwnProperty.call(payload, 'employeeCode')) {
-      payload.employeeId = null
-      delete payload.employeeCode
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Mã nhân viên (employeeCode) là bắt buộc để xác định tài khoản thuộc công ty nào!')
     }
 
     if (typeof payload.login === 'boolean') {
