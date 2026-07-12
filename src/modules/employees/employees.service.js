@@ -298,6 +298,240 @@ class EmployeesServices {
       status: 'DISABLED'
     })
   }
+
+  /**
+   * Preview employee import from CSV data
+   */
+  async importPreview(data) {
+    const { csvText } = data
+    if (!csvText || !csvText.trim()) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'CSV data is required!')
+    }
+
+    const lines = csvText.split(/\r?\n/).filter(line => line.trim())
+    if (lines.length === 0) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'CSV is empty!')
+    }
+
+    const parseCSVLine = (line) => {
+      const result = []
+      let current = ''
+      let inQuotes = false
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i]
+        if (char === '"') {
+          inQuotes = !inQuotes
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim())
+          current = ''
+        } else {
+          current += char
+        }
+      }
+      result.push(current.trim())
+      return result.map(v => v.replace(/^["']|["']$/g, ''))
+    }
+
+    const headers = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase())
+    
+    // Required headers: employeeCode, firstName, lastName, unitCode
+    const required = ['employeecode', 'firstname', 'lastname', 'unitcode']
+    const missing = required.filter(r => !headers.includes(r))
+    if (missing.length > 0) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, `Missing required headers: ${missing.join(', ')}`)
+    }
+
+    const records = []
+    let validCount = 0
+    let invalidCount = 0
+
+    for (let i = 1; i < lines.length; i++) {
+      const values = parseCSVLine(lines[i])
+      if (values.length < headers.length) continue
+
+      const rowData = {}
+      headers.forEach((header, idx) => {
+        rowData[header] = values[idx] || null
+      })
+
+      const errors = []
+
+      // 1. employeeCode validation
+      const employeeCode = rowData['employeecode']
+      if (!employeeCode) {
+        errors.push('Mã nhân viên là bắt buộc!')
+      } else if (employeeCode.length !== 6) {
+        errors.push('Mã nhân viên phải đúng 6 ký tự!')
+      } else {
+        const existed = await PRISMA.eMPLOYEES.findFirst({
+          where: { employeeCode: employeeCode, deletedAt: null }
+        })
+        if (existed) {
+          errors.push(`Mã nhân viên "${employeeCode}" đã tồn tại!`)
+        }
+      }
+
+      // 2. firstName/lastName validation
+      const firstName = rowData['firstname']
+      const lastName = rowData['lastname']
+      if (!firstName || !firstName.trim()) {
+        errors.push('Họ nhân viên là bắt buộc!')
+      }
+      if (!lastName || !lastName.trim()) {
+        errors.push('Tên nhân viên là bắt buộc!')
+      }
+
+      // 3. email validation
+      const email = rowData['email']
+      if (email && email.trim()) {
+        const emailRegex = /^\S+@\S+\.\S+$/
+        if (!emailRegex.test(email.trim())) {
+          errors.push('Email không hợp lệ!')
+        } else {
+          const existedEmail = await PRISMA.eMPLOYEES.findFirst({
+            where: { email: email.trim().toLowerCase(), deletedAt: null }
+          })
+          if (existedEmail) {
+            errors.push(`Email "${email}" đã tồn tại!`)
+          }
+        }
+      }
+
+      // 4. unitCode validation
+      const unitCode = rowData['unitcode']
+      let unitRecord = null
+      if (!unitCode || !unitCode.trim()) {
+        errors.push('Mã đơn vị/phòng ban là bắt buộc!')
+      } else {
+        unitRecord = await PRISMA.oRG_UNITS.findFirst({
+          where: { orgUnitCode: unitCode.trim(), deletedAt: null }
+        })
+        if (!unitRecord) {
+          errors.push(`Mã đơn vị "${unitCode}" không tồn tại!`)
+        } else if (!unitRecord.companyId) {
+          errors.push(`Đơn vị "${unitCode}" không thuộc bất kỳ công ty nào!`)
+        }
+      }
+
+      // 5. positionName validation
+      const positionName = rowData['positionname']
+      let positionRecord = null
+      if (positionName && positionName.trim()) {
+        positionRecord = await PRISMA.pOSITIONS.findFirst({
+          where: { positionName: positionName.trim(), deletedAt: null }
+        })
+        if (!positionRecord) {
+          errors.push(`Chức vụ "${positionName}" không tồn tại!`)
+        }
+      }
+
+      // 6. birthDate validation
+      const birthDateStr = rowData['birthdate']
+      let formattedBirthDate = null
+      if (birthDateStr && birthDateStr.trim()) {
+        const d = new Date(birthDateStr.trim())
+        if (isNaN(d.getTime())) {
+          errors.push('Ngày sinh không đúng định dạng (VD: YYYY-MM-DD)!')
+        } else {
+          formattedBirthDate = birthDateStr.trim()
+        }
+      }
+
+      const isValid = errors.length === 0
+      if (isValid) validCount++
+      else invalidCount++
+
+      records.push({
+        rowNumber: i + 1,
+        employeeCode: employeeCode,
+        firstName: firstName,
+        lastName: lastName,
+        email: email || null,
+        phone: rowData['phone'] || null,
+        birthDate: formattedBirthDate,
+        unitCode: unitCode,
+        positionName: positionName || null,
+        status: rowData['status'] || 'ENABLE',
+        description: rowData['description'] || null,
+        isValid,
+        errors
+      })
+    }
+
+    return {
+      summary: {
+        total: records.length,
+        validCount,
+        invalidCount
+      },
+      records
+    }
+  }
+
+  /**
+   * Confirm and import valid records into the database
+   */
+  async importConfirm(data) {
+    const { records } = data
+    if (!records || !Array.isArray(records) || records.length === 0) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Records are required for confirmation!')
+    }
+
+    const { v7: uuidv7 } = await import('uuid')
+
+    const imported = await PRISMA.$transaction(async (tx) => {
+      let count = 0
+      for (const rec of records) {
+        // Resolve unitId
+        const unit = await tx.oRG_UNITS.findFirst({
+          where: { orgUnitCode: rec.unitCode, deletedAt: null }
+        })
+        if (!unit) continue
+
+        // Resolve positionId if any
+        let positionId = null
+        if (rec.positionName) {
+          const position = await tx.pOSITIONS.findFirst({
+            where: { positionName: rec.positionName, deletedAt: null }
+          })
+          if (position) {
+            positionId = position.positionId
+          }
+        }
+
+        // Resolve birthDate safely
+        let birthDateVal = null
+        if (rec.birthDate) {
+          const d = new Date(rec.birthDate)
+          if (!isNaN(d.getTime())) {
+            birthDateVal = d
+          }
+        }
+
+        // Insert employee
+        await tx.eMPLOYEES.create({
+          data: {
+            id: uuidv7(),
+            employeeCode: rec.employeeCode,
+            firstName: rec.firstName,
+            lastName: rec.lastName,
+            phone: rec.phone || null,
+            email: rec.email ? rec.email.toLowerCase() : null,
+            birthDate: birthDateVal,
+            status: rec.status || 'ENABLE',
+            unitId: unit.orgUnitId,
+            positionId: positionId,
+            description: rec.description || null,
+            isAccount: false
+          }
+        })
+        count++
+      }
+      return count
+    })
+
+    return { success: true, count: imported }
+  }
 }
 
 // Export an instance of the class

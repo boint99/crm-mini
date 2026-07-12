@@ -61,12 +61,14 @@ async function testEmployeesImport() {
   }
   console.log(`✅ Setup complete. Test Department Code is: ${deptCode}`)
 
+  const testEmpCode = 'EMP' + suffix.toString().slice(0, 3)
+
   // 3. Generate CSV content
   const csvText = 
     `employeeCode,firstName,lastName,email,phone,birthDate,unitCode,positionName,status,description\n` +
-    `EMP111,Văn,Hợp Lệ,vaild1@crm.com,0987111222,1995-10-10,${deptCode},,ENABLE,Bản ghi hợp lệ\n` + 
+    `${testEmpCode},Văn,Hợp Lệ,valid_${suffix}@crm.com,0987111222,1995-10-10,${deptCode},,ENABLE,Bản ghi hợp lệ\n` + 
     `ERR2,Lỗi,Thiếu Mã,,0987222333,1996-11-11,${deptCode},,ENABLE,Lỗi mã ngắn quá\n` +
-    `EMP333,Lỗi,Sai Phòng,err3@crm.com,0987333444,1997-12-12,NONEXISTENT,,ENABLE,Mã đơn vị sai`
+    `EMP333,Lỗi,Sai Ngày,err3@crm.com,0987333444,invalid-date,${deptCode},,ENABLE,Ngày sinh sai`
 
   console.log('\nTesting POST /import-preview with sample CSV...')
   const previewRes = await fetch(`${API_URL}/employees/import-preview`, {
@@ -115,7 +117,7 @@ async function testEmployeesImport() {
 
   // 5. Query the employee to verify database insertion
   console.log('\nVerifying imported employee in database...')
-  const listRes = await fetch(`${API_URL}/employees?search=EMP111`, {
+  const listRes = await fetch(`${API_URL}/employees?search=${testEmpCode}`, {
     method: 'GET',
     headers: { 'Authorization': `Bearer ${token}` }
   })
@@ -123,7 +125,7 @@ async function testEmployeesImport() {
     throw new Error(`Failed to list employees: ${listRes.status}`)
   }
   const listData = await listRes.json()
-  const found = listData.data.find(e => e.employeeCode === 'EMP111')
+  const found = listData.data.find(e => e.employeeCode === testEmpCode)
   if (found) {
     console.log('✅ Imported employee found in database:', found.firstName, found.lastName)
   } else {
