@@ -3,7 +3,8 @@ import { NAV_GROUPS } from "@/utils/menuConfig";
 import NavGroupItem from "@/components/navigate/NavGroupItem";
 import NavItem from "@/components/navigate/NavItem";
 import NavGroupCollapsed from "@/components/navigate/NavGroupCollapsed";
-import { Zap, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import logoImg from "@/assets/images/logo.png";
 
 export default function Sidebar({ collapsed, setCollapsed }) {
   const [openId, setOpenId] = useState(null);
@@ -16,14 +17,20 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       ].join(" ")}
     >
       {/* Logo */}
-      <div className={`flex items-center gap-3 px-5 py-5 ${collapsed ? "justify-center" : ""}`}>
-        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-500">
-          <Zap size={20} className="text-white" />
-        </div>
-        {!collapsed && (
-          <span className="text-lg font-bold text-white tracking-tight">
-            Mini CRM
-          </span>
+      <div className={`flex items-center gap-3 px-4 py-4 ${collapsed ? "justify-center" : ""}`}>
+        {collapsed ? (
+          <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0">
+            <img src={logoImg} alt="IT-HELPDESK" className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0">
+              <img src={logoImg} alt="IT-HELPDESK" className="w-full h-full object-cover" />
+            </div>
+            <span className="text-base font-bold text-white tracking-tight leading-tight">
+              IT-HELPDESK
+            </span>
+          </div>
         )}
       </div>
 
