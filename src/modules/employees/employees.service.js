@@ -115,15 +115,6 @@ class EmployeesServices {
     const { isAccount: rawIsAccount, ...payload } = data
     const isAccount = rawIsAccount === true || rawIsAccount === 'true'
     if (!payload.status) throw new ApiError(StatusCodes.BAD_REQUEST, 'Status is required!')
-    await this.checked(payload)
-
-    let emailToAccount = null
-    if (isAccount === true) {
-      emailToAccount = payload.email ? payload.email.toLowerCase() : null
-      if (!emailToAccount) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'A valid EMAIL is required to create an account!')
-      }
-    }
 
     if (!payload.unitId) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Đơn vị/phòng ban là bắt buộc để xác định vị trí thuộc công ty nào!')
@@ -141,13 +132,86 @@ class EmployeesServices {
     const unitId = findUnit.orgUnitId
 
     let positionId = null
-
     if (payload.positionId) {
       const findPosition = await positionsModel.findByUnique(payload.positionId, 'id')
       if (!findPosition || findPosition.deletedAt) {
         throw new ApiError(StatusCodes.NOT_FOUND, 'Position not found!')
       }
       positionId = findPosition.positionId
+    }
+
+    // Kiểm tra employeeCode đã tồn tại chưa (bao gồm cả soft-deleted)
+    if (payload.employeeCode) {
+      const existingByCode = await PRISMA.eMPLOYEES.findFirst({
+        where: { employeeCode: payload.employeeCode }
+      })
+      if (existingByCode) {
+        if (existingByCode.deletedAt) {
+          // Đã soft-delete → khôi phục lại
+          return await PRISMA.$transaction(async (tx) => {
+            const restored = await tx.eMPLOYEES.update({
+              where: { employeeId: existingByCode.employeeId },
+              data: {
+                deletedAt: null,
+                status: payload.status || 'ENABLE',
+                firstName: payload.firstName || existingByCode.firstName,
+                lastName: payload.lastName || existingByCode.lastName,
+                phone: payload.phone ?? existingByCode.phone,
+                email: payload.email ? payload.email.toLowerCase() : existingByCode.email,
+                birthDate: payload.birthDate ? new Date(payload.birthDate) : existingByCode.birthDate,
+                unitId,
+                positionId,
+                description: payload.description ?? existingByCode.description
+              }
+            })
+
+            if (isAccount === true) {
+              const emailToAccount = (payload.email || '').toLowerCase()
+              if (!emailToAccount) {
+                throw new ApiError(StatusCodes.BAD_REQUEST, 'A valid EMAIL is required to create an account!')
+              }
+              const existingAccount = await tx.aCCOUNTS.findFirst({
+                where: { employeeId: restored.employeeId }
+              })
+              if (!existingAccount) {
+                await tx.aCCOUNTS.create({
+                  data: {
+                    accountName: emailToAccount,
+                    isLogin: true,
+                    employeeId: restored.employeeId
+                  }
+                })
+              }
+            }
+
+            return restored
+          })
+        }
+        throw new ApiError(StatusCodes.CONFLICT, 'This employee code is already taken!')
+      }
+    }
+
+    // Kiểm tra email đã tồn tại chưa (bao gồm cả soft-deleted)
+    if (payload.email) {
+      const existingByEmail = await PRISMA.eMPLOYEES.findFirst({
+        where: { email: payload.email.toLowerCase() }
+      })
+      if (existingByEmail && !existingByEmail.deletedAt) {
+        throw new ApiError(StatusCodes.CONFLICT, 'This email is already taken!')
+      }
+    }
+
+    // Kiểm tra status enum
+    if (payload.status !== undefined) {
+      CHECK_ENUM(payload.status, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, `Invalid status. Allowed: ${ALLOWED_STATUS.join(', ')}`)
+    }
+
+    let emailToAccount = null
+    if (isAccount === true) {
+      emailToAccount = payload.email ? payload.email.toLowerCase() : null
+      if (!emailToAccount) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'A valid EMAIL is required to create an account!')
+      }
     }
 
     const prismaPayload = {

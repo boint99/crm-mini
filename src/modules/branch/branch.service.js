@@ -109,16 +109,41 @@ class BranchesServices {
     // 3. Check status enum
     BranchesServices.checkEnumStatus(normalized.status)
 
-    // 4. Check uniqueness
-    await BranchesServices.checkUniqueFields(normalized)
+    // 4. Kiểm tra branchCode đã tồn tại chưa (bao gồm cả soft-deleted)
+    const existingByCode = await branchesModel.findByField(normalized.branchCode, 'branchCode', true)
+    if (existingByCode) {
+      if (existingByCode.deletedAt) {
+        // Đã soft-delete → khôi phục, cập nhật thông tin mới
+        return await branchesModel.updateById(existingByCode.id, {
+          deletedAt: null,
+          status: normalized.status || 'ENABLE',
+          branchName: normalized.branchName,
+          location: normalized.location ?? existingByCode.location
+        })
+      }
+      throw new ApiError(StatusCodes.CONFLICT, 'This branch code is already taken!')
+    }
 
-    // 5. Build final payload
+    // 5. Kiểm tra branchName đã tồn tại chưa (bao gồm cả soft-deleted)
+    const existingByName = await branchesModel.findByName(normalized.branchName, true)
+    if (existingByName) {
+      if (existingByName.deletedAt) {
+        return await branchesModel.updateById(existingByName.id, {
+          deletedAt: null,
+          status: normalized.status || 'ENABLE',
+          branchCode: normalized.branchCode,
+          location: normalized.location ?? existingByName.location
+        })
+      }
+      throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken!')
+    }
+
+    // 6. Build final payload & create
     const payload = {
       id: uuidv7(),
       ...normalized
     }
 
-    // 6. Create
     return await branchesModel.create(payload)
   }
 

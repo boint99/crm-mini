@@ -26,7 +26,7 @@ class PositionsServices {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'The name cannot be left blank!')
     }
 
-    // 2. Check existence within same company (if company is linked)
+    // 2. Resolve company FK
     let companyIdDb = null
     if (companyId) {
       const company = await PRISMA.cOMPANY.findUnique({
@@ -38,19 +38,32 @@ class PositionsServices {
       companyIdDb = company.companyId
     }
 
-    const isExisted = await PRISMA.pOSITIONS.findFirst({
+    // 3. Kiểm tra tên chức vụ trong công ty (bao gồm cả soft-deleted)
+    const existingIncDeleted = await PRISMA.pOSITIONS.findFirst({
       where: {
         positionName: positionName.trim(),
-        companyId: companyIdDb,
-        deletedAt: null
+        companyId: companyIdDb
       }
     })
 
-    if (isExisted) {
+    if (existingIncDeleted) {
+      if (existingIncDeleted.deletedAt) {
+        // Đã soft-delete → khôi phục lại
+        return await PRISMA.pOSITIONS.update({
+          where: { positionId: existingIncDeleted.positionId },
+          data: {
+            deletedAt: null,
+            status: status || 'ENABLE',
+            positionName: positionName.trim(),
+            level: level || existingIncDeleted.level,
+            companyId: companyIdDb
+          }
+        })
+      }
       throw new ApiError(StatusCodes.CONFLICT, 'This name is already taken in this company!')
     }
 
-    // 3. Check status enum
+    // 4. Check status enum
     CHECK_ENUM(status, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status!')
 
     const createData = {

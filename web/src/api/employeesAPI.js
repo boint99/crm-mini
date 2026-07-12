@@ -23,5 +23,17 @@ export const employeesAPI = {
   delete: async (payload) => {
     const res = await axios.delete(`/employees/delete/${payload}`)
     return res.data
+  },
+
+  // IMPORT PREVIEW
+  importPreview: async (payload) => {
+    const res = await axios.post(`/employees/import-preview`, payload)
+    return res.data
+  },
+
+  // IMPORT CONFIRM
+  importConfirm: async (payload) => {
+    const res = await axios.post(`/employees/import-confirm`, payload)
+    return res.data
   }
 }

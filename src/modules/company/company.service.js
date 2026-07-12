@@ -89,10 +89,23 @@ class CompanyService {
     // 3. Check enum
     CompanyService.checkEnumStatus(normalized.status)
 
-    // 4. Check unique
-    await CompanyService.checkUniqueFields(normalized)
+    // 4. Kiểm tra xem tên công ty đã tồn tại chưa (bao gồm cả đã soft-delete)
+    const existingIncDeleted = await companyModel.findByField(normalized.companyName, 'companyName', true)
 
-    // 5. Create
+    if (existingIncDeleted) {
+      if (existingIncDeleted.deletedAt) {
+        // Đã bị soft-delete → khôi phục lại
+        return await companyModel.updateById(existingIncDeleted.companyId, {
+          deletedAt: null,
+          status: normalized.status || 'ENABLE',
+          companyName: normalized.companyName
+        })
+      }
+      // Đang tồn tại → báo lỗi trùng
+      throw new ApiError(StatusCodes.CONFLICT, 'Company name already exists!')
+    }
+
+    // 5. Tạo mới
     const newCompany = {
       id: uuidv7(),
       ...normalized

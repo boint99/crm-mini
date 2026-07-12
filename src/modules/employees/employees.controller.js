@@ -50,6 +50,30 @@ class EmployeesController {
       })
     } catch (error) { next(error) }
   }
+
+  // import preview
+  async importPreview(req, res, next) {
+    try {
+      const result = await employeesServices.importPreview(req.body)
+      new SuccessResponse({
+        res: res,
+        data: result,
+        message: 'OK'
+      })
+    } catch (error) { next(error) }
+  }
+
+  // import confirm
+  async importConfirm(req, res, next) {
+    try {
+      const result = await employeesServices.importConfirm(req.body)
+      new SuccessResponse({
+        res: res,
+        data: result,
+        message: 'OK'
+      })
+    } catch (error) { next(error) }
+  }
 }
 
 export const employeesController = new EmployeesController()

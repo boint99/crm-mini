@@ -166,10 +166,55 @@ class OrganizationService {
     // 3. Check status enum
     OrganizationService.checkEnumStatus(normalized.status)
 
-    // 4. Check unique constraints (unitName, orgUnitCode)
-    await OrganizationService.checkUniqueFields(normalized)
+    // 4. Kiểm tra orgUnitCode đã tồn tại chưa (bao gồm cả soft-deleted)
+    const existingByCode = await organizationModel.findByUnique(normalized.orgUnitCode, 'orgUnitCode', true)
 
-    // 5. Resolve foreign keys
+    if (existingByCode) {
+      if (existingByCode.deletedAt) {
+        // Đã soft-delete → khôi phục
+        // Vẫn resolve FK để cập nhật
+        let companyId = existingByCode.companyId
+        if (data.companyId) {
+          const findCompany = await companyModel.findByUnique(data.companyId, 'id')
+          if (!findCompany || findCompany.deletedAt) {
+            throw new ApiError(StatusCodes.NOT_FOUND, 'Company not found!')
+          }
+          companyId = findCompany.companyId
+        }
+
+        let branchId = existingByCode.branchId
+        if (data.branchId) {
+          const findBranch = await branchesModel.findByUnique(data.branchId, 'id')
+          if (!findBranch || findBranch.deletedAt) {
+            throw new ApiError(StatusCodes.NOT_FOUND, 'Branch not found!')
+          }
+          branchId = findBranch.branchId
+        }
+
+        let parentUnitId = existingByCode.parentUnitId
+        if (data.parentUnitId) {
+          const findParent = await organizationModel.findByUnique(data.parentUnitId, 'id')
+          if (!findParent || findParent.deletedAt) {
+            throw new ApiError(StatusCodes.NOT_FOUND, 'Parent unit not found!')
+          }
+          parentUnitId = findParent.orgUnitId
+        }
+
+        return await organizationModel.updateById(existingByCode.orgUnitId, {
+          deletedAt: null,
+          status: normalized.status || 'ENABLE',
+          unitName: normalized.unitName,
+          unitType: normalized.unitType ?? existingByCode.unitType,
+          companyId,
+          branchId,
+          parentUnitId
+        })
+      }
+      // Đang tồn tại → báo lỗi trùng
+      throw new ApiError(StatusCodes.CONFLICT, 'Unit code already exists!')
+    }
+
+    // 5. Resolve foreign keys (normal create)
     let companyId = null
     if (data.companyId) {
       const findCompany = await companyModel.findByUnique(data.companyId, 'id')
