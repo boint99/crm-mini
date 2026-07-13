@@ -144,11 +144,11 @@ class CompanyService {
   async delete(id) {
     const findCompany = await companyModel.findByUnique(id, 'id')
 
-    const companyKey = await organizationModel.findByUnique(findCompany.companyId, 'companyId')
-
     if (!findCompany || findCompany.deletedAt) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Company not found!')
     }
+
+    const companyKey = await organizationModel.findByField(findCompany.companyId, 'companyId')
 
     if (companyKey) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Company has organization!')

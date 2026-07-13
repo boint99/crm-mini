@@ -27,7 +27,7 @@ import {
   Users
 } from 'lucide-react'
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 50
 
 const STATUS_CONFIG = {
   ENABLE: {
@@ -56,6 +56,38 @@ function Accounts() {
 
   useEffect(() => {
     dispatchAsync(getCompanies())
+  }, [dispatchAsync])
+
+  // Dynamic layout adjustments for MainLayout wrapper to prevent page-level scrollbars
+  useEffect(() => {
+    const contentArea = document.querySelector('.content-area')
+    const layoutMain = document.querySelector('.layout-main')
+    let innerDiv = null
+
+    if (contentArea) {
+      innerDiv = contentArea.querySelector('.flex.min-h-full.flex-col') || contentArea.firstElementChild
+      contentArea.style.overflow = 'hidden'
+    }
+    if (innerDiv) {
+      innerDiv.style.height = '100%'
+      innerDiv.style.minHeight = 'auto'
+    }
+    if (layoutMain) {
+      layoutMain.style.height = 'calc(100% - 41px)'
+    }
+
+    return () => {
+      if (contentArea) {
+        contentArea.style.overflow = ''
+      }
+      if (innerDiv) {
+        innerDiv.style.height = ''
+        innerDiv.style.minHeight = ''
+      }
+      if (layoutMain) {
+        layoutMain.style.height = ''
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -64,7 +96,7 @@ function Accounts() {
       params.companyId = selectedCompany
     }
     dispatchAsync(getAccounts(params))
-  }, [selectedCompany])
+  }, [selectedCompany, dispatchAsync])
 
   const handleAction = (actionType, item = null) => {
     setAction(actionType)
@@ -105,7 +137,6 @@ function Accounts() {
   const activeAccounts = accountItems.filter(
     (a) => a.status === 'ENABLE'
   ).length
-  const loggedInAccounts = accountItems.filter((a) => a.isLogin).length
 
   const maxLogin = Math.max(
     ...accountItems.map((a) => Number(a.login) || 0),
@@ -238,7 +269,7 @@ function Accounts() {
   }
 
   return (
-    <div>
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -336,22 +367,22 @@ function Accounts() {
       </div>
 
       {/* Table */}
-      <div className="mt-4 rounded-lg border border-gray-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
+      <div className="mt-4 rounded-lg border border-gray-200 bg-white shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-auto">
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
                 {Object.entries(headerTableAccounts).map(([key, label]) => (
                   <th
                     key={key}
-                    className={`px-4 py-3 font-semibold text-gray-700 whitespace-nowrap ${
+                    className={`sticky top-0 bg-gray-50 px-4 py-3 font-semibold text-gray-700 whitespace-nowrap z-10 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)] ${
                       key === 'isLogin' ? 'text-center' : 'text-left'
                     }`}
                   >
                     {label}
                   </th>
                 ))}
-                <th className="px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap">
+                <th className="sticky top-0 bg-gray-50 px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap z-10 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]">
                   Thao tác
                 </th>
               </tr>

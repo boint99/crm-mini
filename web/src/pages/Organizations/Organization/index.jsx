@@ -276,7 +276,7 @@ const Organization = () => {
       innerDiv.style.minHeight = 'auto'
     }
     if (layoutMain) {
-      layoutMain.style.height = '100%'
+      layoutMain.style.height = 'calc(100% - 41px)'
     }
 
     return () => {
@@ -602,7 +602,7 @@ const Organization = () => {
                                 {emp.employeeCode}
                               </td>
                               <td className="px-6 py-4 text-sm font-bold text-slate-800">
-                                 {emp.firstName} {emp.lastName}
+                                {emp.firstName} {emp.lastName}
                               </td>
                               <td className="px-6 py-4 text-sm text-slate-600">
                                 {emp.orgUnit?.unitName || '—'}

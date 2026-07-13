@@ -9,7 +9,7 @@ class EmployeesModel extends BaseModel {
     return await super.LISTALL()
   }
 
-  async listQuery(status, info, unitId, companyId, branchId, search) {
+  async listQuery(status, info, unitId, companyId, branchId, search, page, limit) {
     const where = {
       ...(status ? { status } : {})
     }
@@ -121,7 +121,10 @@ class EmployeesModel extends BaseModel {
       })
     }
 
-    return await super.LISTQUERY({
+    const pageNum = page ? Number(page) : undefined
+    const limitNum = limit ? Number(limit) : undefined
+
+    const findOptions = {
       where: Object.keys(where).length ? where : undefined,
       include: {
         position: { select: { id: true, positionId: true, positionName: true, level: true } },
@@ -139,7 +142,25 @@ class EmployeesModel extends BaseModel {
         viettel: { select: { id: true, viettelId: true, viettelEmail: true } }
       },
       orderBy: { [this.defaultOrderBy]: 'asc' }
+    }
+
+    const total = await this.model.count({
+      where: this._buildWhere(Object.keys(where).length ? where : undefined)
     })
+
+    if (pageNum !== undefined && limitNum !== undefined) {
+      const maxPage = Math.max(1, Math.ceil(total / limitNum))
+      const correctedPage = pageNum > maxPage ? maxPage : pageNum
+      findOptions.skip = (correctedPage - 1) * limitNum
+      findOptions.take = limitNum
+    }
+
+    const list = await super.LISTQUERY(findOptions)
+
+    return {
+      total,
+      list
+    }
   }
 
   async create(data) {

@@ -113,7 +113,9 @@ class AccountsModel extends ModelCore {
     if (page !== undefined || pageSize !== undefined) {
       const pageNum = Number(page) || 1
       const sizeNum = Number(pageSize) || 10
-      findOptions.skip = (pageNum - 1) * sizeNum
+      const maxPage = Math.max(1, Math.ceil(total / sizeNum))
+      const correctedPage = pageNum > maxPage ? maxPage : pageNum
+      findOptions.skip = (correctedPage - 1) * sizeNum
       findOptions.take = sizeNum
     }
 

@@ -408,7 +408,7 @@ export default function EmployeeModel({
                 {...register('employeeCode', {
                   required: 'Bắt buộc',
                   validate: (v) =>
-                    v.trim().length >= 6 || 'Mã nhân viên phải đúng 6 ký tự'
+                    v.trim().length >= 6 || 'Mã nhân viên phải tối thiểu 6 ký tự'
                 })}
               />
               {errors.employeeCode && (

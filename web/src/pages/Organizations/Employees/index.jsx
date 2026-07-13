@@ -8,15 +8,17 @@ import {
   deleteEmployee,
   getEmployees,
   selectEmployees,
+  selectEmployeesTotal,
   selectLoading,
   updateEmployee
 } from '@/redux/slice/employeesSlice'
 import { selectCompanies, getCompanies } from '@/redux/slice/companiesSilce'
 import { formatDateTime } from '@/utils/contants'
 import { CUSTOM_MESSAGES } from '@/utils/contants'
-import { Pencil, Plus, Search, Trash2, Users, ChevronDown, Building2, Upload } from 'lucide-react'
+import { Pencil, Plus, Search, Trash2, Users, ChevronDown, Upload, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useSearchParams } from 'react-router-dom'
 import { headerTableEmployees } from '@/utils/headerTable'
 
 const employeeColumns = Object.entries(headerTableEmployees)
@@ -93,21 +95,69 @@ function Employees() {
   const [mode, setMode] = useState('create')
   const [selectedEmployee, setSelectedEmployee] = useState(null)
   const [selectedCompany, setSelectedCompany] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const page = Number(searchParams.get('page')) || 1
+
+  const setPage = useCallback((newPage) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('page', String(newPage))
+      return next
+    })
+  }, [setSearchParams])
+
+  const PAGE_SIZE = 50
 
   const dispatchAsync = useAppDispatch()
   const dispatch = useDispatch()
   const employees = useSelector(selectEmployees)
+  const totalEmployees = useSelector(selectEmployeesTotal)
   const loading = useSelector(selectLoading)
   const companies = useSelector(selectCompanies)
   const debounceRef = useRef(null)
 
   useEffect(() => {
     dispatchAsync(getCompanies())
+  }, [dispatchAsync])
+
+  // Dynamic layout adjustments for MainLayout wrapper to prevent page-level scrollbars
+  useEffect(() => {
+    const contentArea = document.querySelector('.content-area')
+    const layoutMain = document.querySelector('.layout-main')
+    let innerDiv = null
+
+    if (contentArea) {
+      innerDiv = contentArea.querySelector('.flex.min-h-full.flex-col') || contentArea.firstElementChild
+      contentArea.style.overflow = 'hidden'
+    }
+    if (innerDiv) {
+      innerDiv.style.height = '100%'
+      innerDiv.style.minHeight = 'auto'
+    }
+    if (layoutMain) {
+      layoutMain.style.height = 'calc(100% - 41px)'
+    }
+
+    return () => {
+      if (contentArea) {
+        contentArea.style.overflow = ''
+      }
+      if (innerDiv) {
+        innerDiv.style.height = ''
+        innerDiv.style.minHeight = ''
+      }
+      if (layoutMain) {
+        layoutMain.style.height = ''
+      }
+    }
   }, [])
 
   // Fetch employees khi đổi company hoặc search keyword thay đổi
   const fetchEmployees = useCallback(() => {
-    const params = {}
+    const params = {
+      page,
+      limit: PAGE_SIZE
+    }
     if (selectedCompany) {
       params.companyId = selectedCompany
     }
@@ -115,19 +165,20 @@ function Employees() {
       params.search = searchKeyword.trim()
     }
     dispatchAsync(getEmployees(params))
-  }, [selectedCompany, searchKeyword, dispatchAsync])
+  }, [selectedCompany, searchKeyword, page, dispatchAsync])
 
   useEffect(() => {
     fetchEmployees()
   }, [fetchEmployees])
 
-  // Debounce search input → cập nhật searchKeyword sau 400ms
+  // Debounce search input → cập nhật searchKeyword sau 400ms và reset page
   const handleSearchChange = (e) => {
     const value = e.target.value
     setQuery(value)
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
       setSearchKeyword(value)
+      setPage(1)
     }, 400)
   }
 
@@ -136,10 +187,12 @@ function Employees() {
     return employees
   }, [employees])
 
-  const totalEmployees = employees.length
   const activeEmployees = employees.filter(
     (employee) => employee.status === 'ENABLE'
   ).length
+
+  const totalPages = Math.max(1, Math.ceil(totalEmployees / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
 
   const openCreateModal = () => {
     setMode('create')
@@ -383,7 +436,7 @@ function Employees() {
   }
 
   return (
-    <div>
+    <div className="h-full flex flex-col overflow-hidden">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-gray-900">
@@ -434,7 +487,7 @@ function Employees() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-lg border border-gray-200 bg-white shadow-sm">
+      <div className="mt-6 rounded-lg border border-gray-200 bg-white shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
         <div className="border-b border-gray-200 px-4 py-3 sm:px-6 flex items-center justify-between gap-4">
           <div>
             <p className="text-lg font-medium text-gray-900">
@@ -447,7 +500,10 @@ function Employees() {
               <FilterSelect
                 options={companies.map((c) => ({ value: c.id, label: c.companyName }))}
                 value={selectedCompany}
-                onChange={setSelectedCompany}
+                onChange={(val) => {
+                  setSelectedCompany(val)
+                  setPage(1)
+                }}
                 placeholder="Tất cả"
               />
             </div>
@@ -463,19 +519,19 @@ function Employees() {
             </div>
           </div>
         </div>
-        <div className="overflow-x-auto">
+        <div className="flex-1 min-h-0 overflow-auto">
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
                 {employeeColumns.map(([key, label]) => (
                   <th
                     key={key}
-                    className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap"
+                    className="sticky top-0 bg-gray-50 px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap z-10 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]"
                   >
                     {label}
                   </th>
                 ))}
-                <th className="px-4 py-2 text-right font-semibold text-gray-700 whitespace-nowrap">
+                <th className="sticky top-0 bg-gray-50 px-4 py-2 text-right font-semibold text-gray-700 whitespace-nowrap z-10 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]">
                   Thao tác
                 </th>
               </tr>
@@ -483,6 +539,62 @@ function Employees() {
             {renderTableBody()}
           </table>
         </div>
+
+        {/* Pagination */}
+        {!loading && filteredRows.length > 0 && (
+          <div className="border-t border-gray-100 px-4 py-3 flex items-center justify-between">
+            <p className="text-xs text-gray-500">
+              Hiển thị {(currentPage - 1) * PAGE_SIZE + 1}–
+              {Math.min(currentPage * PAGE_SIZE, totalEmployees)} /{' '}
+              {totalEmployees} nhân viên
+            </p>
+            <div className="flex items-center gap-1">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setPage(1)}
+                className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                <ChevronsLeft className="h-4 w-4" />
+              </button>
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setPage((p) => p - 1)}
+                className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((p) => Math.abs(p - currentPage) <= 2)
+                .map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`min-w-[32px] rounded-md px-2.5 py-1 text-xs font-semibold transition cursor-pointer ${
+                      p === currentPage
+                        ? 'bg-primary text-white'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setPage((p) => p + 1)}
+                className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setPage(totalPages)}
+                className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                <ChevronsRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <AddEmployeeModal

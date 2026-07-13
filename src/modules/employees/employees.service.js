@@ -65,13 +65,16 @@ class EmployeesServices {
    */
   async lists(data) {
     const {
-      status, info, search,
+      status, info, search, keyword,
+      page, limit, limitVal, pageSize,
       unitId, unitid,
       companyId, companyid,
       branchId, branchid
     } = data
 
     const resolvedCompanyId = companyId || companyid
+    const resolvedSearch = search || keyword
+    const resolvedLimit = limit || limitVal || pageSize
 
     const queryStatus = status ? status.toUpperCase() : undefined
 
@@ -96,6 +99,7 @@ class EmployeesServices {
       if (!existing) {
         throw new ApiError(StatusCodes.NOT_FOUND, 'Employee is not found!')
       }
+      return existing
     }
 
     return await employeesModel.listQuery(
@@ -104,7 +108,9 @@ class EmployeesServices {
       unitId || unitid,
       resolvedCompanyId,
       branchId || branchid,
-      search
+      resolvedSearch,
+      page,
+      resolvedLimit
     )
   }
 
@@ -424,8 +430,8 @@ class EmployeesServices {
       const employeeCode = rowData['employeecode']
       if (!employeeCode) {
         errors.push('Mã nhân viên là bắt buộc!')
-      } else if (employeeCode.length !== 6) {
-        errors.push('Mã nhân viên phải đúng 6 ký tự!')
+      } else if (employeeCode.length < 6) {
+        errors.push('Mã nhân viên phải tối thiểu 6 ký tự!')
       } else {
         const existed = await PRISMA.eMPLOYEES.findFirst({
           where: { employeeCode: employeeCode, deletedAt: null }
