@@ -1,18 +1,31 @@
 import { Outlet } from 'react-router-dom'
-
+import styles from './AuthLayout.module.css'
+import bgLogin from '@/assets/images/banner_image.png'
 
 function Auth() {
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-            <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
-                <div className="mb-6 text-center">
-                    <h1 className="text-xl font-semibold text-gray-900">CRM Mini</h1>
-                    <p className="mt-1 text-sm text-gray-500">Đăng nhập / Đăng ký để tiếp tục</p>
-                </div>
-                <Outlet />
-            </div>
+  return (
+    <div className={styles.loginContainer}>
+      {/* Ảnh nền toàn màn hình */}
+      <div className={styles.backgroundImage}>
+        <img src={bgLogin} alt="Background" />
+        <div className={styles.overlay}></div>
+      </div>
+
+      {/* Form wrapper bên phải */}
+      <div className={styles.loginFormWrapper}>
+        <div className={styles.loginCard}>
+          <div className={styles.header}>
+            <h1 className={styles.logo}>IT-HELPDESK</h1>
+            <p className={styles.subtitle}>Đăng nhập / Đăng ký để tiếp tục</p>
+          </div>
+          <Outlet />
+          <div className={styles.footerText}>
+                        PROFESSIONAL SUPPORT &amp; TECHNICAL SOLUTIONS
+          </div>
         </div>
-    )
+      </div>
+    </div>
+  )
 }
 
 export default Auth

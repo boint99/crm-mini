@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { authAPI } from '@/api/auth'
 import { toast } from 'react-toastify'
 import { ArrowLeft } from 'lucide-react'
+import styles from '../AuthLayout.module.css'
 
 export default function ForgotPasswordPage() {
   const [step, setStep] = useState(1)
@@ -56,6 +57,7 @@ export default function ForgotPasswordPage() {
       await authAPI.generateOtp(email.trim(), 'RESET_PASSWORD')
       setStep(2)
       setTimer(30)
+      toast.success('Mã OTP đã được gửi thành công!')
     } catch (err) {
       const errMsg = err?.response?.data?.message || err?.message || 'Không thể gửi OTP!'
       toast.error(errMsg)
@@ -92,34 +94,32 @@ export default function ForgotPasswordPage() {
     }
   }
 
-  const inputClass =
-    'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:bg-gray-50'
-  const labelClass = 'block text-sm font-medium text-gray-700'
-
   return (
-    <div className="space-y-4">
+    <>
+      <h2 className={styles.title}>Đặt lại mật khẩu</h2>
+
       {step === 1 ? (
-        <form onSubmit={handleSendOtp} className="space-y-4">
+        <form onSubmit={handleSendOtp} className={styles.form}>
           <div className="flex items-center gap-2 mb-2">
             <button
               type="button"
               onClick={() => navigate('/auth/login')}
-              className="p-1 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-900 cursor-pointer"
+              className="p-1.5 rounded-md hover:bg-black/5 text-gray-500 hover:text-gray-900 cursor-pointer transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
             <span className="text-sm font-semibold text-gray-700">Quay lại đăng nhập</span>
           </div>
 
-          <div className="space-y-1">
-            <label className={labelClass} htmlFor="email">
+          <div className={styles.formGroup}>
+            <label className={styles.label} htmlFor="email">
               Địa chỉ Email tài khoản
             </label>
             <input
               id="email"
               type="email"
               disabled={isLoading}
-              className={inputClass}
+              className={styles.input}
               placeholder="you@example.com"
               {...register('email', {
                 required: 'Vui lòng nhập Email!',
@@ -130,25 +130,37 @@ export default function ForgotPasswordPage() {
               })}
             />
             {errors.email && (
-              <p className="text-xs text-rose-500 mt-1">{errors.email.message}</p>
+              <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                {errors.email.message}
+              </p>
             )}
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:bg-gray-400 cursor-pointer transition-colors"
+            className={styles.loginButton}
           >
-            {isLoading ? 'Đang gửi yêu cầu...' : 'Gửi mã OTP'}
+            {isLoading ? (
+              <span className={styles.loadingSpinner}>
+                <svg className={styles.spinner} viewBox="0 0 24 24">
+                  <circle className={styles.spinnerCircle} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className={styles.spinnerPath} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Đang gửi yêu cầu...
+              </span>
+            ) : (
+              'Gửi mã OTP'
+            )}
           </button>
         </form>
       ) : (
-        <form onSubmit={handleSubmit(handleResetPassword)} className="space-y-4">
+        <form onSubmit={handleSubmit(handleResetPassword)} className={styles.form}>
           <div className="flex items-center gap-2 mb-2">
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="p-1 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-900 cursor-pointer"
+              className="p-1.5 rounded-md hover:bg-black/5 text-gray-500 hover:text-gray-900 cursor-pointer transition-colors"
               disabled={isLoading}
             >
               <ArrowLeft className="h-4 w-4" />
@@ -156,13 +168,13 @@ export default function ForgotPasswordPage() {
             <span className="text-sm font-semibold text-gray-700">Thay đổi Email</span>
           </div>
 
-          <div className="rounded-lg bg-blue-50 border border-blue-100 p-4 text-xs text-blue-800 space-y-2">
+          <div className="rounded-lg bg-indigo-50 border border-indigo-100 p-4 text-xs text-indigo-800 space-y-1">
             <p className="font-semibold">Mã OTP đã được gửi về Email.</p>
             <p>Hệ thống đã gửi mã OTP về Email: <strong>{emailValue}</strong></p>
           </div>
 
-          <div className="space-y-1">
-            <label className={labelClass} htmlFor="otp">
+          <div className={styles.formGroup}>
+            <label className={styles.label} htmlFor="otp">
               Mã xác thực OTP (6 chữ số)
             </label>
             <input
@@ -170,7 +182,7 @@ export default function ForgotPasswordPage() {
               type="text"
               maxLength={6}
               disabled={isLoading}
-              className={`${inputClass} text-center tracking-widest font-bold text-lg`}
+              className={`${styles.input} text-center tracking-widest font-bold text-lg`}
               placeholder="000000"
               {...register('otp', {
                 required: 'Vui lòng nhập mã OTP!',
@@ -184,19 +196,21 @@ export default function ForgotPasswordPage() {
               })}
             />
             {errors.otp && (
-              <p className="text-xs text-rose-500 mt-1">{errors.otp.message}</p>
+              <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                {errors.otp.message}
+              </p>
             )}
           </div>
 
-          <div className="space-y-1">
-            <label className={labelClass} htmlFor="password">
+          <div className={styles.formGroup}>
+            <label className={styles.label} htmlFor="password">
               Mật khẩu mới
             </label>
             <input
               id="password"
               type="password"
               disabled={isLoading}
-              className={inputClass}
+              className={styles.input}
               placeholder="••••••••"
               {...register('password', {
                 required: 'Vui lòng điền mật khẩu mới!',
@@ -207,19 +221,21 @@ export default function ForgotPasswordPage() {
               })}
             />
             {errors.password && (
-              <p className="text-xs text-rose-500 mt-1">{errors.password.message}</p>
+              <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                {errors.password.message}
+              </p>
             )}
           </div>
 
-          <div className="space-y-1">
-            <label className={labelClass} htmlFor="confirmPassword">
+          <div className={styles.formGroup}>
+            <label className={styles.label} htmlFor="confirmPassword">
               Nhập lại mật khẩu mới
             </label>
             <input
               id="confirmPassword"
               type="password"
               disabled={isLoading}
-              className={inputClass}
+              className={styles.input}
               placeholder="••••••••"
               {...register('confirmPassword', {
                 required: 'Vui lòng nhập lại mật khẩu mới!',
@@ -228,26 +244,38 @@ export default function ForgotPasswordPage() {
               })}
             />
             {errors.confirmPassword && (
-              <p className="text-xs text-rose-500 mt-1">{errors.confirmPassword.message}</p>
+              <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                {errors.confirmPassword.message}
+              </p>
             )}
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:bg-gray-400 cursor-pointer transition-colors"
+            className={styles.loginButton}
           >
-            {isLoading ? 'Đang xử lý...' : 'Đặt lại mật khẩu'}
+            {isLoading ? (
+              <span className={styles.loadingSpinner}>
+                <svg className={styles.spinner} viewBox="0 0 24 24">
+                  <circle className={styles.spinnerCircle} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className={styles.spinnerPath} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Đang xử lý...
+              </span>
+            ) : (
+              'Đặt lại mật khẩu'
+            )}
           </button>
 
-          <div className="text-center text-xs text-gray-500">
+          <div className={styles.registerLink}>
             {timer > 0 ? (
               <span>Gửi lại mã OTP sau {timer} giây</span>
             ) : (
               <button
                 type="button"
                 onClick={handleSendOtp}
-                className="text-gray-900 font-semibold hover:underline cursor-pointer"
+                className={styles.registerButton}
               >
                 Gửi lại mã OTP
               </button>
@@ -255,6 +283,6 @@ export default function ForgotPasswordPage() {
           </div>
         </form>
       )}
-    </div>
+    </>
   )
 }
