@@ -554,14 +554,6 @@ export default function EmployeeModel({
               />
             </div>
 
-            <div>
-              <label className={labelClass}>Trạng thái (STATUS) *</label>
-              <select className={inputClass} {...register('status')}>
-                <option value="ENABLE">ENABLE (Hoạt động)</option>
-                <option value="DISABLED">DISABLED</option>
-              </select>
-            </div>
-
             <div className="sm:col-span-2">
               <label className={labelClass}>Mô tả</label>
               <textarea
@@ -570,6 +562,14 @@ export default function EmployeeModel({
                 className={inputClass}
                 {...register('description')}
               />
+            </div>
+
+            <div>
+              <label className={labelClass}>Trạng thái (STATUS) *</label>
+              <select className={inputClass} {...register('status')}>
+                <option value="ENABLE">ENABLE (Hoạt động)</option>
+                <option value="DISABLED">DISABLED</option>
+              </select>
             </div>
           </div>
 

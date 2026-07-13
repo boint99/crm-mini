@@ -40,6 +40,14 @@ function ActionModal({ open, onClose, action, item }) {
   const employeeItems = useSelector((state) => state.employees?.items || [])
   const [rolesList, setRolesList] = useState([])
 
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors, isValid }
+  } = useForm({ defaultValues, mode: 'onTouched' })
+
   useEffect(() => {
     if (open && employeeItems.length === 0) {
       dispatchAsync(getEmployees())
@@ -53,20 +61,18 @@ function ActionModal({ open, onClose, action, item }) {
         .then((res) => {
           if (res && res.data) {
             setRolesList(res.data)
+            if (action === 'edit' && item?.roles?.[0]?.roleId) {
+              setValue('roleId', String(item.roles[0].roleId))
+            }
           }
         })
         .catch((err) => {
           console.error('Lỗi khi tải danh sách vai trò:', err)
         })
     }
-  }, [open])
+  }, [open, action, item, setValue])
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isValid }
-  } = useForm({ defaultValues, mode: 'onTouched' })
+
 
   useEffect(() => {
     if (!open) return
@@ -77,7 +83,7 @@ function ActionModal({ open, onClose, action, item }) {
         accountName: item?.accountName ?? '',
         password: '',
         status: item?.status ?? 'ENABLE',
-        employeeCode: item?.employeeCode ? String(item.employeeCode) : '',
+        employeeCode: item?.employee?.employeeCode ? String(item.employee.employeeCode) : '',
         description: item?.description ?? '',
         isLogin: item?.isLogin !== undefined ? String(item.isLogin) : 'false',
         roleId: item?.roles?.[0]?.roleId ? String(item.roles[0].roleId) : ''
@@ -227,9 +233,9 @@ function ActionModal({ open, onClose, action, item }) {
                     placeholder="VD: admin, nhanvien01"
                     className={inputClass}
                     {...register('accountName', {
-                      required: 'Vui lòng nhập tên đăng nhập',
+                      required: isCreate ? 'Vui lòng nhập tên đăng nhập' : false,
                       validate: (v) =>
-                        !!v.trim() || 'Vui lòng nhập tên đăng nhập'
+                        !isCreate || !!v.trim() || 'Vui lòng nhập tên đăng nhập'
                     })}
                   />
                   {errors.accountName && (
@@ -259,8 +265,8 @@ function ActionModal({ open, onClose, action, item }) {
                   placeholder="••••••••"
                   className={inputClass}
                   {...register('password', {
-                    required: 'Vui lòng nhập mật khẩu',
-                    minLength: { value: 8, message: 'Tối thiểu 8 ký tự' }
+                    required: (isCreate || isResetPwd) ? 'Vui lòng nhập mật khẩu' : false,
+                    minLength: (isCreate || isResetPwd) ? { value: 8, message: 'Tối thiểu 8 ký tự' } : undefined
                   })}
                 />
                 {errors.password && (
@@ -268,20 +274,6 @@ function ActionModal({ open, onClose, action, item }) {
                     {errors.password.message}
                   </p>
                 )}
-              </div>
-            )}
-
-            {/* STATUS —hidden when reset-password*/}
-            {!isResetPwd && (
-              <div>
-                <label className={labelClass}>Trạng thái *</label>
-                <select
-                  className={selectClass}
-                  {...register('status', { required: true })}
-                >
-                  <option value="ENABLE">ENABLE (Hoạt động)</option>
-                  <option value="DISABLED">DISABLED (Ngừng hoạt động)</option>
-                </select>
               </div>
             )}
 
@@ -297,22 +289,27 @@ function ActionModal({ open, onClose, action, item }) {
                 />
               </div>
             )}
-            <div>
-              <label className={labelClass}>Đăng nhập</label>
-              <select
-                className={selectClass}
-                {...register('isLogin', { required: true })}
-              >
-                <option value="true">True</option>
-                <option value="false">False</option>
-              </select>
-            </div>
+            {/* LOGIN — hidden when reset-password */}
+            {!isResetPwd && (
+              <div>
+                <label className={labelClass}>Đăng nhập</label>
+                <select
+                  className={selectClass}
+                  disabled={item?.accountId === 1}
+                  {...register('isLogin', { required: true })}
+                >
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </select>
+              </div>
+            )}
             {/* ROLE — hidden when reset-password */}
             {!isResetPwd && (
               <div>
                 <label className={labelClass}>Vai trò</label>
                 <select
                   className={selectClass}
+                  disabled={item?.accountId === 1}
                   {...register('roleId')}
                 >
                   <option value="">Chọn vai trò...</option>
@@ -325,6 +322,21 @@ function ActionModal({ open, onClose, action, item }) {
               </div>
             )}
           </div>
+
+          {/* STATUS —hidden when reset-password, moved below description */}
+          {!isResetPwd && (
+            <div>
+              <label className={labelClass}>Trạng thái *</label>
+              <select
+                className={selectClass}
+                disabled={item?.accountId === 1}
+                {...register('status', { required: true })}
+              >
+                <option value="ENABLE">ENABLE (Hoạt động)</option>
+                <option value="DISABLED">DISABLED (Ngừng hoạt động)</option>
+              </select>
+            </div>
+          )}
 
           {/* DESCRIPTION — ẩn khi reset-password */}
           {!isResetPwd && (

@@ -85,10 +85,10 @@ class AccountsService {
   async create(data) {
     await this._checkDuplicateName(data.accountName.trim())
 
-    if (!data.employeeCode) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Mã nhân viên (employeeCode) là bắt buộc để xác định tài khoản thuộc công ty nào!')
+    let employeeId = null
+    if (data.employeeCode) {
+      employeeId = await this._getEmployeeIdFromCode(data.employeeCode)
     }
-    const employeeId = await this._getEmployeeIdFromCode(data.employeeCode)
 
     const payload = this._buildPayload({ ...data, employeeId })
 
@@ -131,7 +131,8 @@ class AccountsService {
       payload.employeeId = await this._getEmployeeIdFromCode(payload.employeeCode, id)
       delete payload.employeeCode
     } else if (Object.prototype.hasOwnProperty.call(payload, 'employeeCode')) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Mã nhân viên (employeeCode) là bắt buộc để xác định tài khoản thuộc công ty nào!')
+      payload.employeeId = null
+      delete payload.employeeCode
     }
 
     if (typeof payload.login === 'boolean') {
@@ -163,6 +164,10 @@ class AccountsService {
       const currentRoleId = activeRoles.length > 0 ? activeRoles[0].roleId : null
 
       if (currentRoleId !== targetRoleId) {
+        if (account.accountId === 1) {
+          throw new ApiError(StatusCodes.FORBIDDEN, 'Không thể thay đổi hoặc gỡ bỏ vai trò của tài khoản Superadmin!')
+        }
+
         // Soft-delete current active roles
         if (activeRoles.length > 0) {
           await PRISMA.aCCOUNT_ROLES.updateMany({

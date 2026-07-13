@@ -26,6 +26,7 @@ class AccountsModel extends ModelCore {
       deletedAt: record.deletedAt,
       employee: record.employee ? {
         employeeId: record.employee.employeeId,
+        employeeCode: record.employee.employeeCode,
         firstName: record.employee.firstName,
         lastName: record.employee.lastName,
         company: record.employee.orgUnit?.company ? {
@@ -90,6 +91,7 @@ class AccountsModel extends ModelCore {
         employee: {
           select: {
             employeeId: true,
+            employeeCode: true,
             firstName: true,
             lastName: true,
             orgUnit: {
@@ -169,6 +171,7 @@ class AccountsModel extends ModelCore {
         employee: {
           select: {
             employeeId: true,
+            employeeCode: true,
             firstName: true,
             lastName: true,
             orgUnit: {
