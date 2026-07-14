@@ -32,13 +32,21 @@ export default function ImportPositionModal({ isOpen, onClose, onImportSuccess }
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0])
+      const selectedFile = e.target.files[0]
+      const ext = selectedFile.name.split('.').pop().toLowerCase()
+      if (ext !== 'csv' && ext !== 'xlsx') {
+        toast.error('Định dạng tệp không hợp lệ! Vui lòng chỉ chọn tệp .csv hoặc .xlsx.')
+        e.target.value = ''
+        setFile(null)
+        return
+      }
+      setFile(selectedFile)
     }
   }
 
   const handleUpload = async () => {
     if (!file) {
-      toast.error('Vui lòng chọn một tệp CSV!')
+      toast.error('Vui lòng chọn một tệp!')
       return
     }
 
@@ -48,7 +56,7 @@ export default function ImportPositionModal({ isOpen, onClose, onImportSuccess }
       reader.onload = async (event) => {
         const csvText = event.target.result
         try {
-          const res = await positionsAPI.importPreview({ csvText })
+          const res = await positionsAPI.importPreview({ csvText, fileName: file.name })
           if (res.data) {
             setImportResult(res.data)
             setStage(2)
@@ -171,19 +179,19 @@ export default function ImportPositionModal({ isOpen, onClose, onImportSuccess }
               <Upload className={`h-10 w-10 ${importResult && importResult.summary.invalidCount > 0 ? 'text-rose-400' : 'text-gray-400'}`} />
               <div className="text-center">
                 <p className={`text-sm font-medium ${importResult && importResult.summary.invalidCount > 0 ? 'text-rose-900' : 'text-gray-700'}`}>
-                  {file ? file.name : 'Kéo thả hoặc nhấp để chọn tệp CSV'}
+                  {file ? file.name : 'Kéo thả hoặc nhấp để chọn tệp CSV/Excel'}
                 </p>
                 <p className={`text-xs mt-1 ${importResult && importResult.summary.invalidCount > 0 ? 'text-rose-500' : 'text-gray-400'}`}>
                   {importResult && importResult.summary.invalidCount > 0
                     ? `Tệp tin chứa ${importResult.summary.invalidCount} lỗi cần chỉnh sửa!`
-                    : file ? `${(file.size / 1024).toFixed(1)} KB` : 'Chấp nhận file .csv lên tới 5MB'}
+                    : file ? `${(file.size / 1024).toFixed(1)} KB` : 'Chấp nhận file .csv và .xlsx lên tới 5MB'}
                 </p>
               </div>
               <input
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileChange}
-                accept=".csv"
+                accept=".csv, .xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 className="hidden"
               />
             </div>

@@ -1,6 +1,7 @@
 import express from 'express'
 import { employeesController } from './employees.controller.js'
 import EmployeesValidate from './employees.validate.js'
+import { validateImportFile } from '../../middleware/fileValidation.middleware.js'
 
 const Router = express.Router()
 
@@ -11,7 +12,7 @@ Router.get('/' , employeesController.lists)
 
 // POST /api/employees
 Router.post('/create', EmployeesValidate.create, employeesController.create)
-Router.post('/import-preview', employeesController.importPreview)
+Router.post('/import-preview', validateImportFile, employeesController.importPreview)
 Router.post('/import-confirm', employeesController.importConfirm)
 
 // Update PUT /api/employees
