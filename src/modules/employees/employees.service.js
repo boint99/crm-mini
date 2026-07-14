@@ -7,6 +7,39 @@ import { organizationModel } from '../organization/organization.model.js'
 import { PRISMA } from '../../configs/db.config.js'
 
 class EmployeesServices {
+
+  // Trích xuất phần local (trước @) từ email
+  _extractLocalPart(email) {
+    if (!email || !email.includes('@')) return null
+    return email.trim().toLowerCase().split('@')[0]
+  }
+
+  // Kiểm tra trùng lặp phần local của email
+  async _checkDuplicateLocalEmail(email, excludeId = null) {
+    const localPart = this._extractLocalPart(email)
+    if (!localPart) return
+
+    // Tìm tất cả nhân viên có email chứa phần local giống nhau (chưa bị xóa)
+    const allEmployees = await PRISMA.eMPLOYEES.findMany({
+      where: {
+        email: { startsWith: `${localPart}@`, mode: 'insensitive' },
+        deletedAt: null
+      },
+      select: { id: true, email: true, employeeCode: true, firstName: true, lastName: true }
+    })
+
+    // Loại bỏ chính nhân viên đang cập nhật (nếu có)
+    const duplicates = allEmployees.filter(emp => emp.id !== excludeId)
+
+    if (duplicates.length > 0) {
+      const existingEmail = duplicates[0].email
+      throw new ApiError(
+        StatusCodes.CONFLICT,
+        `Email đã tồn tại! Phần tên email "${localPart}" trùng với tài khoản "${existingEmail}" (${duplicates[0].firstName} ${duplicates[0].lastName}). Vui lòng sử dụng tên email khác.`
+      )
+    }
+  }
+
   /**
    * Shared validation: employeeCode, email, status, FK (positionId, viettelId, unitId)
    * @param {object} data - payload to validate
@@ -21,12 +54,9 @@ class EmployeesServices {
       }
     }
 
-    // 2. email
+    // 2. email — kiểm tra trùng phần local (trước @)
     if (data.email) {
-      const existedEmail = await employeesModel.findByField(data.email, 'email')
-      if (existedEmail && existedEmail.id !== excludeId) {
-        throw new ApiError(StatusCodes.CONFLICT, 'This email is already taken!')
-      }
+      await this._checkDuplicateLocalEmail(data.email, excludeId)
     }
 
     // 3. status
@@ -197,14 +227,9 @@ class EmployeesServices {
       }
     }
 
-    // Kiểm tra email đã tồn tại chưa (bao gồm cả soft-deleted)
+    // Kiểm tra email đã tồn tại chưa — theo phần local (trước @)
     if (payload.email) {
-      const existingByEmail = await PRISMA.eMPLOYEES.findFirst({
-        where: { email: payload.email.toLowerCase() }
-      })
-      if (existingByEmail && !existingByEmail.deletedAt) {
-        throw new ApiError(StatusCodes.CONFLICT, 'This email is already taken!')
-      }
+      await this._checkDuplicateLocalEmail(payload.email)
     }
 
     // Kiểm tra status enum
@@ -458,11 +483,16 @@ class EmployeesServices {
         if (!emailRegex.test(email.trim())) {
           errors.push('Email không hợp lệ!')
         } else {
-          const existedEmail = await PRISMA.eMPLOYEES.findFirst({
-            where: { email: email.trim().toLowerCase(), deletedAt: null }
+          const localPart = email.trim().toLowerCase().split('@')[0]
+          const existedByLocal = await PRISMA.eMPLOYEES.findMany({
+            where: {
+              email: { startsWith: `${localPart}@`, mode: 'insensitive' },
+              deletedAt: null
+            },
+            select: { email: true }
           })
-          if (existedEmail) {
-            errors.push(`Email "${email}" đã tồn tại!`)
+          if (existedByLocal.length > 0) {
+            errors.push(`Phần tên email "${localPart}" đã trùng với tài khoản "${existedByLocal[0].email}"!`)
           }
         }
       }
