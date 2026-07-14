@@ -3,7 +3,7 @@ import globals from "globals";
 
 export default [
   {
-    ignores: ["node_modules/**", "dist/**", "build/**", ".eslintcache", "web/**"],
+    ignores: ["node_modules/**", "dist/**", "build/**", ".eslintcache", "web/**", "src/scratch/**"],
   },
 
   js.configs.recommended,
