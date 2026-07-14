@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { authAPI } from '@/api/auth'
 import { toast } from 'react-toastify'
+import { useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { logout } from '@/redux/slice/authSlice'
 import {
   User,
   KeyRound,
@@ -9,7 +12,9 @@ import {
   Building2,
   Briefcase,
   Save,
-  Loader2
+  Loader2,
+  Eye,
+  EyeOff
 } from 'lucide-react'
 
 
@@ -32,6 +37,8 @@ function getInitials(name) {
 }
 
 export default function Profile() {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('profile')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -49,6 +56,11 @@ export default function Profile() {
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  
+  // Visibility States
+  const [showOldPassword, setShowOldPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const fullName = (lastName || firstName) ? `${lastName} ${firstName}`.trim() : 'Super Admin'
   const initials = getInitials(fullName)
@@ -113,10 +125,12 @@ export default function Profile() {
     setSaving(true)
     try {
       await authAPI.changePassword({ oldPassword, newPassword })
-      toast.success('Đổi mật khẩu thành công!')
+      toast.success('Đổi mật khẩu thành công! Vui lòng đăng nhập lại.')
       setOldPassword('')
       setNewPassword('')
       setConfirmPassword('')
+      dispatch(logout())
+      navigate('/auth/login')
     } catch (error) {
       toast.error(error.response?.data?.message || 'Mật khẩu cũ không chính xác!')
     } finally {
@@ -311,34 +325,61 @@ export default function Profile() {
                 <div className="space-y-4 max-w-md">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Mật khẩu hiện tại</label>
-                    <input
-                      type="password"
-                      required
-                      value={oldPassword}
-                      onChange={(e) => setOldPassword(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 bg-white"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showOldPassword ? 'text' : 'password'}
+                        required
+                        value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                        className="w-full rounded-lg border border-slate-200 pl-3 pr-10 py-2 text-sm outline-none focus:border-indigo-500 bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowOldPassword(!showOldPassword)}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+                      >
+                        {showOldPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Mật khẩu mới</label>
-                    <input
-                      type="password"
-                      required
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 bg-white"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showNewPassword ? 'text' : 'password'}
+                        required
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full rounded-lg border border-slate-200 pl-3 pr-10 py-2 text-sm outline-none focus:border-indigo-500 bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+                      >
+                        {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
                     <span className="text-[11px] text-slate-400 block mt-1">Độ dài tối thiểu 8 ký tự.</span>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Xác nhận mật khẩu mới</label>
-                    <input
-                      type="password"
-                      required
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 bg-white"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full rounded-lg border border-slate-200 pl-3 pr-10 py-2 text-sm outline-none focus:border-indigo-500 bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+                      >
+                        {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
                   </div>
                 </div>
 
