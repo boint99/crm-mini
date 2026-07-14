@@ -64,7 +64,7 @@ export default function Profile() {
 
   const fullName = (lastName || firstName) ? `${lastName} ${firstName}`.trim() : 'Super Admin'
   const initials = getInitials(fullName)
-  const avatarColor = '#12312b'
+  const avatarColor = stringToColor(fullName)
 
   useEffect(() => {
     fetchProfile()
@@ -197,20 +197,12 @@ export default function Profile() {
 
                 {/* Avatar Display */}
                 <div className="flex items-center gap-4">
-                  {avatar ? (
-                    <img
-                      src={avatar}
-                      alt="User avatar"
-                      className="h-20 w-20 rounded-full object-cover ring-4 ring-indigo-50 shadow-sm"
-                    />
-                  ) : (
-                    <div
-                      className="h-20 w-20 rounded-full flex items-center justify-center text-white text-2xl font-bold ring-4 ring-indigo-50 shadow-sm"
-                      style={{ backgroundColor: avatarColor }}
-                    >
-                      {initials}
-                    </div>
-                  )}
+                  <div
+                    className="h-20 w-20 rounded-full flex items-center justify-center text-white text-2xl font-bold ring-4 ring-indigo-50 shadow-sm"
+                    style={{ backgroundColor: avatarColor }}
+                  >
+                    {initials}
+                  </div>
                   <div>
                     <h3 className="text-sm font-semibold text-slate-800">Ảnh đại diện</h3>
                     <p className="text-xs text-slate-400 mt-0.5">Ảnh hồ sơ hiện tại của tài khoản.</p>

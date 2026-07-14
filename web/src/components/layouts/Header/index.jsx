@@ -83,7 +83,7 @@ function Header({ collapsed: _collapsed, setCollapsed: _setCollapsed }) {
   const firstName = profile?.employee?.firstName || ''
   const fullName = (lastName || firstName) ? `${lastName} ${firstName}`.trim() : 'Super Admin'
   const initials = getInitials(fullName)
-  const avatarColor = '#12312b'
+  const avatarColor = stringToColor(fullName)
 
   return (
     <header className="header header-white sticky top-0 z-20 h-[70px]">
@@ -125,24 +125,16 @@ function Header({ collapsed: _collapsed, setCollapsed: _setCollapsed }) {
               aria-expanded={open}
               onClick={() => setOpen((v) => !v)}
             >
-              {profile?.avatar ? (
-                <img
-                  src={profile.avatar}
-                  alt="User avatar"
-                  className="h-10 w-10 rounded-full object-cover shadow-sm border border-white"
-                />
-              ) : (
-                <div
-                  className="grid h-10 w-10 place-items-center rounded-full text-sm font-bold text-white shadow-sm border border-white"
-                  style={{ backgroundColor: avatarColor }}
-                >
-                  {initials}
-                </div>
-              )}
+              <div
+                className="grid h-10 w-10 place-items-center rounded-full text-sm font-bold text-white shadow-sm border border-white"
+                style={{ backgroundColor: avatarColor }}
+              >
+                {initials}
+              </div>
               <div className="hidden sm:block leading-tight">
                 <div 
                   className="text-sm font-semibold"
-                  style={!profile?.avatar ? { color: '#12312b' } : { color: '#1e293b' }}
+                  style={{ color: '#1e293b' }}
                 >
                   {user?.accountName || 'Admin'}
                 </div>
@@ -161,7 +153,7 @@ function Header({ collapsed: _collapsed, setCollapsed: _setCollapsed }) {
                 <div className="border-b border-slate-50 px-4 py-3">
                   <div 
                     className="text-sm font-semibold truncate"
-                    style={!profile?.avatar ? { color: '#12312b' } : { color: '#1e293b' }}
+                    style={{ color: '#1e293b' }}
                   >
                     {user?.accountName || 'Admin'}
                   </div>
