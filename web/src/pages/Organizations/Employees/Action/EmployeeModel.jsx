@@ -144,12 +144,6 @@ export default function EmployeeModel({
 
   const isEdit = mode === 'edit'
 
-  useEffect(() => {
-    register('companyId')
-    register('unitId')
-    register('positionId')
-  }, [register])
-
   const companyId = watch('companyId')
   const unitId = watch('unitId')
   const positionId = watch('positionId')
@@ -397,6 +391,9 @@ export default function EmployeeModel({
         </div>
 
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+          <input type="hidden" {...register('companyId')} />
+          <input type="hidden" {...register('unitId')} />
+          <input type="hidden" {...register('positionId')} />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className={labelClass}>Mã nhân viên*</label>

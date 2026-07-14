@@ -117,6 +117,7 @@ function Employees() {
   const [mode, setMode] = useState('create')
   const [selectedEmployee, setSelectedEmployee] = useState(null)
   const [selectedCompany, setSelectedCompany] = useState('')
+  const [selectedDepartment, setSelectedDepartment] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('')
   const [searchParams, setSearchParams] = useSearchParams()
   const page = Number(searchParams.get('page')) || 1
@@ -196,11 +197,14 @@ function Employees() {
     if (selectedCompany) {
       params.companyId = selectedCompany
     }
+    if (selectedDepartment) {
+      params.unitId = selectedDepartment
+    }
     if (searchKeyword.trim()) {
       params.search = searchKeyword.trim()
     }
     dispatchAsync(getEmployees(params))
-  }, [selectedCompany, searchKeyword, page, dispatchAsync])
+  }, [selectedCompany, selectedDepartment, searchKeyword, page, dispatchAsync])
 
   useEffect(() => {
     fetchEmployees()
@@ -403,9 +407,9 @@ function Employees() {
         <div className="flex items-center gap-3">
           <FilterDropdown
             label="Tất cả phòng ban"
-            options={departments.map((d) => ({ value: d.orgUnitId || d.id, label: d.unitName }))}
-            value=""
-            onChange={() => {}}
+            options={departments.map((d) => ({ value: d.id, label: d.unitName }))}
+            value={selectedDepartment}
+            onChange={(val) => { setSelectedDepartment(val); setPage(1) }}
           />
           <FilterDropdown
             label="Trạng thái: Tất cả"

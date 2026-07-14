@@ -2,9 +2,8 @@ import axios from 'axios'
 
 
 export const positionsAPI = {
-  // GET list
-  getLists: async () => {
-    const res = await axios.get(`/positions`)
+  getLists: async (params) => {
+    const res = await axios.get(`/positions`, { params })
     return res.data
   },
 
