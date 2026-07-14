@@ -28,7 +28,7 @@ function getInitials(name) {
 function Header({ collapsed: _collapsed, setCollapsed: _setCollapsed }) {
   const [open, setOpen] = useState(false)
   const menuRef = useRef(null)
-  
+
   const user = useSelector(selectUser)
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -81,9 +81,12 @@ function Header({ collapsed: _collapsed, setCollapsed: _setCollapsed }) {
 
   const lastName = profile?.employee?.lastName || ''
   const firstName = profile?.employee?.firstName || ''
-  const fullName = (lastName || firstName) ? `${lastName} ${firstName}`.trim() : 'Super Admin'
-  const initials = getInitials(fullName)
-  const avatarColor = stringToColor(fullName)
+  const displayName = (firstName || lastName) ? `${firstName} ${lastName}`.trim() : (user?.accountName || 'Admin')
+  const roleNames = profile?.accountRoles
+    ? profile.accountRoles.map((ar) => ar.role?.roleName || ar.role?.roleCode).filter(Boolean).join(', ')
+    : 'Quản trị hệ thống'
+  const initials = getInitials(displayName)
+  const avatarColor = stringToColor(displayName)
 
   return (
     <header className="header header-white sticky top-0 z-20 h-[70px]">
@@ -101,10 +104,9 @@ function Header({ collapsed: _collapsed, setCollapsed: _setCollapsed }) {
           <Breadcrumb />
         </div>
 
-        {/* Right side */}
+        {/* Right tools (Notifications, Profile) */}
         <div className="flex items-center gap-4">
-
-          {/* Notification */}
+          {/* Notifications */}
           <button
             type="button"
             className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer text-slate-600"
@@ -132,14 +134,14 @@ function Header({ collapsed: _collapsed, setCollapsed: _setCollapsed }) {
                 {initials}
               </div>
               <div className="hidden sm:block leading-tight">
-                <div 
+                <div
                   className="text-sm font-semibold"
                   style={{ color: '#1e293b' }}
                 >
-                  {user?.accountName || 'Admin'}
+                  {displayName}
                 </div>
-                <div className="text-[11px] text-slate-400 font-medium">
-                  {fullName}
+                <div className="text-[11px] text-slate-400 font-medium truncate max-w-[120px]" title={roleNames}>
+                  {roleNames}
                 </div>
               </div>
               <ChevronDown size={14} className="text-slate-400 ml-1" />
@@ -151,13 +153,15 @@ function Header({ collapsed: _collapsed, setCollapsed: _setCollapsed }) {
                 className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-slate-100 bg-white p-1 shadow-lg z-30"
               >
                 <div className="border-b border-slate-50 px-4 py-3">
-                  <div 
+                  <div
                     className="text-sm font-semibold truncate"
                     style={{ color: '#1e293b' }}
                   >
-                    {user?.accountName || 'Admin'}
+                    {displayName}
                   </div>
-                  <div className="text-xs text-slate-400 mt-0.5">Quản trị hệ thống</div>
+                  <div className="text-xs text-slate-400 mt-0.5 truncate" title={roleNames}>
+                    {roleNames}
+                  </div>
                 </div>
                 <button
                   type="button"
