@@ -129,7 +129,7 @@ function Employees() {
     })
   }, [setSearchParams])
 
-  const PAGE_SIZE = 6
+  const PAGE_SIZE = 30
 
   const dispatchAsync = useAppDispatch()
   const dispatch = useDispatch()
