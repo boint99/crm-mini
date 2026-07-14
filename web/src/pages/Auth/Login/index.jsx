@@ -7,6 +7,7 @@ import { selectIsAuthLoading, selectAuthError, selectIsAuthenticated } from '@/r
 import { toast } from 'react-toastify'
 import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react'
 import styles from '../AuthLayout.module.css'
+import logoImg from '@/assets/images/logo.png'
 
 function LoginPage() {
   const [email, setEmail] = useState('')
@@ -48,10 +49,10 @@ function LoginPage() {
 
   return (
     <div className={styles.loginCardInner}>
-      {/* Icon User dạng tròn ở đầu card */}
+      {/* Logo ở đầu card đăng nhập */}
       <div className={styles.avatarHeader}>
-        <div className={styles.avatarCircle}>
-          <User size={28} className="text-blue-600" strokeWidth={1.8} />
+        <div className={styles.avatarCircle} style={{ background: '#ffffff', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+          <img src={logoImg} alt="Logo" className="w-full h-full object-contain p-1" />
         </div>
       </div>
 

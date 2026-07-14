@@ -9,6 +9,9 @@ import {
   deleteAccount,
   resetAccountPassword
 } from '@/redux/slice/accountsSlice'
+import { selectUser } from '@/redux/selectors/authSelectors'
+import { logout } from '@/redux/slice/authSlice'
+import { navigateTo } from '@/utils/navigateHelper'
 import { getEmployees } from '@/redux/slice/employeesSlice'
 import { useAppDispatch } from '@/hook/useAppDispatch'
 import { customStyles } from '@/utils/contants'
@@ -36,6 +39,7 @@ const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
 function ActionModal({ open, onClose, action, item }) {
   const dispatch = useDispatch()
   const dispatchAsync = useAppDispatch()
+  const currentUser = useSelector(selectUser)
 
   const employeeItems = useSelector((state) => state.employees?.items || [])
   const [rolesList, setRolesList] = useState([])
@@ -133,7 +137,8 @@ function ActionModal({ open, onClose, action, item }) {
         messages: { success: 'Cập nhật tài khoản thành công!' }
       })
     } else if (action === 'reset-password') {
-      await dispatchWithToast({
+      const isOwnReset = Number(item?.accountId) === Number(currentUser?.id)
+      const res = await dispatchWithToast({
         dispatch,
         action: resetAccountPassword,
         payload: {
@@ -142,6 +147,10 @@ function ActionModal({ open, onClose, action, item }) {
         },
         messages: { success: 'Đặt lại mật khẩu thành công!' }
       })
+      if (isOwnReset && res?.meta?.requestStatus === 'fulfilled') {
+        dispatch(logout())
+        navigateTo('/auth/login')
+      }
     }
 
     onClose?.()
