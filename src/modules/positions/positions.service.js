@@ -155,6 +155,16 @@ class PositionsServices {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Position is not found!')
     }
 
+    const employeeCount = await PRISMA.eMPLOYEES.count({
+      where: { positionId: existing.positionId, deletedAt: null }
+    })
+    if (employeeCount > 0) {
+      throw new ApiError(
+        StatusCodes.CONFLICT,
+        `Không thể xóa chức vụ này vì hiện có ${employeeCount} nhân sự đang liên kết với chức vụ này!`
+      )
+    }
+
     return await positionsModel.updateById(id, {
       deletedAt: new Date(),
       status: 'DISABLED'
