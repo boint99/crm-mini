@@ -23,5 +23,17 @@ export const positionsAPI = {
   delete: async (payload) => {
     const res = await axios.delete(`/positions/delete/${payload}`)
     return res.data
+  },
+
+  // IMPORT PREVIEW
+  importPreview: async (payload) => {
+    const res = await axios.post(`/positions/import-preview`, payload)
+    return res.data
+  },
+
+  // IMPORT CONFIRM
+  importConfirm: async (payload) => {
+    const res = await axios.post(`/positions/import-confirm`, payload)
+    return res.data
   }
 }

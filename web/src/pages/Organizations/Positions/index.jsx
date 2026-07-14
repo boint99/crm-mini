@@ -12,10 +12,11 @@ import {
 } from '@/redux/slice/positionsSlice'
 import { selectCompanies, getCompanies } from '@/redux/slice/companiesSilce'
 import { formatDateTime, CUSTOM_MESSAGES } from '@/utils/contants'
-import { Award, BriefcaseBusiness, Pencil, Plus, Trash2, UserCheck, UserX } from 'lucide-react'
+import { Award, BriefcaseBusiness, Pencil, Plus, Trash2, UserCheck, UserX, Upload } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import PositionModel from '@/pages/Organizations/Positions/Action/PositionModel'
+import ImportPositionModal from '@/pages/Organizations/Positions/Action/ImportPositionModal'
 
 function Positions() {
   const [openModal, setOpenModal] = useState(false)
@@ -23,6 +24,7 @@ function Positions() {
   const [selectedPosition, setSelectedPosition] = useState(null)
   const [action, setAction] = useState('create')
   const [selectedCompany, setSelectedCompany] = useState('')
+  const [openImportModal, setOpenImportModal] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState('')
 
   const dispatchAsync = useAppDispatch()
@@ -90,14 +92,24 @@ function Positions() {
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Danh sách chức vụ</h1>
           <p className="mt-1 text-sm text-slate-500">Quản lý các chức vụ và cấp bậc trong doanh nghiệp.</p>
         </div>
-        <button
-          type="button"
-          onClick={() => handleAction('create')}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition cursor-pointer"
-        >
-          <Plus className="h-4 w-4" />
-          Thêm
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setOpenImportModal(true)}
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition cursor-pointer"
+          >
+            <Upload className="h-4 w-4 text-slate-500" />
+            Nhập Excel/CSV
+          </button>
+          <button
+            type="button"
+            onClick={() => handleAction('create')}
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition cursor-pointer"
+          >
+            <Plus className="h-4 w-4" />
+            Thêm
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -174,6 +186,7 @@ function Positions() {
       </div>
 
       <PositionModel open={openModal} onClose={handleCloseModal} onSubmit={handleSubmit} mode={action} initialValues={selectedPosition} />
+      <ImportPositionModal isOpen={openImportModal} onClose={() => setOpenImportModal(false)} onImportSuccess={() => dispatchAsync(getPositions())} />
     </div>
   )
 }

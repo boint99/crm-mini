@@ -38,7 +38,6 @@ class PositionsController {
     } catch (error) { next(error) }
   }
 
-  // delete by id
   async delete(req, res, next) {
     try {
       const { id } = req.params
@@ -46,6 +45,30 @@ class PositionsController {
       await positionsServices.delete(id)
       new SuccessResponse({
         res: res,
+        message: 'OK'
+      })
+    } catch (error) { next(error) }
+  }
+
+  // import preview
+  async importPreview(req, res, next) {
+    try {
+      const result = await positionsServices.importPreview(req.body)
+      new SuccessResponse({
+        res: res,
+        data: result,
+        message: 'OK'
+      })
+    } catch (error) { next(error) }
+  }
+
+  // import confirm
+  async importConfirm(req, res, next) {
+    try {
+      const result = await positionsServices.importConfirm(req.body)
+      new SuccessResponse({
+        res: res,
+        data: result,
         message: 'OK'
       })
     } catch (error) { next(error) }

@@ -170,6 +170,169 @@ class PositionsServices {
       status: 'DISABLED'
     })
   }
+
+  /**
+   * Preview position import from CSV data
+   */
+  async importPreview(data) {
+    const { csvText } = data
+    if (!csvText || !csvText.trim()) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'CSV data is required!')
+    }
+
+    const lines = csvText.split(/\r?\n/).filter(line => line.trim())
+    if (lines.length === 0) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'CSV is empty!')
+    }
+
+    const parseCSVLine = (line) => {
+      const result = []
+      let current = ''
+      let inQuotes = false
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i]
+        if (char === '"') {
+          inQuotes = !inQuotes
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim())
+          current = ''
+        } else {
+          current += char
+        }
+      }
+      result.push(current.trim())
+      return result.map(v => v.replace(/^["']|["']$/g, ''))
+    }
+
+    const headers = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase())
+    
+    // Required headers: positionName
+    const required = ['positionname']
+    const missing = required.filter(r => !headers.includes(r))
+    if (missing.length > 0) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, `Missing required headers: ${missing.join(', ')}`)
+    }
+
+    const records = []
+    let validCount = 0
+    let invalidCount = 0
+
+    for (let i = 1; i < lines.length; i++) {
+      const values = parseCSVLine(lines[i])
+      if (values.length < headers.length) continue
+
+      const rowData = {}
+      headers.forEach((header, idx) => {
+        rowData[header] = values[idx] || null
+      })
+
+      const errors = []
+
+      // 1. positionName validation
+      const positionName = rowData['positionname']
+      if (!positionName || !positionName.trim()) {
+        errors.push('Tên chức vụ là bắt buộc!')
+      }
+
+      // 2. companyName validation (optional)
+      const companyName = rowData['companyname']
+      let companyRecord = null
+      if (companyName && companyName.trim()) {
+        companyRecord = await PRISMA.cOMPANY.findFirst({
+          where: { companyName: companyName.trim(), deletedAt: null }
+        })
+        if (!companyRecord) {
+          errors.push(`Công ty "${companyName}" không tồn tại hoặc đã ngừng hoạt động!`)
+        }
+      }
+
+      // 3. duplicate positionName in company validation
+      if (positionName && positionName.trim()) {
+        const companyIdDb = companyRecord ? companyRecord.companyId : null
+        const existed = await PRISMA.pOSITIONS.findFirst({
+          where: {
+            positionName: positionName.trim(),
+            companyId: companyIdDb,
+            deletedAt: null
+          }
+        })
+        if (existed) {
+          errors.push(`Chức vụ "${positionName}" đã tồn tại trong công ty ${companyName ? `"${companyName}"` : 'mặc định'}!`)
+        }
+      }
+
+      // 4. status validation
+      const status = rowData['status'] || 'ENABLE'
+      if (status && status.trim() !== 'ENABLE' && status.trim() !== 'DISABLED') {
+        errors.push('Trạng thái không hợp lệ! Chỉ chấp nhận ENABLE hoặc DISABLED.')
+      }
+
+      const isValid = errors.length === 0
+      if (isValid) validCount++
+      else invalidCount++
+
+      records.push({
+        rowNumber: i + 1,
+        positionName: positionName ? positionName.trim() : null,
+        level: rowData['level'] || '',
+        companyName: companyName ? companyName.trim() : null,
+        status: status.trim(),
+        isValid,
+        errors
+      })
+    }
+
+    return {
+      summary: {
+        total: records.length,
+        validCount,
+        invalidCount
+      },
+      records
+    }
+  }
+
+  /**
+   * Confirm and import valid records into the database
+   */
+  async importConfirm(data) {
+    const { records } = data
+    if (!records || !Array.isArray(records) || records.length === 0) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Records are required for confirmation!')
+    }
+
+    const { v7: uuidv7 } = await import('uuid')
+
+    const imported = await PRISMA.$transaction(async (tx) => {
+      let count = 0
+      for (const rec of records) {
+        let companyIdDb = null
+        if (rec.companyName) {
+          const company = await tx.cOMPANY.findFirst({
+            where: { companyName: rec.companyName, deletedAt: null }
+          })
+          if (company) {
+            companyIdDb = company.companyId
+          }
+        }
+
+        // Insert position
+        await tx.pOSITIONS.create({
+          data: {
+            id: uuidv7(),
+            positionName: rec.positionName,
+            level: rec.level || '',
+            companyId: companyIdDb,
+            status: rec.status || 'ENABLE'
+          }
+        })
+        count++
+      }
+      return count
+    })
+
+    return { success: true, count: imported }
+  }
 }
 
 // Export an instance of the class

@@ -9,6 +9,8 @@ Router.get('/', positionsController.lists)
 
 // POST /api/positions
 Router.post('/create', PositionsValidate.create, positionsController.create)
+Router.post('/import-preview', positionsController.importPreview)
+Router.post('/import-confirm', positionsController.importConfirm)
 
 // Update PUT /api/positions
 // Note: add POSITION_NAME
