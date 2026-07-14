@@ -1,4 +1,5 @@
 import LoadingItem from "@/components/ui/LoadingItem";
+import { StatCard, StatusBadge, SearchBar, ActionButton, EmptyState, TableHeader, TableHeaderRight, Pagination } from "@/components/ui/PageLayout";
 import { dispatchWithToast } from "@/components/ui/dispatchWithToast";
 import { useAppDispatch } from "@/hook/useAppDispatch";
 import CompanyModel from "@/pages/Organizations/Companies/Action/CompanyModel";
@@ -12,12 +13,10 @@ import {
   updateCompany,
 } from "@/redux/slice/companiesSilce";
 import { formatDateTime, CUSTOM_MESSAGES } from "@/utils/contants";
-import { Building2, CloudUpload, Pencil, Plus, Search, Trash2, Upload } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Building2, Pencil, Plus, Trash2, Upload, UserCheck, UserX } from "lucide-react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { headerTableCompany } from "@/utils/headerTable";
-
-const companyColumns = Object.entries(headerTableCompany);
+import { useSearchParams } from "react-router-dom";
 
 function Companies() {
   const [openModal, setOpenModal] = useState(false);
@@ -25,6 +24,19 @@ function Companies() {
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState("create");
   const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Number(searchParams.get("page")) || 1;
+
+  const setPage = useCallback((newPage) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("page", String(newPage));
+      return next;
+    });
+  }, [setSearchParams]);
+
+  const PAGE_SIZE = 10;
 
   const dispatchAsync = useAppDispatch();
   const dispatch = useDispatch();
@@ -35,10 +47,24 @@ function Companies() {
     dispatchAsync(getCompanies());
   }, []);
 
+  useEffect(() => {
+    if (!searchParams.get("page")) {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("page", "1");
+        return next;
+      }, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   const filteredRows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return companiesItems;
-    return companiesItems.filter((company) => {
+    let list = companiesItems;
+    if (selectedStatus) {
+      list = list.filter((c) => c.status === selectedStatus);
+    }
+    if (!q) return list;
+    return list.filter((company) => {
       const hay = [
         company.companyId?.toString(),
         company.companyName,
@@ -49,12 +75,20 @@ function Companies() {
         .toLowerCase();
       return hay.includes(q);
     });
-  }, [companiesItems, query]);
+  }, [companiesItems, query, selectedStatus]);
 
   const totalCompanies = companiesItems.length;
   const activeCompanies = companiesItems.filter(
     (company) => company.status === "ENABLE",
   ).length;
+  const inactiveCompanies = totalCompanies - activeCompanies;
+
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedItems = filteredRows.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
 
   const openCreateModal = () => {
     setMode("create");
@@ -112,172 +146,134 @@ function Companies() {
     handleCloseModal();
   };
 
-  const renderTableBody = () => {
-    if (loading) {
-      return (
-        <tbody>
-          <tr>
-            <td colSpan={companyColumns.length + 1}>
-              <LoadingItem />
-            </td>
-          </tr>
-        </tbody>
-      );
-    }
-
-    if (!filteredRows.length) {
-      return (
-        <tbody>
-          <tr>
-            <td colSpan={companyColumns.length + 1}>
-              <div className="flex h-40 flex-col items-center justify-center gap-2 text-gray-400">
-                <Building2 className="h-10 w-10 text-gray-300" />
-                <p className="text-sm font-medium">Không có dữ liệu công ty</p>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      );
-    }
-
-    return (
-      <tbody className="divide-y divide-gray-200 bg-white">
-        {filteredRows.map((company, rowIndex) => (
-          <tr key={company.id} className="hover:bg-gray-50 transition duration-150">
-            {companyColumns.map(([key]) => {
-              const cellClass = "px-4 py-3 text-gray-700 whitespace-nowrap";
-
-              if (key === "index") {
-                return (
-                  <td
-                    key={key}
-                    className="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap"
-                  >
-                    {rowIndex + 1}
-                  </td>
-                );
-              }
-
-              if (key === "status") {
-                return (
-                  <td key={key} className="px-4 py-3 whitespace-nowrap">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
-                        company.status === "ENABLE"
-                          ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
-                          : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
-                      }`}
-                    >
-                      {company.status === "ENABLE"
-                        ? "Hoạt động"
-                        : "Ngưng hoạt động"}
-                    </span>
-                  </td>
-                );
-              }
-
-              if (key === "createdAt" || key === "updatedAt") {
-                return (
-                  <td key={key} className={cellClass}>
-                    {company[key] ? formatDateTime(company[key]) : "-"}
-                  </td>
-                );
-              }
-
-              return (
-                <td key={key} className={cellClass}>
-                  {company[key] || "-"}
-                </td>
-              );
-            })}
-            <td className="px-4 py-3 text-right whitespace-nowrap">
-              <div className="flex items-center justify-end gap-1">
-                <button
-                  type="button"
-                  onClick={() => openEditModal(company)}
-                  className="rounded-md p-2 text-indigo-600 transition hover:bg-indigo-50 cursor-pointer"
-                  title="Chỉnh sửa"
-                  aria-label={`Chỉnh sửa ${company.companyName}`}
-                >
-                  <Pencil className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openDeleteModal(company)}
-                  className="rounded-md p-2 text-rose-600 transition hover:bg-rose-50 cursor-pointer"
-                  title="Xóa"
-                  aria-label={`Xóa ${company.companyName}`}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    );
-  };
-
   return (
-    <div>
-      <div className="flex items-center justify-between">
+    <div className="h-full flex flex-col overflow-hidden">
+      {/* Title */}
+      <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            DANH SÁCH CÔNG TY
-          </h2>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Danh sách công ty</h1>
+          <p className="mt-1 text-sm text-slate-500">Quản lý và cập nhật danh sách các công ty trong hệ thống.</p>
         </div>
-        <button
-          type="button"
-          onClick={openCreateModal}
-          className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 cursor-pointer"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Thêm
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setOpenUploadModal(true)}
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition cursor-pointer"
+          >
+            <Upload className="h-4 w-4 text-slate-500" />
+            Nhập Excel
+          </button>
+          <button
+            type="button"
+            onClick={openCreateModal}
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition cursor-pointer"
+          >
+            <Plus className="h-4 w-4" />
+            Thêm công ty
+          </button>
+        </div>
       </div>
-      <div className="mt-6 rounded-lg border border-gray-200 bg-white shadow-sm">
-        <div className="border-b border-gray-200 px-4 py-3 sm:px-6 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-          <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2">
-            <Search className="h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Tìm theo tên..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-64 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
-            />
-          </div>
-          <div
-              onClick={() => setOpenUploadModal(true)}
-              className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2 cursor-pointer hover:bg-gray-50 transition"
-              title="Import Excel"
-            >
-              <Upload className="h-6 w-6 text-gray-400 hover:text-primary transition" />
-            </div>
-          </div>
-        <div>Tổng: {filteredRows.length}</div>
+
+      {/* Stats */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 mb-6">
+        <StatCard label="Tổng công ty" value={totalCompanies} icon={Building2} accentColor="indigo" />
+        <StatCard label="Đang hoạt động" value={activeCompanies} icon={UserCheck} accentColor="emerald" />
+        <StatCard label="Ngưng hoạt động" value={inactiveCompanies} icon={UserX} accentColor="rose" />
+      </div>
+
+      {/* Filters */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => { setSelectedStatus(""); setPage(1); }}
+            className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+              selectedStatus === "" ? "bg-indigo-50 border-indigo-200 text-indigo-600" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            Tất cả
+          </button>
+          <button
+            onClick={() => { setSelectedStatus("ENABLE"); setPage(1); }}
+            className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+              selectedStatus === "ENABLE" ? "bg-emerald-50 border-emerald-200 text-emerald-600" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            Hoạt động
+          </button>
+          <button
+            onClick={() => { setSelectedStatus("DISABLE"); setPage(1); }}
+            className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+              selectedStatus === "DISABLE" ? "bg-rose-50 border-rose-200 text-rose-600" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            Ngưng hoạt động
+          </button>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                {companyColumns.map(([key, label]) => (
-                  <th
-                    key={key}
-                    className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap"
-                  >
-                    {label}
-                  </th>
-                ))}
-                <th className="px-4 py-2 text-right font-semibold text-gray-700 whitespace-nowrap">
-                  Thao tác
-                </th>
+        <p className="text-sm text-slate-500">
+          Hiển thị <span className="font-semibold text-slate-700">{filteredRows.length}</span> công ty
+        </p>
+      </div>
+
+      {/* Table */}
+      <div className="rounded-xl border border-slate-200 bg-white shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
+        <SearchBar value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} placeholder="Tìm theo tên công ty..." />
+        <div className="flex-1 min-h-0 overflow-auto">
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-100">
+                <TableHeader>STT</TableHeader>
+                <TableHeader>Tên công ty</TableHeader>
+                <TableHeader>Ngày tạo</TableHeader>
+                <TableHeader>Trạng thái</TableHeader>
+                <TableHeaderRight>Thao tác</TableHeaderRight>
               </tr>
             </thead>
-            {renderTableBody()}
+            {loading ? (
+              <tbody>
+                <tr>
+                  <td colSpan={5}>
+                    <LoadingItem />
+                  </td>
+                </tr>
+              </tbody>
+            ) : !pagedItems.length ? (
+              <EmptyState icon={Building2} message="Không có dữ liệu công ty" />
+            ) : (
+              <tbody className="divide-y divide-slate-50">
+                {pagedItems.map((company, index) => {
+                  const stt = (currentPage - 1) * PAGE_SIZE + index + 1;
+                  return (
+                    <tr key={company.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="px-5 py-4 text-slate-500 font-medium whitespace-nowrap">
+                        {String(stt).padStart(2, '0')}
+                      </td>
+                      <td className="px-5 py-4 font-semibold text-slate-900 whitespace-nowrap">
+                        {company.companyName || '-'}
+                      </td>
+                      <td className="px-5 py-4 text-slate-500 whitespace-nowrap">
+                        {company.createdAt ? formatDateTime(company.createdAt).split(' ')[0] : '-'}
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <StatusBadge status={company.status} />
+                      </td>
+                      <td className="px-5 py-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1">
+                          <ActionButton icon={Pencil} onClick={() => openEditModal(company)} title="Chỉnh sửa" />
+                          <ActionButton icon={Trash2} onClick={() => openDeleteModal(company)} variant="delete" title="Xóa" />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            )}
           </table>
         </div>
+
+        {/* Pagination */}
+        {!loading && filteredRows.length > 0 && (
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setPage} />
+        )}
       </div>
 
       <CompanyModel

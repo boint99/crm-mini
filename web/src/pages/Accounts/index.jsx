@@ -10,35 +10,20 @@ import { selectCompanies, getCompanies } from '@/redux/slice/companiesSilce'
 import { useSelector } from 'react-redux'
 import LoadingItem from '@/components/ui/LoadingItem'
 import { formatDateTime } from '@/utils/contants'
-import { headerTableAccounts } from '@/utils/headerTable'
+import { StatCard, StatusBadge, SearchBar, ActionButton, EmptyState, TableHeader, TableHeaderRight, Pagination } from '@/components/ui/PageLayout'
 import {
   Pencil,
   Trash2,
   KeyRound,
-  Search,
-  SlidersHorizontal,
   CheckCircle2,
   XCircle,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
   Plus,
-  Users
+  Users,
+  UserCheck,
+  UserX
 } from 'lucide-react'
 
-const PAGE_SIZE = 50
-
-const STATUS_CONFIG = {
-  ENABLE: {
-    label: 'Hoạt động',
-    className: 'bg-green-100 text-green-700 border border-green-300'
-  },
-  DISABLED: {
-    label: 'Vô hiệu hóa',
-    className: 'bg-red-100 text-red-700 border border-red-300'
-  }
-}
+const PAGE_SIZE = 10
 
 function Accounts() {
   const [openModal, setOpenModal] = useState(false)
@@ -104,13 +89,6 @@ function Accounts() {
     setOpenModal(true)
   }
 
-  const handleClear = () => {
-    setQuery('')
-    setStatusFilter('ALL')
-    setSelectedCompany('')
-    setPage(1)
-  }
-
   const filteredItems = useMemo(() => {
     const q = query.trim().toLowerCase()
     return accountItems.filter((acc) => {
@@ -137,6 +115,7 @@ function Accounts() {
   const activeAccounts = accountItems.filter(
     (a) => a.status === 'ENABLE'
   ).length
+  const inactiveAccounts = totalAccounts - activeAccounts
 
   const maxLogin = Math.max(
     ...accountItems.map((a) => Number(a.login) || 0),
@@ -148,305 +127,185 @@ function Accounts() {
     const pct = Math.round((count / maxLogin) * 100)
     return (
       <div className="flex items-center gap-2 min-w-[110px]">
-        <div className="flex-1 h-1.5 rounded-full bg-gray-200">
+        <div className="flex-1 h-1.5 rounded-full bg-slate-100">
           <div
-            className="h-1.5 rounded-full bg-indigo-500"
+            className="h-1.5 rounded-full bg-indigo-500 transition-all duration-300"
             style={{ width: `${pct}%` }}
           />
         </div>
-        <span className="text-xs text-gray-500 w-6 text-right">{count}</span>
+        <span className="text-xs text-slate-500 w-6 text-right font-medium">{count}</span>
       </div>
     )
   }
 
-  const renderCell = (account, key, rowIndex) => {
-    const cellClass = 'px-4 py-3 text-gray-700 whitespace-nowrap'
-    switch (key) {
-    case 'index':
-      return (
-        <td
-          key={key}
-          className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap"
-        >
-          {(currentPage - 1) * PAGE_SIZE + rowIndex + 1}
-        </td>
-      )
-    case 'accountName':
-      return (
-        <td
-          key={key}
-          className="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap"
-        >
-          {account.accountName}
-        </td>
-      )
-    case 'employee':
-      return (
-        <td key={key} className={cellClass}>
-          {account.employee ? (
-            <span className="inline-flex items-center rounded-md px-2 py-0.5 text-slate-700">
-              {account.employee.firstName} {account.employee.lastName}
-            </span>
-          ) : (
-            <span className="text-gray-400 italic text-xs">—</span>
-          )}
-        </td>
-      )
-    case 'role':
-      return (
-        <td key={key} className={cellClass}>
-          {account.roles && account.roles.length > 0 ? (
-            <div className="flex flex-wrap gap-1">
-              {account.roles.map((r) => (
-                <span
-                  key={r.roleId}
-                  className="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-700/10"
-                >
-                  {r.roleName}
-                </span>
-              ))}
-            </div>
-          ) : (
-            <span className="text-gray-400 italic text-xs">—</span>
-          )}
-        </td>
-      )
-    case 'createdAt':
-      return (
-        <td key={key} className={cellClass}>
-          {formatDateTime(account.createdAt)}
-        </td>
-      )
-    case 'login':
-      return (
-        <td key={key} className="px-4 py-3 whitespace-nowrap">
-          {renderLoginBar(account.login)}
-        </td>
-      )
-    case 'status': {
-      const cfg = STATUS_CONFIG[account.status] ?? {
-        label: account.status,
-        className: 'bg-gray-100 text-gray-600 border border-gray-300'
-      }
-      return (
-        <td key={key} className="px-4 py-3 whitespace-nowrap">
-          <span
-            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide ${cfg.className}`}
-          >
-            {cfg.label}
-          </span>
-        </td>
-      )
-    }
-    case 'description':
-      return (
-        <td
-          key={key}
-          className="px-4 py-3 max-w-[160px] truncate text-gray-600 text-xs"
-        >
-          {account.description || (
-            <span className="text-gray-400 italic">—</span>
-          )}
-        </td>
-      )
-    case 'isLogin':
-      return (
-        <td key={key} className="px-4 py-3 whitespace-nowrap text-center">
-          {account.isLogin ? (
-            <CheckCircle2 className="mx-auto h-5 w-5 text-emerald-500" />
-          ) : (
-            <XCircle className="mx-auto h-5 w-5 text-rose-400" />
-          )}
-        </td>
-      )
-    default:
-      return (
-        <td key={key} className={cellClass}>
-          {account[key]}
-        </td>
-      )
-    }
-  }
-
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Title */}
+      <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900">
-            Quản lý tài khoản
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Danh sách tài khoản trong hệ thống.
-          </p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Danh sách tài khoản</h1>
+          <p className="mt-1 text-sm text-slate-500">Quản lý và cấp quyền truy cập hệ thống cho nhân sự.</p>
         </div>
         <button
           type="button"
           onClick={() => handleAction('create')}
-          className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 cursor-pointer"
+          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition cursor-pointer"
         >
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="h-4 w-4" />
           Thêm tài khoản
         </button>
       </div>
 
-      {/* Stat cards */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Tổng tài khoản</p>
-          <p className="mt-3 text-3xl font-semibold text-slate-900">
-            {totalAccounts}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
-          <p className="text-sm font-medium text-emerald-700">Đang hoạt động</p>
-          <p className="mt-3 text-3xl font-semibold text-emerald-900">
-            {activeAccounts}
-          </p>
-        </div>
+      {/* Stats */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 mb-6">
+        <StatCard label="Tổng tài khoản" value={totalAccounts} icon={Users} accentColor="indigo" />
+        <StatCard label="Đang hoạt động" value={activeAccounts} icon={UserCheck} accentColor="emerald" />
+        <StatCard label="Ngưng hoạt động" value={inactiveAccounts} icon={UserX} accentColor="rose" />
       </div>
 
-      {/* Filter panel */}
-      <div className="mt-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-        <p className="mb-3 text-sm font-semibold text-gray-700 flex items-center gap-2">
-          <SlidersHorizontal className="h-4 w-4" />
-          Filter Menu
-        </p>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={handleClear}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-300 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 transition cursor-pointer"
-            >
-              <SlidersHorizontal className="h-3.5 w-3.5" />
-              Clear
-            </button>
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value)
-                setPage(1)
-              }}
-              className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700 outline-none focus:border-indigo-400 cursor-pointer"
-            >
-              <option value="ALL">Tất cả trạng thái</option>
-              <option value="ENABLE">Hoạt động</option>
-              <option value="DISABLED">Vô hiệu hóa</option>
-            </select>
-            <select
-              value={selectedCompany}
-              onChange={(e) => {
-                setSelectedCompany(e.target.value)
-                setPage(1)
-              }}
-              className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700 outline-none focus:border-indigo-400 cursor-pointer bg-white"
-            >
-              <option value="ALL">Tất cả công ty</option>
-              {companies.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.companyName}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2">
-            <Search className="h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Keyword Search"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value)
-                setPage(1)
-              }}
-              className="w-60 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
-            />
-          </div>
+      {/* Filters */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value)
+              setPage(1)
+            }}
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition cursor-pointer outline-none"
+          >
+            <option value="ALL">Tất cả trạng thái</option>
+            <option value="ENABLE">Hoạt động</option>
+            <option value="DISABLED">Vô hiệu hóa</option>
+          </select>
+
+          <select
+            value={selectedCompany}
+            onChange={(e) => {
+              setSelectedCompany(e.target.value)
+              setPage(1)
+            }}
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition cursor-pointer outline-none"
+          >
+            <option value="ALL">Tất cả công ty</option>
+            {companies.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.companyName}
+              </option>
+            ))}
+          </select>
         </div>
+        <p className="text-sm text-slate-500">
+          Hiển thị <span className="font-semibold text-slate-700">{filteredItems.length}</span> tài khoản
+        </p>
       </div>
 
       {/* Table */}
-      <div className="mt-4 rounded-lg border border-gray-200 bg-white shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
+      <div className="rounded-xl border border-slate-200 bg-white shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
+        <SearchBar value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} placeholder="Tìm theo tên tài khoản, mô tả..." />
         <div className="flex-1 min-h-0 overflow-auto">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                {Object.entries(headerTableAccounts).map(([key, label]) => (
-                  <th
-                    key={key}
-                    className={`sticky top-0 bg-gray-50 px-4 py-3 font-semibold text-gray-700 whitespace-nowrap z-10 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)] ${
-                      key === 'isLogin' ? 'text-center' : 'text-left'
-                    }`}
-                  >
-                    {label}
-                  </th>
-                ))}
-                <th className="sticky top-0 bg-gray-50 px-4 py-3 text-right font-semibold text-gray-700 whitespace-nowrap z-10 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]">
-                  Thao tác
-                </th>
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-100">
+                <TableHeader>STT</TableHeader>
+                <TableHeader>Tên tài khoản</TableHeader>
+                <TableHeader>Nhân sự liên kết</TableHeader>
+                <TableHeader>Vai trò</TableHeader>
+                <TableHeader>Đăng nhập</TableHeader>
+                <TableHeader>Số lần đăng nhập</TableHeader>
+                <TableHeader>Ngày tạo</TableHeader>
+                <TableHeader>Trạng thái</TableHeader>
+                <TableHeaderRight>Thao tác</TableHeaderRight>
               </tr>
             </thead>
             {loading ? (
               <tbody>
                 <tr>
-                  <td colSpan={Object.keys(headerTableAccounts).length + 1}>
+                  <td colSpan={9}>
                     <LoadingItem />
                   </td>
                 </tr>
               </tbody>
             ) : !pagedItems.length ? (
-              <tbody>
-                <tr>
-                  <td colSpan={Object.keys(headerTableAccounts).length + 1}>
-                    <div className="flex h-40 flex-col items-center justify-center gap-2 text-gray-400">
-                      <Users className="h-10 w-10" />
-                      <p className="text-sm font-medium">
-                        Không có dữ liệu tài khoản
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
+              <EmptyState icon={Users} message="Không có dữ liệu tài khoản" />
             ) : (
-              <tbody className="divide-y divide-gray-200 bg-white">
-                {pagedItems.map((account, rowIndex) => (
-                  <tr key={account.accountId} className="hover:bg-gray-50">
-                    {Object.entries(headerTableAccounts).map(([key]) =>
-                      renderCell(account, key, rowIndex)
-                    )}
-                    <td className="px-4 py-3 whitespace-nowrap text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => handleAction('edit', account)}
-                          type="button"
-                          title="Chỉnh sửa"
-                          className="rounded-md p-2 text-indigo-600 transition hover:bg-indigo-50 cursor-pointer"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleAction('reset-password', account)
-                          }
-                          type="button"
-                          title="Đặt lại mật khẩu"
-                          className="rounded-md p-2 text-amber-600 transition hover:bg-amber-50 cursor-pointer"
-                        >
-                          <KeyRound className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          title="Xóa"
-                          onClick={() => handleAction('delete', account)}
-                          className="rounded-md p-2 text-rose-600 transition hover:bg-rose-50 cursor-pointer"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-slate-50">
+                {pagedItems.map((account, index) => {
+                  const stt = (currentPage - 1) * PAGE_SIZE + index + 1
+                  return (
+                    <tr key={account.accountId} className="hover:bg-slate-50/60 transition-colors">
+                      {/* STT */}
+                      <td className="px-5 py-4 text-slate-500 font-medium whitespace-nowrap">
+                        {String(stt).padStart(2, '0')}
+                      </td>
+                      {/* Tên tài khoản */}
+                      <td className="px-5 py-4 font-semibold text-slate-900 whitespace-nowrap">
+                        {account.accountName}
+                      </td>
+                      {/* Nhân sự */}
+                      <td className="px-5 py-4 text-slate-600 whitespace-nowrap">
+                        {account.employee ? (
+                          <span className="font-medium text-slate-700">
+                            {account.employee.firstName} {account.employee.lastName}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 italic text-xs">—</span>
+                        )}
+                      </td>
+                      {/* Vai trò */}
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        {account.roles && account.roles.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {account.roles.map((r) => (
+                              <span
+                                key={r.roleId}
+                                className="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-700/10"
+                              >
+                                {r.roleName}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 italic text-xs">—</span>
+                        )}
+                      </td>
+                      {/* Đăng nhập (Hoạt động/Không hoạt động) */}
+                      <td className="px-5 py-4 whitespace-nowrap text-center">
+                        {account.isLogin ? (
+                          <span className="inline-flex items-center gap-1 text-emerald-600 font-medium text-xs">
+                            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                            Đã kết nối
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-slate-400 font-medium text-xs">
+                            <XCircle className="h-4 w-4 text-slate-300" />
+                            Chưa kết nối
+                          </span>
+                        )}
+                      </td>
+                      {/* Số lần đăng nhập */}
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        {renderLoginBar(account.login)}
+                      </td>
+                      {/* Ngày tạo */}
+                      <td className="px-5 py-4 text-slate-500 whitespace-nowrap">
+                        {account.createdAt ? formatDateTime(account.createdAt).split(' ')[0] : '-'}
+                      </td>
+                      {/* Trạng thái */}
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <StatusBadge status={account.status} activeLabel="Hoạt động" inactiveLabel="Vô hiệu hóa" />
+                      </td>
+                      {/* Thao tác */}
+                      <td className="px-5 py-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1">
+                          <ActionButton icon={Pencil} onClick={() => handleAction('edit', account)} title="Chỉnh sửa" />
+                          <ActionButton icon={KeyRound} onClick={() => handleAction('reset-password', account)} variant="warning" title="Đặt lại mật khẩu" />
+                          <ActionButton icon={Trash2} onClick={() => handleAction('delete', account)} variant="delete" title="Xóa" />
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             )}
           </table>
@@ -454,58 +313,7 @@ function Accounts() {
 
         {/* Pagination */}
         {!loading && filteredItems.length > 0 && (
-          <div className="border-t border-gray-100 px-4 py-3 flex items-center justify-between">
-            <p className="text-xs text-gray-500">
-              Hiển thị {(currentPage - 1) * PAGE_SIZE + 1}–
-              {Math.min(currentPage * PAGE_SIZE, filteredItems.length)} /{' '}
-              {filteredItems.length} tài khoản
-            </p>
-            <div className="flex items-center gap-1">
-              <button
-                disabled={currentPage === 1}
-                onClick={() => setPage(1)}
-                className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-              >
-                <ChevronsLeft className="h-4 w-4" />
-              </button>
-              <button
-                disabled={currentPage === 1}
-                onClick={() => setPage((p) => p - 1)}
-                className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter((p) => Math.abs(p - currentPage) <= 2)
-                .map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPage(p)}
-                    className={`min-w-[32px] rounded-md px-2.5 py-1 text-xs font-semibold transition cursor-pointer ${
-                      p === currentPage
-                        ? 'bg-primary text-white'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              <button
-                disabled={currentPage === totalPages}
-                onClick={() => setPage((p) => p + 1)}
-                className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-              <button
-                disabled={currentPage === totalPages}
-                onClick={() => setPage(totalPages)}
-                className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-              >
-                <ChevronsRight className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setPage} />
         )}
       </div>
 

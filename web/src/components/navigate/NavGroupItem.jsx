@@ -45,7 +45,7 @@ function NavGroupItem({ item, openId, setOpenId }) {
           open ? "max-h-96" : "max-h-0",
         ].join(" ")}
       >
-        <ul className="ml-4 mt-1 space-y-0.5 border-l border-slate-600/30 pl-3">
+        <ul className="ml-4 mt-1 space-y-0.5 border-l border-slate-200 pl-3">
           {item.children.map((child) => (
             <li key={child.id}>
               <NavLink
@@ -54,8 +54,8 @@ function NavGroupItem({ item, openId, setOpenId }) {
                   [
                     "flex items-center gap-2.5 py-1.5 px-2 rounded-lg text-sm transition-colors",
                     isActive
-                      ? "text-white font-semibold"
-                      : "text-slate-400 hover:text-slate-200",
+                      ? "text-indigo-600 font-semibold bg-indigo-50/60"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50",
                   ].join(" ")
                 }
               >
@@ -63,7 +63,7 @@ function NavGroupItem({ item, openId, setOpenId }) {
                   <>
                     <child.icon
                       size={14}
-                      className={isActive ? "text-indigo-400" : "text-slate-500"}
+                      className={isActive ? "text-indigo-600" : "text-slate-400"}
                       strokeWidth={1.8}
                     />
                     {child.label}

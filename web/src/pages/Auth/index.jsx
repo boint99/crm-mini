@@ -1,27 +1,31 @@
 import { Outlet } from 'react-router-dom'
 import styles from './AuthLayout.module.css'
 import bgLogin from '@/assets/images/banner_image.png'
+import logoImg from '@/assets/images/logo.png'
 
 function Auth() {
   return (
     <div className={styles.loginContainer}>
-      {/* Ảnh nền toàn màn hình */}
-      <div className={styles.backgroundImage}>
-        <img src={bgLogin} alt="Background" />
-        <div className={styles.overlay}></div>
+      {/* Cột trái: Banner ảnh phong cảnh đẹp mắt */}
+      <div className={styles.leftBanner}>
+        <img src={bgLogin} alt="IT Helpdesk Landscape" className={styles.bannerImage} />
+        <div className={styles.bannerOverlay}>
+          <div className={styles.logoWrapper}>
+            <div className={styles.logoImageWrapper}>
+              <img src={logoImg} alt="Logo" className={styles.logoImage} />
+            </div>
+            <div className={styles.logoTextGroup}>
+              <h1 className={styles.logoTitle}>IT-Helpdesk</h1>
+              <p className={styles.logoSubtitle}>Management System</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Form wrapper bên phải */}
-      <div className={styles.loginFormWrapper}>
+      {/* Cột phải: Form đăng nhập nổi bật trên nền xám nhẹ */}
+      <div className={styles.rightContent}>
         <div className={styles.loginCard}>
-          <div className={styles.header}>
-            <h1 className={styles.logo}>IT-HELPDESK</h1>
-            <p className={styles.subtitle}>Đăng nhập / Đăng ký để tiếp tục</p>
-          </div>
           <Outlet />
-          <div className={styles.footerText}>
-                        PROFESSIONAL SUPPORT &amp; TECHNICAL SOLUTIONS
-          </div>
         </div>
       </div>
     </div>
