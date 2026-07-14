@@ -1,4 +1,5 @@
 import LoadingItem from "@/components/ui/LoadingItem";
+import { StatCard, StatusBadge, SearchBar, ActionButton, EmptyState, TableHeader, TableHeaderRight, Pagination } from "@/components/ui/PageLayout";
 import { dispatchWithToast } from "@/components/ui/dispatchWithToast";
 import { useAppDispatch } from "@/hook/useAppDispatch";
 import BranchModel from "@/pages/Organizations/Branches/Action/BranchModel";
@@ -11,18 +12,29 @@ import {
   updateBranch,
 } from "@/redux/slice/branchesSlice";
 import { formatDateTime, CUSTOM_MESSAGES } from "@/utils/contants";
-import { Building2, Pencil, Plus, Search, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Building2, Pencil, Plus, Trash2, MapPin, UserCheck, UserX } from "lucide-react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { headerTableBranch } from "@/utils/headerTable";
-
-const branchColumns = Object.entries(headerTableBranch);
+import { useSearchParams } from "react-router-dom";
 
 function Branches() {
   const [openModal, setOpenModal] = useState(false);
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState("create");
   const [selectedBranch, setSelectedBranch] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Number(searchParams.get("page")) || 1;
+
+  const setPage = useCallback((newPage) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("page", String(newPage));
+      return next;
+    });
+  }, [setSearchParams]);
+
+  const PAGE_SIZE = 10;
 
   const dispatchAsync = useAppDispatch();
   const dispatch = useDispatch();
@@ -33,10 +45,24 @@ function Branches() {
     dispatchAsync(getBranches());
   }, []);
 
+  useEffect(() => {
+    if (!searchParams.get("page")) {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("page", "1");
+        return next;
+      }, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   const filteredRows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return branches;
-    return branches.filter((branch) => {
+    let list = branches;
+    if (selectedStatus) {
+      list = list.filter((b) => b.status === selectedStatus);
+    }
+    if (!q) return list;
+    return list.filter((branch) => {
       const hay = [
         branch.branchId,
         branch.branchName,
@@ -49,12 +75,20 @@ function Branches() {
         .toLowerCase();
       return hay.includes(q);
     });
-  }, [branches, query]);
+  }, [branches, query, selectedStatus]);
 
   const totalBranches = branches.length;
   const activeBranches = branches.filter(
     (branch) => branch.status === "ENABLE",
   ).length;
+  const inactiveBranches = totalBranches - activeBranches;
+
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedItems = filteredRows.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
 
   const openCreateModal = () => {
     setMode("create");
@@ -112,194 +146,132 @@ function Branches() {
     handleCloseModal();
   };
 
-  const renderTableBody = () => {
-    if (loading) {
-      return (
-        <tbody>
-          <tr>
-            <td colSpan={branchColumns.length + 1}>
-              <LoadingItem />
-            </td>
-          </tr>
-        </tbody>
-      );
-    }
-
-    if (!filteredRows.length) {
-      return (
-        <tbody>
-          <tr>
-            <td colSpan={branchColumns.length + 1}>
-              <div className="flex h-40 flex-col items-center justify-center gap-2 text-gray-400">
-                <Building2 className="h-10 w-10" />
-                <p className="text-sm font-medium">
-                  Không có dữ liệu chi nhánh
-                </p>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      );
-    }
-
-    return (
-      <tbody className="divide-y divide-gray-200 bg-white">
-        {filteredRows.map((branch, rowIndex) => (
-          <tr key={branch.id} className="hover:bg-gray-50">
-            {branchColumns.map(([key]) => {
-              const cellClass = "px-4 py-3 text-gray-700 whitespace-nowrap";
-
-              if (key === "index") {
-                return (
-                  <td
-                    key={key}
-                    className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap"
-                  >
-                    {rowIndex + 1}
-                  </td>
-                );
-              }
-
-              if (key === "status") {
-                return (
-                  <td key={key} className="px-4 py-3 whitespace-nowrap">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        branch.status === "ENABLE"
-                          ? "bg-green-50 text-green-700 ring-1 ring-green-600/20"
-                          : "bg-gray-50 text-gray-700 ring-1 ring-gray-500/20"
-                      }`}
-                    >
-                      {branch.status === "ENABLE"
-                        ? "Hoạt động"
-                        : "Ngưng hoạt động"}
-                    </span>
-                  </td>
-                );
-              }
-
-              if (key === "createdAt" || key === "updatedAt") {
-                return (
-                  <td key={key} className={cellClass}>
-                    {branch[key] ? formatDateTime(branch[key]) : "-"}
-                  </td>
-                );
-              }
-
-              return (
-                <td key={key} className={cellClass}>
-                  {branch[key] || "-"}
-                </td>
-              );
-            })}
-            <td className="px-4 py-3 text-right whitespace-nowrap">
-              <div className="flex items-center justify-end gap-1">
-                <button
-                  type="button"
-                  onClick={() => openEditModal(branch)}
-                  className="rounded-md p-2 text-indigo-600 transition hover:bg-indigo-50 cursor-pointer"
-                  title="Chỉnh sửa"
-                  aria-label={`Chỉnh sửa ${branch.branchName}`}
-                >
-                  <Pencil className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openDeleteModal(branch)}
-                  className="rounded-md p-2 text-rose-600 transition hover:bg-rose-50 cursor-pointer"
-                  title="Xóa"
-                  aria-label={`Xóa ${branch.branchName}`}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    );
-  };
-
   return (
-    <div>
-      <div className="flex items-center justify-between">
+    <div className="h-full flex flex-col overflow-hidden">
+      {/* Title */}
+      <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900">
-            Quản lý chi nhánh
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Dữ liệu hiển thị tất cả chi nhánh.
-          </p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Danh sách chi nhánh</h1>
+          <p className="mt-1 text-sm text-slate-500">Quản lý và cập nhật danh sách chi nhánh trong hệ thống.</p>
         </div>
         <button
           type="button"
           onClick={openCreateModal}
-          className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 cursor-pointer"
+          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition cursor-pointer"
         >
-          <Plus className="mr-2 h-4 w-4" />
-          Thêm
+          <Plus className="h-4 w-4" />
+          Thêm chi nhánh
         </button>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Tổng chi nhánh</p>
-          <p className="mt-3 text-3xl font-semibold text-slate-900">
-            {totalBranches}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
-          <p className="text-sm font-medium text-emerald-700">Đang hoạt động</p>
-          <p className="mt-3 text-3xl font-semibold text-emerald-900">
-            {activeBranches}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm sm:col-span-2 xl:col-span-1">
-          <p className="text-sm font-medium text-amber-700">Kết quả lọc</p>
-          <p className="mt-3 text-3xl font-semibold text-amber-900">
-            {filteredRows.length}
-          </p>
-        </div>
+      {/* Stats */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 mb-6">
+        <StatCard label="Tổng chi nhánh" value={totalBranches} icon={Building2} accentColor="indigo" />
+        <StatCard label="Đang hoạt động" value={activeBranches} icon={UserCheck} accentColor="emerald" />
+        <StatCard label="Ngưng hoạt động" value={inactiveBranches} icon={UserX} accentColor="rose" />
       </div>
 
-      <div className="mt-6 rounded-lg border border-gray-200 bg-white shadow-sm">
-        <div className="border-b border-gray-200 px-4 py-3 sm:px-6 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-lg font-medium text-gray-900">
-              Danh sách chi nhánh
-            </p>
-          </div>
-          <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2">
-            <Search className="h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Tìm theo tên, địa điểm..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-64 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
-            />
-          </div>
+      {/* Filters */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => { setSelectedStatus(""); setPage(1); }}
+            className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+              selectedStatus === "" ? "bg-indigo-50 border-indigo-200 text-indigo-600" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            Tất cả
+          </button>
+          <button
+            onClick={() => { setSelectedStatus("ENABLE"); setPage(1); }}
+            className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+              selectedStatus === "ENABLE" ? "bg-emerald-50 border-emerald-200 text-emerald-600" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            Hoạt động
+          </button>
+          <button
+            onClick={() => { setSelectedStatus("DISABLE"); setPage(1); }}
+            className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+              selectedStatus === "DISABLE" ? "bg-rose-50 border-rose-200 text-rose-600" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            Ngưng hoạt động
+          </button>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                {branchColumns.map(([key, label]) => (
-                  <th
-                    key={key}
-                    className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap"
-                  >
-                    {label}
-                  </th>
-                ))}
-                <th className="px-4 py-2 text-right font-semibold text-gray-700 whitespace-nowrap">
-                  Thao tác
-                </th>
+        <p className="text-sm text-slate-500">
+          Hiển thị <span className="font-semibold text-slate-700">{filteredRows.length}</span> chi nhánh
+        </p>
+      </div>
+
+      {/* Table */}
+      <div className="rounded-xl border border-slate-200 bg-white shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
+        <SearchBar value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} placeholder="Tìm theo tên, địa điểm, mã..." />
+        <div className="flex-1 min-h-0 overflow-auto">
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-100">
+                <TableHeader>STT</TableHeader>
+                <TableHeader>Mã chi nhánh</TableHeader>
+                <TableHeader>Tên chi nhánh</TableHeader>
+                <TableHeader>Địa điểm</TableHeader>
+                <TableHeader>Ngày tạo</TableHeader>
+                <TableHeader>Trạng thái</TableHeader>
+                <TableHeaderRight>Thao tác</TableHeaderRight>
               </tr>
             </thead>
-            {renderTableBody()}
+            {loading ? (
+              <tbody>
+                <tr>
+                  <td colSpan={7}>
+                    <LoadingItem />
+                  </td>
+                </tr>
+              </tbody>
+            ) : !pagedItems.length ? (
+              <EmptyState icon={MapPin} message="Không có dữ liệu chi nhánh" />
+            ) : (
+              <tbody className="divide-y divide-slate-50">
+                {pagedItems.map((branch, index) => {
+                  const stt = (currentPage - 1) * PAGE_SIZE + index + 1;
+                  return (
+                    <tr key={branch.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="px-5 py-4 text-slate-500 font-medium whitespace-nowrap">
+                        {String(stt).padStart(2, '0')}
+                      </td>
+                      <td className="px-5 py-4 font-semibold text-indigo-600 whitespace-nowrap">
+                        {branch.branchCode || '-'}
+                      </td>
+                      <td className="px-5 py-4 font-semibold text-slate-900 whitespace-nowrap">
+                        {branch.branchName || '-'}
+                      </td>
+                      <td className="px-5 py-4 text-slate-600 whitespace-nowrap">
+                        {branch.location || '-'}
+                      </td>
+                      <td className="px-5 py-4 text-slate-500 whitespace-nowrap">
+                        {branch.createdAt ? formatDateTime(branch.createdAt).split(' ')[0] : '-'}
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <StatusBadge status={branch.status} />
+                      </td>
+                      <td className="px-5 py-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1">
+                          <ActionButton icon={Pencil} onClick={() => openEditModal(branch)} title="Chỉnh sửa" />
+                          <ActionButton icon={Trash2} onClick={() => openDeleteModal(branch)} variant="delete" title="Xóa" />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            )}
           </table>
         </div>
+
+        {/* Pagination */}
+        {!loading && filteredRows.length > 0 && (
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setPage} />
+        )}
       </div>
 
       <BranchModel

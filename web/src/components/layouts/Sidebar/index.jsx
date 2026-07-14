@@ -17,19 +17,24 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       ].join(" ")}
     >
       {/* Logo */}
-      <div className={`flex items-center gap-3 px-4 py-4 ${collapsed ? "justify-center" : ""}`}>
+      <div className={`flex items-center gap-3 px-5 py-5 ${collapsed ? "justify-center" : ""}`}>
         {collapsed ? (
-          <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0">
+          <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 border border-slate-100 shadow-sm">
             <img src={logoImg} alt="IT-HELPDESK" className="w-full h-full object-cover" />
           </div>
         ) : (
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border border-slate-100 shadow-sm">
               <img src={logoImg} alt="IT-HELPDESK" className="w-full h-full object-cover" />
             </div>
-            <span className="text-base font-bold text-white tracking-tight leading-tight">
-              IT-HELPDESK
-            </span>
+            <div className="flex flex-col leading-tight">
+              <span className="text-[14px] font-extrabold text-slate-800 tracking-tight">
+                IT-Helpdesk
+              </span>
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                System
+              </span>
+            </div>
           </div>
         )}
       </div>
@@ -43,7 +48,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                 {group.group}
               </p>
             )}
-            {collapsed && <div className="my-2 border-t border-slate-700/50" />}
+            {collapsed && <div className="my-2 border-t border-slate-200/50" />}
             <ul className="space-y-0.5">
               {group.items.map((item) =>
                 item.children ? (
@@ -67,28 +72,6 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           </div>
         ))}
       </nav>
-
-      {/* Toggle collapse button */}
-      <div className="px-3 py-4 border-t border-slate-700/40">
-        <button
-          type="button"
-          onClick={() => setCollapsed((v) => !v)}
-          title={collapsed ? "Mở rộng sidebar" : "Thu nhỏ sidebar"}
-          className={[
-            "sidebar-nav-item w-full",
-            collapsed ? "justify-center" : "",
-          ].join(" ")}
-        >
-          {collapsed ? (
-            <PanelLeftOpen size={18} className="flex-shrink-0" strokeWidth={1.8} />
-          ) : (
-            <>
-              <PanelLeftClose size={18} className="flex-shrink-0" strokeWidth={1.8} />
-              <span>Thu gọn</span>
-            </>
-          )}
-        </button>
-      </div>
     </aside>
   );
 }

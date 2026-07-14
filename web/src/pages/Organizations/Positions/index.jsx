@@ -1,4 +1,5 @@
 import LoadingItem from '@/components/ui/LoadingItem'
+import { StatCard, FilterDropdown, StatusBadge, SearchBar, ActionButton, EmptyState, TableHeader, TableHeaderRight } from '@/components/ui/PageLayout'
 import { dispatchWithToast } from '@/components/ui/dispatchWithToast'
 import { useAppDispatch } from '@/hook/useAppDispatch'
 import {
@@ -11,13 +12,10 @@ import {
 } from '@/redux/slice/positionsSlice'
 import { selectCompanies, getCompanies } from '@/redux/slice/companiesSilce'
 import { formatDateTime, CUSTOM_MESSAGES } from '@/utils/contants'
-import { headerTablePositions } from '@/utils/headerTable'
-import { Award, Pencil, Plus, Search, Trash2 } from 'lucide-react'
+import { Award, BriefcaseBusiness, Pencil, Plus, Trash2, UserCheck, UserX } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import PositionModel from '@/pages/Organizations/Positions/Action/PositionModel'
-
-const positionColumns = Object.entries(headerTablePositions)
 
 function Positions() {
   const [openModal, setOpenModal] = useState(false)
@@ -25,6 +23,7 @@ function Positions() {
   const [selectedPosition, setSelectedPosition] = useState(null)
   const [action, setAction] = useState('create')
   const [selectedCompany, setSelectedCompany] = useState('')
+  const [selectedStatus, setSelectedStatus] = useState('')
 
   const dispatchAsync = useAppDispatch()
   const dispatch = useDispatch()
@@ -40,50 +39,29 @@ function Positions() {
   const filteredRows = useMemo(() => {
     const q = query.trim().toLowerCase()
     let list = positions
-    if (selectedCompany && selectedCompany !== 'ALL') {
+    if (selectedCompany) {
       list = list.filter((pos) => pos.company?.id === selectedCompany)
+    }
+    if (selectedStatus) {
+      list = list.filter((pos) => pos.status === selectedStatus)
     }
     if (!q) return list
     return list.filter((position) => {
       const companyName = position.company?.companyName || ''
-      const hay = [
-        position.id,
-        position.positionCode,
-        position.positionName,
-        position.level,
-        companyName,
-        position.status
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
+      const hay = [position.positionCode, position.positionName, position.level, companyName, position.status]
+        .filter(Boolean).join(' ').toLowerCase()
       return hay.includes(q)
     })
-  }, [positions, query, selectedCompany])
+  }, [positions, query, selectedCompany, selectedStatus])
 
   const totalPositions = positions.length
   const activePositions = positions.filter((p) => p.status === 'ENABLE').length
+  const inactivePositions = totalPositions - activePositions
 
-  const handleAction = (action, position = null) => {
-    switch (action) {
-    case 'edit':
-      setAction('edit')
-      setSelectedPosition(position)
-      setOpenModal(true)
-      break
-    case 'create':
-      setAction('create')
-      setSelectedPosition(null)
-      setOpenModal(true)
-      break
-    case 'delete':
-      setAction('delete')
-      setSelectedPosition(position)
-      setOpenModal(true)
-      break
-    default:
-      break
-    }
+  const handleAction = (act, position = null) => {
+    setAction(act)
+    setSelectedPosition(act === 'create' ? null : position)
+    setOpenModal(true)
   }
 
   const handleCloseModal = () => {
@@ -93,254 +71,109 @@ function Positions() {
   }
 
   const handleSubmit = async (payload) => {
-    if (action === 'delete') {
-      await dispatchWithToast({
-        dispatch,
-        action: deletePosition,
-        payload,
-        messages: CUSTOM_MESSAGES.delete
-      })
-      handleCloseModal()
-      return
-    }
-
-    if (action === 'edit') {
-      await dispatchWithToast({
-        dispatch,
-        action: updatePosition,
-        payload,
-        messages: CUSTOM_MESSAGES.update
-      })
-      handleCloseModal()
-      return
-    }
-
+    const config = { delete: deletePosition, edit: updatePosition }
+    const messages = { delete: CUSTOM_MESSAGES.delete, edit: CUSTOM_MESSAGES.update }
     await dispatchWithToast({
       dispatch,
-      action: createPosition,
+      action: config[action] || createPosition,
       payload,
-      messages: CUSTOM_MESSAGES.create
+      messages: messages[action] || CUSTOM_MESSAGES.create
     })
     handleCloseModal()
   }
 
-  const renderTableBody = () => {
-    if (loading) {
-      return (
-        <tbody>
-          <tr>
-            <td colSpan={positionColumns.length + 1}>
-              <LoadingItem />
-            </td>
-          </tr>
-        </tbody>
-      )
-    }
-
-    if (!filteredRows.length) {
-      return (
-        <tbody>
-          <tr>
-            <td colSpan={positionColumns.length + 1}>
-              <div className="flex h-40 flex-col items-center justify-center gap-2 text-gray-400">
-                <Award className="h-10 w-10" />
-                <p className="text-sm font-medium">Không có dữ liệu chức vụ</p>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      )
-    }
-
-    return (
-      <tbody className="divide-y divide-gray-200 bg-white">
-        {filteredRows.map((position, rowIndex) => (
-          <tr key={position.id} className="hover:bg-gray-50">
-            {positionColumns.map(([key]) => {
-              const cellClass = 'px-4 py-3 text-gray-700 whitespace-nowrap'
-
-              if (key === 'index') {
-                return (
-                  <td
-                    key={key}
-                    className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap"
-                  >
-                    {rowIndex + 1}
-                  </td>
-                )
-              }
-
-              if (key === 'status') {
-                return (
-                  <td key={key} className="px-4 py-3 whitespace-nowrap">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        position.status === 'ENABLE'
-                          ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20'
-                          : 'bg-gray-50 text-gray-700 ring-1 ring-gray-500/20'
-                      }`}
-                    >
-                      {position.status === 'ENABLE'
-                        ? 'Hoạt động'
-                        : 'Ngưng hoạt động'}
-                    </span>
-                  </td>
-                )
-              }
-
-              if (key === 'companyName') {
-                return (
-                  <td key={key} className={cellClass}>
-                    {position.company?.companyName || '-'}
-                  </td>
-                )
-              }
-
-              if (key === 'createdAt' || key === 'updatedAt') {
-                return (
-                  <td key={key} className={cellClass}>
-                    {position[key] ? formatDateTime(position[key]) : '-'}
-                  </td>
-                )
-              }
-
-              return (
-                <td key={key} className={cellClass}>
-                  {position[key] || '-'}
-                </td>
-              )
-            })}
-            <td className="px-4 py-3 text-right whitespace-nowrap">
-              <div className="flex items-center justify-end gap-1">
-                <button
-                  type="button"
-                  onClick={() => handleAction('edit', position)}
-                  className="rounded-md p-2 text-indigo-600 transition hover:bg-indigo-50 cursor-pointer"
-                  title="Chỉnh sửa"
-                  aria-label={`Chỉnh sửa ${position.positionName}`}
-                >
-                  <Pencil className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleAction('delete', position)}
-                  className="rounded-md p-2 text-rose-600 transition hover:bg-rose-50 cursor-pointer"
-                  title="Xóa"
-                  aria-label={`Xóa ${position.positionName}`}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    )
-  }
-
   return (
-    <div>
-      <div className="flex items-center justify-between">
+    <div className="h-full flex flex-col overflow-hidden">
+      {/* Title */}
+      <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900">
-            Quản lý chức vụ
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Dữ liệu hiển thị tất cả chức vụ.
-          </p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Danh sách chức vụ</h1>
+          <p className="mt-1 text-sm text-slate-500">Quản lý các chức vụ và cấp bậc trong doanh nghiệp.</p>
         </div>
         <button
           type="button"
           onClick={() => handleAction('create')}
-          className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 cursor-pointer"
+          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition cursor-pointer"
         >
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="h-4 w-4" />
           Thêm
         </button>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Tổng chức vụ</p>
-          <p className="mt-3 text-3xl font-semibold text-slate-900">
-            {totalPositions}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
-          <p className="text-sm font-medium text-emerald-700">Đang hoạt động</p>
-          <p className="mt-3 text-3xl font-semibold text-emerald-900">
-            {activePositions}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm sm:col-span-2 xl:col-span-1">
-          <p className="text-sm font-medium text-amber-700">Kết quả lọc</p>
-          <p className="mt-3 text-3xl font-semibold text-amber-900">
-            {filteredRows.length}
-          </p>
-        </div>
+      {/* Stats */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 mb-6">
+        <StatCard label="Tổng chức vụ" value={totalPositions} icon={BriefcaseBusiness} accentColor="indigo" />
+        <StatCard label="Đang hoạt động" value={activePositions} icon={UserCheck} accentColor="emerald" subtitle="Chức vụ hiện tại" />
+        <StatCard label="Ngưng hoạt động" value={inactivePositions} icon={UserX} accentColor="rose" />
       </div>
 
-      <div className="mt-6 rounded-lg border border-gray-200 bg-white shadow-sm">
-        <div className="border-b border-gray-200 px-4 py-3 sm:px-6 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-lg font-medium text-gray-900">
-              Danh sách chức vụ
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <select
-              value={selectedCompany}
-              onChange={(e) => setSelectedCompany(e.target.value)}
-              className="rounded-xl border border-gray-200 px-3 py-2 text-sm bg-white outline-none focus:border-indigo-500"
-            >
-              <option value="ALL">Tất cả công ty</option>
-              {companies.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.companyName}
-                </option>
-              ))}
-            </select>
-            <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2">
-              <Search className="h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Tìm theo tên, cấp bậc..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="w-64 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
-              />
-            </div>
-          </div>
+      {/* Filters */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <FilterDropdown
+            label="Tất cả công ty"
+            options={companies.map((c) => ({ value: c.id, label: c.companyName }))}
+            value={selectedCompany}
+            onChange={setSelectedCompany}
+          />
+          <FilterDropdown
+            label="Trạng thái: Tất cả"
+            options={[{ value: 'ENABLE', label: 'Hoạt động' }, { value: 'DISABLE', label: 'Ngưng hoạt động' }]}
+            value={selectedStatus}
+            onChange={setSelectedStatus}
+          />
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                {positionColumns.map(([key, label]) => (
-                  <th
-                    key={key}
-                    className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap"
-                  >
-                    {label}
-                  </th>
-                ))}
-                <th className="px-4 py-2 text-right font-semibold text-gray-700 whitespace-nowrap">
-                  Thao tác
-                </th>
+        <p className="text-sm text-slate-500">
+          Hiển thị <span className="font-semibold text-slate-700">{filteredRows.length}</span> trong tổng số{' '}
+          <span className="font-semibold text-slate-700">{totalPositions}</span> chức vụ
+        </p>
+      </div>
+
+      {/* Table */}
+      <div className="rounded-xl border border-slate-200 bg-white shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
+        <SearchBar value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tìm theo tên, cấp bậc..." />
+        <div className="flex-1 min-h-0 overflow-auto">
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-100">
+                <TableHeader>STT</TableHeader>
+                <TableHeader>Tên chức vụ</TableHeader>
+                <TableHeader>Cấp bậc</TableHeader>
+                <TableHeader>Công ty</TableHeader>
+                <TableHeader>Ngày tạo</TableHeader>
+                <TableHeader>Trạng thái</TableHeader>
+                <TableHeaderRight>Thao tác</TableHeaderRight>
               </tr>
             </thead>
-            {renderTableBody()}
+            {loading ? (
+              <tbody><tr><td colSpan={7}><LoadingItem /></td></tr></tbody>
+            ) : !filteredRows.length ? (
+              <EmptyState icon={Award} message="Không có dữ liệu chức vụ" />
+            ) : (
+              <tbody className="divide-y divide-slate-50">
+                {filteredRows.map((position, i) => (
+                  <tr key={position.id} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="px-5 py-4 text-slate-500 font-medium whitespace-nowrap">{String(i + 1).padStart(2, '0')}</td>
+                    <td className="px-5 py-4 font-semibold text-slate-900 whitespace-nowrap">{position.positionName || '-'}</td>
+                    <td className="px-5 py-4 text-slate-600 whitespace-nowrap">{position.level || '-'}</td>
+                    <td className="px-5 py-4 text-slate-600 whitespace-nowrap">{position.company?.companyName || '-'}</td>
+                    <td className="px-5 py-4 text-slate-500 whitespace-nowrap">{position.createdAt ? formatDateTime(position.createdAt).split(' ')[0] : '-'}</td>
+                    <td className="px-5 py-4 whitespace-nowrap"><StatusBadge status={position.status} /></td>
+                    <td className="px-5 py-4 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-1">
+                        <ActionButton icon={Pencil} onClick={() => handleAction('edit', position)} title="Chỉnh sửa" />
+                        <ActionButton icon={Trash2} onClick={() => handleAction('delete', position)} variant="delete" title="Xóa" />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            )}
           </table>
         </div>
       </div>
 
-      <PositionModel
-        open={openModal}
-        onClose={handleCloseModal}
-        onSubmit={handleSubmit}
-        mode={action}
-        initialValues={selectedPosition}
-      />
+      <PositionModel open={openModal} onClose={handleCloseModal} onSubmit={handleSubmit} mode={action} initialValues={selectedPosition} />
     </div>
   )
 }

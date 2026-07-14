@@ -10,7 +10,6 @@ import {
   Users,
   Search,
   X,
-  CheckCircle2,
   XCircle,
   Settings,
   ShieldCheck,
@@ -22,6 +21,7 @@ import { accountRolesAPI } from '@/api/accountRolesAPI'
 import { accountsAPI } from '@/api/accountsAPI'
 import { customStyles } from '@/utils/contants'
 import LoadingItem from '@/components/ui/LoadingItem'
+import { StatCard, StatusBadge, SearchBar, ActionButton, EmptyState, TableHeader, TableHeaderRight } from '@/components/ui/PageLayout'
 
 const STATUS_CONFIG = {
   ENABLE: {
@@ -45,8 +45,8 @@ const modalStyles = {
 }
 
 const inputClass =
-  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed bg-white'
-const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
+  'w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed bg-white'
+const labelClass = 'block text-sm font-semibold text-slate-700 mb-1'
 
 export default function PermissionsPage() {
   const [activeTab, setActiveTab] = useState('permissions') // permissions, roles, assignments
@@ -343,31 +343,31 @@ export default function PermissionsPage() {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="h-full flex flex-col overflow-hidden">
+      {/* Title */}
+      <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <Settings className="h-6 w-6 text-indigo-500" />
             Cấu Hình Hệ Thống Phân Quyền
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
             Quản lý vai trò (Roles), danh mục quyền hạn (Permissions) và phân vai trò người dùng động.
           </p>
         </div>
       </div>
 
       {/* Tabs list */}
-      <div className="flex border-b border-gray-200">
+      <div className="flex border-b border-slate-200 mb-6">
         <button
           onClick={() => {
             setActiveTab('permissions')
             setSearchQuery('')
           }}
-          className={`px-5 py-3 text-sm font-semibold border-b-2 transition cursor-pointer flex items-center gap-2 ${
+          className={`px-5 py-3 text-sm font-semibold border-b-2 transition cursor-pointer flex items-center gap-2 outline-none ${
             activeTab === 'permissions'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
           }`}
         >
           <Shield className="h-4 w-4" />
@@ -378,10 +378,10 @@ export default function PermissionsPage() {
             setActiveTab('roles')
             setSearchQuery('')
           }}
-          className={`px-5 py-3 text-sm font-semibold border-b-2 transition cursor-pointer flex items-center gap-2 ${
+          className={`px-5 py-3 text-sm font-semibold border-b-2 transition cursor-pointer flex items-center gap-2 outline-none ${
             activeTab === 'roles'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
           }`}
         >
           <ShieldCheck className="h-4 w-4" />
@@ -392,10 +392,10 @@ export default function PermissionsPage() {
             setActiveTab('assignments')
             setSearchQuery('')
           }}
-          className={`px-5 py-3 text-sm font-semibold border-b-2 transition cursor-pointer flex items-center gap-2 ${
+          className={`px-5 py-3 text-sm font-semibold border-b-2 transition cursor-pointer flex items-center gap-2 outline-none ${
             activeTab === 'assignments'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
           }`}
         >
           <UserCheck className="h-4 w-4" />
@@ -404,50 +404,41 @@ export default function PermissionsPage() {
       </div>
 
       {/* Stats summary cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Tổng quyền hạn</p>
-          <p className="mt-2 text-3xl font-semibold text-slate-900">{permissions.length}</p>
-        </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Số lượng vai trò</p>
-          <p className="mt-2 text-3xl font-semibold text-slate-900">{roles.length}</p>
-        </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Liên kết gán vai trò</p>
-          <p className="mt-2 text-3xl font-semibold text-slate-900">{assignments.length}</p>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-3 mb-6">
+        <StatCard label="Tổng quyền hạn" value={permissions.length} icon={Shield} accentColor="indigo" />
+        <StatCard label="Số lượng vai trò" value={roles.length} icon={ShieldCheck} accentColor="emerald" />
+        <StatCard label="Liên kết gán vai trò" value={assignments.length} icon={UserCheck} accentColor="rose" />
       </div>
 
       {/* Tables based on active tab */}
-      <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-slate-200 bg-white shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
         {/* Integrated Filter and Action Header */}
-        <div className="border-b border-gray-200 px-4 py-3 flex items-center justify-between gap-4 flex-wrap bg-white">
+        <div className="border-b border-slate-100 px-5 py-3 flex items-center justify-between gap-4 flex-wrap bg-white">
           <div>
-            <p className="text-lg font-medium text-gray-900">
+            <p className="text-lg font-bold text-slate-900">
               {activeTab === 'permissions' && 'Danh mục Quyền hạn'}
               {activeTab === 'roles' && 'Danh sách vai trò (Roles)'}
               {activeTab === 'assignments' && 'Danh sách gán vai trò'}
             </p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-1.5 w-64 bg-white">
-              <Search className="h-4 w-4 text-gray-400" />
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 w-64">
+              <Search className="h-4 w-4 text-slate-400" />
               <input
                 type="text"
                 placeholder="Tìm kiếm nhanh..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
+                className="w-full border-none bg-transparent text-sm text-slate-900 placeholder:text-slate-400 outline-none"
               />
             </div>
 
             {activeTab === 'permissions' && (
               <button
                 onClick={() => handleCreateOpen('permission')}
-                className="inline-flex items-center rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:opacity-95 cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 transition cursor-pointer"
               >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                <Plus className="h-4 w-4" />
                 Thêm quyền hạn
               </button>
             )}
@@ -455,9 +446,9 @@ export default function PermissionsPage() {
             {activeTab === 'roles' && (
               <button
                 onClick={() => handleCreateOpen('role')}
-                className="inline-flex items-center rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:opacity-95 cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 transition cursor-pointer"
               >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                <Plus className="h-4 w-4" />
                 Thêm vai trò
               </button>
             )}
@@ -465,9 +456,9 @@ export default function PermissionsPage() {
             {activeTab === 'assignments' && (
               <button
                 onClick={() => handleCreateOpen('assignment')}
-                className="inline-flex items-center rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:opacity-95 cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 transition cursor-pointer"
               >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                <Plus className="h-4 w-4" />
                 Gán vai trò
               </button>
             )}
@@ -478,70 +469,52 @@ export default function PermissionsPage() {
             <LoadingItem />
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="flex-1 min-h-0 overflow-auto">
             {/* 1. PERMISSIONS TABLE */}
             {activeTab === 'permissions' && (
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-left w-12">#</th>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-left w-24">Mã quyền</th>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-left w-48">Tên quyền</th>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-left">API Path</th>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-left w-24">Method</th>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-left">Ghi chú</th>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-left w-32">Trạng thái</th>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-right w-24">Thao tác</th>
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <TableHeader>#</TableHeader>
+                    <TableHeader>Mã quyền</TableHeader>
+                    <TableHeader>Tên quyền</TableHeader>
+                    <TableHeader>API Path</TableHeader>
+                    <TableHeader>Method</TableHeader>
+                    <TableHeader>Ghi chú</TableHeader>
+                    <TableHeader>Trạng thái</TableHeader>
+                    <TableHeaderRight>Thao tác</TableHeaderRight>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
+                <tbody className="divide-y divide-slate-50">
                   {!filteredPermissions.length ? (
                     <tr>
-                      <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
+                      <td colSpan={8} className="px-5 py-8 text-center text-slate-400">
                         Không có dữ liệu quyền hạn nào.
                       </td>
                     </tr>
                   ) : (
                     filteredPermissions.map((p, idx) => {
-                      const cfg = STATUS_CONFIG[p.status] || {
-                        label: p.status,
-                        className: 'bg-gray-100 text-gray-600 border border-gray-300'
-                      }
                       return (
-                        <tr key={p.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 font-medium text-gray-900">{idx + 1}</td>
-                          <td className="px-4 py-3 font-semibold text-gray-900">{p.perCode}</td>
-                          <td className="px-4 py-3 text-gray-900 font-medium">{p.perName}</td>
-                          <td className="px-4 py-3 text-indigo-600 font-mono text-xs">{p.apiPath || '—'}</td>
-                          <td className="px-4 py-3">
+                        <tr key={p.id} className="hover:bg-slate-50/60 transition-colors">
+                          <td className="px-5 py-4 text-slate-500 font-medium whitespace-nowrap">{idx + 1}</td>
+                          <td className="px-5 py-4 font-semibold text-slate-800 whitespace-nowrap">{p.perCode}</td>
+                          <td className="px-5 py-4 text-slate-900 font-medium whitespace-nowrap">{p.perName}</td>
+                          <td className="px-5 py-4 text-indigo-600 font-mono text-xs whitespace-nowrap">{p.apiPath || '—'}</td>
+                          <td className="px-5 py-4 whitespace-nowrap">
                             {p.method ? (
-                              <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-800 font-mono">
+                              <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-800 font-mono border border-slate-200">
                                 {p.method}
                               </span>
                             ) : '—'}
                           </td>
-                          <td className="px-4 py-3 text-gray-500 text-xs truncate max-w-xs">{p.notes || '—'}</td>
-                          <td className="px-4 py-3">
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold uppercase ${cfg.className}`}>
-                              {cfg.label}
-                            </span>
+                          <td className="px-5 py-4 text-slate-500 text-xs truncate max-w-xs">{p.notes || '—'}</td>
+                          <td className="px-5 py-4 whitespace-nowrap">
+                            <StatusBadge status={p.status} />
                           </td>
-                          <td className="px-4 py-3 text-right">
+                          <td className="px-5 py-4 text-right whitespace-nowrap">
                             <div className="flex justify-end gap-1">
-                              <button
-                                onClick={() => handleEditOpen('permission', p)}
-                                className="rounded p-1 text-indigo-600 hover:bg-indigo-50 cursor-pointer"
-                                title="Chỉnh sửa"
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteOpen('permission', p)}
-                                className="rounded p-1 text-rose-600 hover:bg-rose-50 cursor-pointer"
-                                title="Xóa"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
+                              <ActionButton icon={Pencil} onClick={() => handleEditOpen('permission', p)} title="Chỉnh sửa" />
+                              <ActionButton icon={Trash2} onClick={() => handleDeleteOpen('permission', p)} variant="delete" title="Xóa" />
                             </div>
                           </td>
                         </tr>
@@ -554,64 +527,40 @@ export default function PermissionsPage() {
 
             {/* 2. ROLES TABLE */}
             {activeTab === 'roles' && (
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-left w-12">#</th>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-left w-32">Mã vai trò</th>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-left w-56">Tên vai trò</th>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-left">Mô tả</th>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-left w-36">Trạng thái</th>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-right w-24">Thao tác</th>
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <TableHeader>#</TableHeader>
+                    <TableHeader>Mã vai trò</TableHeader>
+                    <TableHeader>Tên vai trò</TableHeader>
+                    <TableHeader>Mô tả</TableHeader>
+                    <TableHeader>Trạng thái</TableHeader>
+                    <TableHeaderRight>Thao tác</TableHeaderRight>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
+                <tbody className="divide-y divide-slate-50">
                   {!filteredRoles.length ? (
                     <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
+                      <td colSpan={6} className="px-5 py-8 text-center text-slate-400">
                         Không có dữ liệu vai trò nào.
                       </td>
                     </tr>
                   ) : (
                     filteredRoles.map((r, idx) => {
-                      const cfg = STATUS_CONFIG[r.status] || {
-                        label: r.status,
-                        className: 'bg-gray-100 text-gray-600 border border-gray-300'
-                      }
                       return (
-                        <tr key={r.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 font-medium text-gray-900">{idx + 1}</td>
-                          <td className="px-4 py-3 font-semibold text-gray-900">{r.roleCode}</td>
-                          <td className="px-4 py-3 font-medium text-gray-900">{r.roleName}</td>
-                          <td className="px-4 py-3 text-gray-500 text-xs truncate max-w-sm">{r.description || '—'}</td>
-                          <td className="px-4 py-3">
-                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase ${cfg.className}`}>
-                              {cfg.label}
-                            </span>
+                        <tr key={r.id} className="hover:bg-slate-50/60 transition-colors">
+                          <td className="px-5 py-4 text-slate-500 font-medium whitespace-nowrap">{idx + 1}</td>
+                          <td className="px-5 py-4 font-semibold text-slate-800 whitespace-nowrap">{r.roleCode}</td>
+                          <td className="px-5 py-4 font-semibold text-slate-900 whitespace-nowrap">{r.roleName}</td>
+                          <td className="px-5 py-4 text-slate-500 text-xs truncate max-w-sm">{r.description || '—'}</td>
+                          <td className="px-5 py-4 whitespace-nowrap">
+                            <StatusBadge status={r.status} />
                           </td>
-                          <td className="px-4 py-3 text-right">
+                          <td className="px-5 py-4 text-right whitespace-nowrap">
                             <div className="flex justify-end gap-1">
-                              <button
-                                onClick={() => handleAssignPermissionsOpen(r)}
-                                className="rounded p-1 text-indigo-600 hover:bg-indigo-50 cursor-pointer"
-                                title="Phân quyền"
-                              >
-                                <KeyRound className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => handleEditOpen('role', r)}
-                                className="rounded p-1 text-indigo-600 hover:bg-indigo-50 cursor-pointer"
-                                title="Chỉnh sửa"
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteOpen('role', r)}
-                                className="rounded p-1 text-rose-600 hover:bg-rose-50 cursor-pointer"
-                                title="Xóa"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
+                              <ActionButton icon={KeyRound} onClick={() => handleAssignPermissionsOpen(r)} variant="warning" title="Phân quyền" />
+                              <ActionButton icon={Pencil} onClick={() => handleEditOpen('role', r)} title="Chỉnh sửa" />
+                              <ActionButton icon={Trash2} onClick={() => handleDeleteOpen('role', r)} variant="delete" title="Xóa" />
                             </div>
                           </td>
                         </tr>
@@ -624,42 +573,42 @@ export default function PermissionsPage() {
 
             {/* 3. ASSIGNMENTS TABLE */}
             {activeTab === 'assignments' && (
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-left w-12">#</th>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-left">Tài khoản</th>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-left">Vai trò đang sở hữu</th>
-                    <th className="px-4 py-2 font-semibold text-slate-700 text-right w-32">Thao tác</th>
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <TableHeader>#</TableHeader>
+                    <TableHeader>Tài khoản</TableHeader>
+                    <TableHeader>Vai trò đang sở hữu</TableHeader>
+                    <TableHeaderRight>Thao tác</TableHeaderRight>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
+                <tbody className="divide-y divide-slate-50">
                   {!filteredAssignments.length ? (
                     <tr>
-                      <td colSpan={4} className="px-4 py-8 text-center text-gray-400">
+                      <td colSpan={4} className="px-5 py-8 text-center text-slate-400">
                         Chưa có tài khoản nào được gán vai trò.
                       </td>
                     </tr>
                   ) : (
                     filteredAssignments.map((a, idx) => (
-                      <tr key={a.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 font-medium text-gray-900">{idx + 1}</td>
-                        <td className="px-4 py-3 font-semibold text-gray-900">
-                          {a.account?.accountName || <span className="text-gray-400 font-normal italic">Đã xóa tài khoản (ID: {a.accountId})</span>}
+                      <tr key={a.id} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="px-5 py-4 text-slate-500 font-medium whitespace-nowrap">{idx + 1}</td>
+                        <td className="px-5 py-4 font-semibold text-slate-900 whitespace-nowrap">
+                          {a.account?.accountName || <span className="text-slate-400 font-normal italic">Đã xóa tài khoản (ID: {a.accountId})</span>}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-5 py-4 whitespace-nowrap">
                           {a.role ? (
-                            <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-700 border border-indigo-200">
+                            <span className="inline-flex items-center rounded-md bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 border border-indigo-200">
                               {a.role.roleName} ({a.role.roleCode})
                             </span>
                           ) : (
-                            <span className="text-gray-400 italic">Đã xóa vai trò (ID: {a.roleId})</span>
+                            <span className="text-slate-400 italic">Đã xóa vai trò (ID: {a.roleId})</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-5 py-4 text-right whitespace-nowrap">
                           <button
                             onClick={() => handleDeleteOpen('assignment', a)}
-                            className="rounded p-1 text-rose-600 hover:bg-rose-50 cursor-pointer inline-flex items-center gap-1 text-xs font-semibold border border-rose-200 px-2 py-1"
+                            className="rounded-lg p-2 text-rose-600 hover:bg-rose-50 transition cursor-pointer inline-flex items-center gap-1 text-xs font-semibold border border-rose-200 px-2 py-1"
                             title="Thu hồi quyền hạn"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -686,7 +635,7 @@ export default function PermissionsPage() {
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-5">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-bold text-slate-900">
               {modalAction === 'delete' && 'Xác nhận xóa'}
               {modalAction === 'revoke' && 'Xác nhận thu hồi vai trò'}
               {modalAction === 'assignPermissions' && `Phân quyền cho vai trò: ${selectedItem?.roleName}`}
@@ -701,7 +650,7 @@ export default function PermissionsPage() {
             </h3>
             <button
               onClick={() => setModalOpen(false)}
-              className="p-1 rounded-md hover:bg-gray-100 cursor-pointer text-gray-400 hover:text-gray-600 transition"
+              className="p-1 rounded-md hover:bg-slate-100 cursor-pointer text-slate-400 hover:text-slate-600 transition"
             >
               <X className="h-5 w-5" />
             </button>
@@ -732,13 +681,13 @@ export default function PermissionsPage() {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
+                  className="px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-lg hover:bg-rose-700 cursor-pointer"
+                  className="px-4 py-2 text-sm font-semibold text-white bg-rose-600 rounded-lg hover:bg-rose-700 cursor-pointer"
                 >
                   Xác nhận
                 </button>
@@ -875,15 +824,15 @@ export default function PermissionsPage() {
               {/* 4. ROLE PERMISSIONS ASSIGNMENT FORM */}
               {modalType === 'role' && modalAction === 'assignPermissions' && (
                 <div className="space-y-4">
-                  <p className="text-sm text-gray-500 mb-2">
-                    Tích chọn các quyền hạn muốn cấp cho vai trò <span className="font-semibold text-gray-900">{selectedItem?.roleName}</span>:
+                  <p className="text-sm text-slate-500 mb-2">
+                    Tích chọn các quyền hạn muốn cấp cho vai trò <span className="font-semibold text-slate-900">{selectedItem?.roleName}</span>:
                   </p>
                   {rolePermissionsLoading ? (
                     <div className="py-8"><LoadingItem /></div>
                   ) : (
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 max-h-64 overflow-y-auto p-2 border border-slate-200 rounded-xl bg-slate-50/50">
                       {!permissions.filter(p => p.status === 'ENABLE').length ? (
-                        <div className="sm:col-span-2 text-center text-sm text-gray-400 py-4 italic">
+                        <div className="sm:col-span-2 text-center text-sm text-slate-400 py-4 italic">
                           Không có quyền hạn hoạt động nào để gán.
                         </div>
                       ) : (
@@ -894,17 +843,17 @@ export default function PermissionsPage() {
                             return (
                               <label
                                 key={p.perId}
-                                className="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-100 bg-white hover:bg-slate-100 hover:border-slate-200 cursor-pointer transition text-sm text-gray-700"
+                                className="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-100 bg-white hover:bg-slate-100 hover:border-slate-200 cursor-pointer transition text-sm text-slate-700"
                               >
                                 <input
                                   type="checkbox"
                                   checked={isChecked}
                                   onChange={() => handlePermissionCheckboxChange(p.perId)}
-                                  className="mt-0.5 rounded text-primary focus:ring-primary h-4 w-4 cursor-pointer"
+                                  className="mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer"
                                 />
                                 <div>
-                                  <div className="font-semibold text-gray-900">{p.perCode}</div>
-                                  <div className="text-xs text-gray-500">{p.perName}</div>
+                                  <div className="font-semibold text-slate-900">{p.perCode}</div>
+                                  <div className="text-xs text-slate-500">{p.perName}</div>
                                 </div>
                               </label>
                             )
@@ -961,13 +910,13 @@ export default function PermissionsPage() {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
+                  className="px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+                  className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg disabled:opacity-50 cursor-pointer"
                 >
                   {getSubmitButtonText()}
                 </button>

@@ -13,17 +13,51 @@ import {
   updateEmployee
 } from '@/redux/slice/employeesSlice'
 import { selectCompanies, getCompanies } from '@/redux/slice/companiesSilce'
+import { getDepartments, selectDepartments } from '@/redux/slice/departmentsSlice'
 import { formatDateTime } from '@/utils/contants'
 import { CUSTOM_MESSAGES } from '@/utils/contants'
-import { Pencil, Plus, Search, Trash2, Users, ChevronDown, Upload, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
+import {
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+  Users,
+  ChevronDown,
+  Upload,
+  ChevronLeft,
+  ChevronRight,
+  UserCheck,
+  UserX,
+  TrendingUp,
+  TrendingDown,
+  MoreHorizontal
+} from 'lucide-react'
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom'
-import { headerTableEmployees } from '@/utils/headerTable'
 
-const employeeColumns = Object.entries(headerTableEmployees)
+/* ─── Helpers ─── */
 
-function FilterSelect({ options, value, onChange, placeholder = 'Tất cả' }) {
+/** Generate a consistent HSL color from a string */
+function stringToColor(str) {
+  if (!str) return 'hsl(220, 60%, 55%)'
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  const h = Math.abs(hash) % 360
+  return `hsl(${h}, 55%, 50%)`
+}
+
+/** Get initials (max 2 chars) from name */
+function getInitials(firstName, lastName) {
+  const f = (firstName || '').charAt(0).toUpperCase()
+  const l = (lastName || '').charAt(0).toUpperCase()
+  return (f + l) || '?'
+}
+
+/* ─── Filter Dropdown ─── */
+function FilterDropdown({ label, options, value, onChange }) {
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef(null)
 
@@ -37,46 +71,33 @@ function FilterSelect({ options, value, onChange, placeholder = 'Tất cả' }) 
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const selectedOption = options.find((opt) => opt.value === value)
+  const selectedLabel = options.find((o) => o.value === value)?.label || label
 
   return (
     <div className="relative" ref={containerRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between gap-1 text-sm font-medium text-gray-700 hover:text-indigo-600 transition bg-transparent cursor-pointer outline-none focus:outline-none"
+        className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition cursor-pointer"
       >
-        <span className="truncate max-w-[180px]">
-          {selectedOption ? selectedOption.label : placeholder}
-        </span>
-        <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        <span className="truncate max-w-[180px]">{selectedLabel}</span>
+        <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
-
       {isOpen && (
-        <div className="absolute left-0 z-50 mt-2 min-w-[220px] max-h-60 overflow-y-auto rounded-xl border border-gray-100 bg-white p-1.5 shadow-lg ring-1 ring-black/5 animate-in fade-in slide-in-from-top-1 duration-100">
+        <div className="absolute left-0 z-50 mt-2 min-w-[220px] max-h-60 overflow-y-auto rounded-xl border border-slate-100 bg-white p-1.5 shadow-xl ring-1 ring-black/5">
           <button
             type="button"
-            onClick={() => {
-              onChange('')
-              setIsOpen(false)
-            }}
-            className={`w-full text-left rounded-lg px-3 py-2 text-sm hover:bg-slate-50 transition cursor-pointer ${
-              value === '' ? 'bg-indigo-50 text-indigo-600 font-semibold' : 'text-gray-700'
-            }`}
+            onClick={() => { onChange(''); setIsOpen(false) }}
+            className={`w-full text-left rounded-lg px-3 py-2 text-sm hover:bg-slate-50 transition cursor-pointer ${value === '' ? 'bg-indigo-50 text-indigo-600 font-semibold' : 'text-slate-700'}`}
           >
-            {placeholder}
+            {label}
           </button>
           {options.map((opt) => (
             <button
               key={opt.value}
               type="button"
-              onClick={() => {
-                onChange(opt.value)
-                setIsOpen(false)
-              }}
-              className={`w-full text-left rounded-lg px-3 py-2 text-sm hover:bg-slate-50 transition cursor-pointer ${
-                opt.value === value ? 'bg-indigo-50 text-indigo-600 font-semibold' : 'text-gray-700'
-              }`}
+              onClick={() => { onChange(opt.value); setIsOpen(false) }}
+              className={`w-full text-left rounded-lg px-3 py-2 text-sm hover:bg-slate-50 transition cursor-pointer ${opt.value === value ? 'bg-indigo-50 text-indigo-600 font-semibold' : 'text-slate-700'}`}
             >
               {opt.label}
             </button>
@@ -87,6 +108,7 @@ function FilterSelect({ options, value, onChange, placeholder = 'Tất cả' }) 
   )
 }
 
+/* ─── Main Component ─── */
 function Employees() {
   const [openAdd, setOpenAdd] = useState(false)
   const [openImportModal, setOpenImportModal] = useState(false)
@@ -95,6 +117,7 @@ function Employees() {
   const [mode, setMode] = useState('create')
   const [selectedEmployee, setSelectedEmployee] = useState(null)
   const [selectedCompany, setSelectedCompany] = useState('')
+  const [selectedStatus, setSelectedStatus] = useState('')
   const [searchParams, setSearchParams] = useSearchParams()
   const page = Number(searchParams.get('page')) || 1
 
@@ -106,7 +129,7 @@ function Employees() {
     })
   }, [setSearchParams])
 
-  const PAGE_SIZE = 50
+  const PAGE_SIZE = 6
 
   const dispatchAsync = useAppDispatch()
   const dispatch = useDispatch()
@@ -114,11 +137,23 @@ function Employees() {
   const totalEmployees = useSelector(selectEmployeesTotal)
   const loading = useSelector(selectLoading)
   const companies = useSelector(selectCompanies)
+  const departments = useSelector(selectDepartments)
   const debounceRef = useRef(null)
 
   useEffect(() => {
     dispatchAsync(getCompanies())
+    dispatchAsync(getDepartments())
   }, [dispatchAsync])
+
+  useEffect(() => {
+    if (!searchParams.get('page')) {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev)
+        next.set('page', '1')
+        return next
+      }, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
 
   // Dynamic layout adjustments for MainLayout wrapper to prevent page-level scrollbars
   useEffect(() => {
@@ -152,7 +187,7 @@ function Employees() {
     }
   }, [])
 
-  // Fetch employees khi đổi company hoặc search keyword thay đổi
+  // Fetch employees
   const fetchEmployees = useCallback(() => {
     const params = {
       page,
@@ -171,7 +206,7 @@ function Employees() {
     fetchEmployees()
   }, [fetchEmployees])
 
-  // Debounce search input → cập nhật searchKeyword sau 400ms và reset page
+  // Debounce search
   const handleSearchChange = (e) => {
     const value = e.target.value
     setQuery(value)
@@ -182,14 +217,17 @@ function Employees() {
     }, 400)
   }
 
-  // Client-side filter bổ sung (nếu cần lọc thêm ngoài server-side search)
+  // Filter by status (client-side)
   const filteredRows = useMemo(() => {
-    return employees
-  }, [employees])
+    if (!selectedStatus) return employees
+    return employees.filter((emp) => emp.status === selectedStatus)
+  }, [employees, selectedStatus])
 
   const activeEmployees = employees.filter(
     (employee) => employee.status === 'ENABLE'
   ).length
+
+  const inactiveEmployees = totalEmployees - activeEmployees
 
   const totalPages = Math.max(1, Math.ceil(totalEmployees / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
@@ -253,350 +291,330 @@ function Employees() {
     handleCloseModal()
   }
 
-  const renderTableBody = () => {
-    if (loading) {
-      return (
-        <tbody>
-          <tr>
-            <td colSpan={employeeColumns.length + 1}>
-              <LoadingItem />
-            </td>
-          </tr>
-        </tbody>
-      )
+  /* ─── Pagination helpers ─── */
+  const getPageNumbers = () => {
+    const pages = []
+    const maxVisible = 3
+    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2))
+    let end = Math.min(totalPages, start + maxVisible - 1)
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1)
     }
-
-    if (!filteredRows.length) {
-      return (
-        <tbody>
-          <tr>
-            <td colSpan={employeeColumns.length + 1}>
-              <div className="flex h-40 flex-col items-center justify-center gap-2 text-gray-400">
-                <Users className="h-10 w-10" />
-                <p className="text-sm font-medium">
-                  {query ? 'Không tìm thấy nhân viên phù hợp' : 'Không có dữ liệu nhân viên'}
-                </p>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      )
-    }
-
-    return (
-      <tbody className="divide-y divide-gray-200 bg-white">
-        {filteredRows.map((employee) => (
-          <tr key={employee.id} className="hover:bg-gray-50">
-            {employeeColumns.map(([key]) => {
-              const cellClass = 'px-4 py-3 text-gray-700 whitespace-nowrap'
-              if (key === 'employeeId') {
-                return (
-                  <td
-                    key={key}
-                    className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap"
-                  >
-                    {employee.employeeId || '-'}
-                  </td>
-                )
-              }
-
-              if (key === 'employeeCode') {
-                return (
-                  <td
-                    key={key}
-                    className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap"
-                  >
-                    {employee.employeeCode}
-                  </td>
-                )
-              }
-
-              if (key === 'name') {
-                return (
-                  <td key={key} className={cellClass}>
-                    {employee.firstName || '-'} {employee.lastName || ''}
-                  </td>
-                )
-              }
-
-              if (key === 'email') {
-                return (
-                  <td key={key} className={cellClass}>
-                    {employee.email || '-'}
-                  </td>
-                )
-              }
-
-              if (key === 'birthday') {
-                return (
-                  <td key={key} className={cellClass}>
-                    {employee.birthDate
-                      ? formatDateTime(employee.birthDate).split(' ')[0]
-                      : '-'}
-                  </td>
-                )
-              }
-
-              if (key === 'department') {
-                const parentName = employee.unit?.parentUnit?.unitName
-                const unitName = employee.unit?.unitName
-                const hierarchy =
-                  parentName && unitName
-                    ? `${parentName} > ${unitName}`
-                    : unitName
-                return (
-                  <td key={key} className={cellClass}>
-                    {hierarchy || employee?.orgUnit?.unitName || '-'}
-                  </td>
-                )
-              }
-
-              if (key === 'parentUnit') {
-                return (
-                  <td key={key} className={cellClass}>
-                    {employee.orgUnit?.parentUnit?.unitName || employee.orgUnit?.unitName || '-'}
-                  </td>
-                )
-              }
-
-              if (key === 'position') {
-                return (
-                  <td key={key} className={cellClass}>
-                    {employee.position?.positionName || '-'}
-                  </td>
-                )
-              }
-
-              if (key === 'viettel') {
-                return (
-                  <td key={key} className={cellClass}>
-                    {employee?.viettel?.viettelCode || '-'}
-                  </td>
-                )
-              }
-
-              if (key === 'status') {
-                return (
-                  <td key={key} className="px-4 py-3 whitespace-nowrap">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        employee.status === 'ENABLE'
-                          ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20'
-                          : 'bg-gray-50 text-gray-700 ring-1 ring-gray-500/20'
-                      }`}
-                    >
-                      {employee.status === 'ENABLE'
-                        ? 'Hoạt động'
-                        : 'Ngưng hoạt động'}
-                    </span>
-                  </td>
-                )
-              }
-
-              if (key === 'createdAt' || key === 'updatedAt') {
-                return (
-                  <td key={key} className={cellClass}>
-                    {employee[key] ? formatDateTime(employee[key]) : '-'}
-                  </td>
-                )
-              }
-
-              return (
-                <td key={key} className={cellClass}>
-                  {employee[key] || '-'}
-                </td>
-              )
-            })}
-            <td className="px-4 py-3 text-right whitespace-nowrap">
-              <div className="flex items-center justify-end gap-1">
-                <button
-                  type="button"
-                  onClick={() => openEditModal(employee)}
-                  className="rounded-md p-2 text-indigo-600 transition hover:bg-indigo-50 cursor-pointer"
-                  title="Chỉnh sửa"
-                  aria-label={`Chỉnh sửa ${employee.employeeCode}`}
-                >
-                  <Pencil className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openDeleteModal(employee)}
-                  className="rounded-md p-2 text-rose-600 transition hover:bg-rose-50 cursor-pointer"
-                  title="Xóa"
-                  aria-label={`Xóa ${employee.employeeCode}`}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    )
+    for (let i = start; i <= end; i++) pages.push(i)
+    return pages
   }
 
+  /* ─── Render ─── */
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex items-center justify-between">
+
+      {/* ── Title Section ── */}
+      <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900">
-            Quản lý nhân viên
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Dữ liệu hiển thị tất cả nhân viên.
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            Danh sách đội ngũ
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Hệ thống quản lý dữ liệu nhân sự tập trung của doanh nghiệp.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => setOpenImportModal(true)}
-            className="inline-flex items-center rounded-md bg-white border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition focus-visible:outline-none cursor-pointer"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition cursor-pointer"
           >
-            <Upload className="mr-2 h-4 w-4 text-gray-500" />
+            <Upload className="h-4 w-4 text-slate-500" />
             Nhập Excel/CSV
           </button>
           <button
             type="button"
             onClick={openCreateModal}
-            className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 cursor-pointer"
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition cursor-pointer"
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="h-4 w-4" />
             Thêm
           </button>
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Tổng nhân viên</p>
-          <p className="mt-3 text-3xl font-semibold text-slate-900">
-            {totalEmployees}
-          </p>
+      {/* ── Stat Cards ── */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 mb-6">
+        {/* Total */}
+        <div className="relative rounded-2xl border border-slate-200 bg-white p-5 shadow-sm overflow-hidden">
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500 rounded-l-2xl" />
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tổng nhân viên</p>
+              <div className="flex items-baseline gap-3 mt-2">
+                <p className="text-3xl font-bold text-slate-900">{totalEmployees}</p>
+                <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-600">
+                  <TrendingUp className="h-3 w-3" />
+                  +12%
+                </span>
+              </div>
+            </div>
+            <div className="h-12 w-12 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+              <Users className="h-6 w-6 text-indigo-500" />
+            </div>
+          </div>
         </div>
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
-          <p className="text-sm font-medium text-emerald-700">Đang hoạt động</p>
-          <p className="mt-3 text-3xl font-semibold text-emerald-900">
-            {activeEmployees}
-          </p>
+
+        {/* Active */}
+        <div className="relative rounded-2xl border border-slate-200 bg-white p-5 shadow-sm overflow-hidden">
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500 rounded-l-2xl" />
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Đang hoạt động</p>
+              <div className="flex items-baseline gap-3 mt-2">
+                <p className="text-3xl font-bold text-slate-900">{activeEmployees}</p>
+                <span className="text-xs text-slate-400 font-medium">Thành viên trực tuyến</span>
+              </div>
+            </div>
+            <div className="h-12 w-12 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+              <UserCheck className="h-6 w-6 text-emerald-500" />
+            </div>
+          </div>
         </div>
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm sm:col-span-2 xl:col-span-1">
-          <p className="text-sm font-medium text-amber-700">Kết quả lọc</p>
-          <p className="mt-3 text-3xl font-semibold text-amber-900">
-            {filteredRows.length}
-          </p>
+
+        {/* Inactive */}
+        <div className="relative rounded-2xl border border-slate-200 bg-white p-5 shadow-sm overflow-hidden sm:col-span-2 xl:col-span-1">
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-rose-400 rounded-l-2xl" />
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nghỉ việc/Tạm dừng</p>
+              <div className="flex items-baseline gap-3 mt-2">
+                <p className="text-3xl font-bold text-slate-900">{inactiveEmployees}</p>
+                <span className="inline-flex items-center gap-0.5 rounded-full bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-500">
+                  <TrendingDown className="h-3 w-3" />
+                  -5%
+                </span>
+              </div>
+            </div>
+            <div className="h-12 w-12 rounded-xl bg-rose-50 flex items-center justify-center flex-shrink-0">
+              <UserX className="h-6 w-6 text-rose-400" />
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="mt-6 rounded-lg border border-gray-200 bg-white shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
-        <div className="border-b border-gray-200 px-4 py-3 sm:px-6 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-lg font-medium text-gray-900">
-              Danh sách nhân viên
-            </p>
-          </div>
-          <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2">
-            <span className="text-sm font-medium text-slate-500 whitespace-nowrap">Công ty</span>
-            <div className="flex items-center border-r border-gray-200 pr-3">
-              <FilterSelect
-                options={companies.map((c) => ({ value: c.id, label: c.companyName }))}
-                value={selectedCompany}
-                onChange={(val) => {
-                  setSelectedCompany(val)
-                  setPage(1)
-                }}
-                placeholder="Tất cả"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Search className="h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Tìm theo mã, tên, email..."
-                value={query}
-                onChange={handleSearchChange}
-                className="w-72 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
-              />
-            </div>
+      {/* ── Filter Bar ── */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <FilterDropdown
+            label="Tất cả phòng ban"
+            options={departments.map((d) => ({ value: d.orgUnitId || d.id, label: d.unitName }))}
+            value=""
+            onChange={() => {}}
+          />
+          <FilterDropdown
+            label="Trạng thái: Tất cả"
+            options={[
+              { value: 'ENABLE', label: 'Đang hoạt động' },
+              { value: 'DISABLE', label: 'Nghỉ việc/Tạm dừng' }
+            ]}
+            value={selectedStatus}
+            onChange={(val) => { setSelectedStatus(val); setPage(1) }}
+          />
+        </div>
+        <p className="text-sm text-slate-500">
+          Hiển thị <span className="font-semibold text-slate-700">{filteredRows.length}</span> trong tổng số{' '}
+          <span className="font-semibold text-slate-700">{totalEmployees}</span> nhân viên
+        </p>
+      </div>
+
+      {/* ── Table ── */}
+      <div className="rounded-xl border border-slate-200 bg-white shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
+        {/* Search bar inside table header */}
+        <div className="border-b border-slate-100 px-5 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 w-80">
+            <Search className="h-4 w-4 text-slate-400 flex-shrink-0" />
+            <input
+              type="text"
+              placeholder="Tìm theo mã, tên, email..."
+              value={query}
+              onChange={handleSearchChange}
+              className="bg-transparent border-none text-sm text-slate-900 placeholder:text-slate-400 outline-none w-full"
+            />
           </div>
         </div>
+
+        {/* Table */}
         <div className="flex-1 min-h-0 overflow-auto">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                {employeeColumns.map(([key, label]) => (
-                  <th
-                    key={key}
-                    className="sticky top-0 bg-gray-50 px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap z-10 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]"
-                  >
-                    {label}
-                  </th>
-                ))}
-                <th className="sticky top-0 bg-gray-50 px-4 py-2 text-right font-semibold text-gray-700 whitespace-nowrap z-10 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]">
-                  Thao tác
-                </th>
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-100">
+                <th className="sticky top-0 bg-slate-50/80 backdrop-blur-sm px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap z-10">STT</th>
+                <th className="sticky top-0 bg-slate-50/80 backdrop-blur-sm px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap z-10">Mã NV</th>
+                <th className="sticky top-0 bg-slate-50/80 backdrop-blur-sm px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap z-10">Nhân viên</th>
+                <th className="sticky top-0 bg-slate-50/80 backdrop-blur-sm px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap z-10">Chức vụ</th>
+                <th className="sticky top-0 bg-slate-50/80 backdrop-blur-sm px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap z-10">Đơn vị</th>
+                <th className="sticky top-0 bg-slate-50/80 backdrop-blur-sm px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap z-10">Ngày tạo</th>
+                <th className="sticky top-0 bg-slate-50/80 backdrop-blur-sm px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap z-10">Trạng thái</th>
+                <th className="sticky top-0 bg-slate-50/80 backdrop-blur-sm px-5 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap z-10">Thao tác</th>
               </tr>
             </thead>
-            {renderTableBody()}
+
+            {loading ? (
+              <tbody>
+                <tr>
+                  <td colSpan={8}>
+                    <LoadingItem />
+                  </td>
+                </tr>
+              </tbody>
+            ) : !filteredRows.length ? (
+              <tbody>
+                <tr>
+                  <td colSpan={8}>
+                    <div className="flex h-48 flex-col items-center justify-center gap-3 text-slate-400">
+                      <Users className="h-12 w-12 text-slate-300" />
+                      <p className="text-sm font-medium">
+                        {query ? 'Không tìm thấy nhân viên phù hợp' : 'Không có dữ liệu nhân viên'}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            ) : (
+              <tbody className="divide-y divide-slate-50">
+                {filteredRows.map((employee, index) => {
+                  const fullName = `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || 'N/A'
+                  const initials = getInitials(employee.firstName, employee.lastName)
+                  const avatarColor = stringToColor(fullName)
+                  const stt = (currentPage - 1) * PAGE_SIZE + index + 1
+
+                  return (
+                    <tr key={employee.id} className="hover:bg-slate-50/60 transition-colors">
+                      {/* STT */}
+                      <td className="px-5 py-4 text-slate-500 font-medium whitespace-nowrap">
+                        {String(stt).padStart(2, '0')}
+                      </td>
+
+                      {/* Mã NV */}
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <span className="font-semibold text-slate-800">{employee.employeeCode || '-'}</span>
+                      </td>
+
+                      {/* Nhân viên (Avatar + Tên + Email) */}
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="h-9 w-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-sm"
+                            style={{ backgroundColor: avatarColor }}
+                          >
+                            {initials}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-semibold text-slate-900 truncate">{fullName}</p>
+                            <p className="text-xs text-slate-400 truncate">{employee.email || '-'}</p>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Chức vụ */}
+                      <td className="px-5 py-4 text-slate-600 whitespace-nowrap">
+                        {employee.position?.positionName || '-'}
+                      </td>
+
+                      {/* Đơn vị */}
+                      <td className="px-5 py-4 text-slate-600 whitespace-nowrap">
+                        {employee.unit?.unitName || employee.orgUnit?.unitName || '-'}
+                      </td>
+
+                      {/* Ngày tạo */}
+                      <td className="px-5 py-4 text-slate-500 whitespace-nowrap">
+                        {employee.createdAt ? formatDateTime(employee.createdAt).split(' ')[0] : '-'}
+                      </td>
+
+                      {/* Trạng thái */}
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        {employee.status === 'ENABLE' ? (
+                          <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-emerald-200">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                            Đang hoạt động
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 rounded-md bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-600 ring-1 ring-rose-200">
+                            <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+                            Nghỉ việc
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Thao tác */}
+                      <td className="px-5 py-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(employee)}
+                            className="rounded-lg p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition cursor-pointer"
+                            title="Chỉnh sửa"
+                            aria-label={`Chỉnh sửa ${employee.employeeCode}`}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openDeleteModal(employee)}
+                            className="rounded-lg p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                            title="Xóa"
+                            aria-label={`Xóa ${employee.employeeCode}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            )}
           </table>
         </div>
 
-        {/* Pagination */}
+        {/* ── Pagination ── */}
         {!loading && filteredRows.length > 0 && (
-          <div className="border-t border-gray-100 px-4 py-3 flex items-center justify-between">
-            <p className="text-xs text-gray-500">
-              Hiển thị {(currentPage - 1) * PAGE_SIZE + 1}–
-              {Math.min(currentPage * PAGE_SIZE, totalEmployees)} /{' '}
-              {totalEmployees} nhân viên
+          <div className="border-t border-slate-100 px-5 py-3 flex items-center justify-between">
+            <p className="text-sm text-slate-500">
+              Trang <span className="font-semibold text-slate-700">{currentPage}</span> / {totalPages}
             </p>
             <div className="flex items-center gap-1">
               <button
                 disabled={currentPage === 1}
-                onClick={() => setPage(1)}
-                className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-              >
-                <ChevronsLeft className="h-4 w-4" />
-              </button>
-              <button
-                disabled={currentPage === 1}
-                onClick={() => setPage((p) => p - 1)}
-                className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                onClick={() => setPage(currentPage - 1)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                aria-label="Trang trước"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter((p) => Math.abs(p - currentPage) <= 2)
-                .map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPage(p)}
-                    className={`min-w-[32px] rounded-md px-2.5 py-1 text-xs font-semibold transition cursor-pointer ${
-                      p === currentPage
-                        ? 'bg-primary text-white'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
+              {getPageNumbers().map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`inline-flex h-8 min-w-[32px] items-center justify-center rounded-lg text-sm font-semibold transition cursor-pointer ${
+                    p === currentPage
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'border border-slate-200 text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
               <button
                 disabled={currentPage === totalPages}
-                onClick={() => setPage((p) => p + 1)}
-                className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                onClick={() => setPage(currentPage + 1)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                aria-label="Trang sau"
               >
                 <ChevronRight className="h-4 w-4" />
-              </button>
-              <button
-                disabled={currentPage === totalPages}
-                onClick={() => setPage(totalPages)}
-                className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-              >
-                <ChevronsRight className="h-4 w-4" />
               </button>
             </div>
           </div>
         )}
       </div>
 
+      {/* ── Modals ── */}
       <AddEmployeeModal
         open={openAdd}
         onClose={handleCloseModal}

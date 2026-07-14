@@ -19,15 +19,11 @@ export const headerTablePositions = {
 export const headerTableEmployees = {
   employeeId: 'STT',
   employeeCode: 'Mã NV',
-  name: 'Tên nhân viên',
-  email: 'Email',
-  birthday: 'Ngày sinh',
+  employee: 'Nhân viên',
   position: 'Chức vụ',
-  department: 'Đơn vị/phòng ban',
-  description: 'Mô tả',
-  status: 'Trạng thái',
+  department: 'Đơn vị',
   createdAt: 'Ngày tạo',
-  updatedAt: 'Ngày cập nhật'
+  status: 'Trạng thái'
 }
 
 export const headerTableDepartments = {

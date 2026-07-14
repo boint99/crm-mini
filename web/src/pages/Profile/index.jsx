@@ -4,7 +4,6 @@ import { toast } from 'react-toastify'
 import {
   User,
   KeyRound,
-  Bell,
   Mail,
   Phone,
   Building2,
@@ -13,14 +12,24 @@ import {
   Loader2
 } from 'lucide-react'
 
-const PRESET_AVATARS = [
-  'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80',
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80',
-  'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&h=150&q=80',
-  'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&h=150&q=80',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80',
-  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&h=150&q=80'
-]
+
+
+function stringToColor(str) {
+  if (!str) return 'hsl(220, 60%, 55%)';
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h = Math.abs(hash) % 360;
+  return `hsl(${h}, 55%, 50%)`;
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(' ');
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState('profile')
@@ -41,10 +50,9 @@ export default function Profile() {
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
-  // Notification Settings States
-  const [notifySystem, setNotifySystem] = useState(true)
-  const [notifyNetwork, setNotifyNetwork] = useState(false)
-  const [notifyRoles, setNotifyRoles] = useState(true)
+  const fullName = (lastName || firstName) ? `${lastName} ${firstName}`.trim() : 'Super Admin'
+  const initials = getInitials(fullName)
+  const avatarColor = '#12312b'
 
   useEffect(() => {
     fetchProfile()
@@ -63,14 +71,7 @@ export default function Profile() {
         setLastName(data.employee.lastName || '')
         setPhone(data.employee.phone || '')
       }
-      setAvatar(data.avatar || PRESET_AVATARS[0])
-
-      // Populate notification settings if exist
-      if (data.notificationSettings) {
-        setNotifySystem(!!data.notificationSettings.notifySystem)
-        setNotifyNetwork(!!data.notificationSettings.notifyNetwork)
-        setNotifyRoles(!!data.notificationSettings.notifyRoles)
-      }
+      setAvatar(data.avatar || '')
     } catch (error) {
       toast.error('Không thể tải thông tin hồ sơ!')
       console.error(error)
@@ -87,12 +88,7 @@ export default function Profile() {
         firstName,
         lastName,
         phone,
-        avatar,
-        notificationSettings: {
-          notifySystem,
-          notifyNetwork,
-          notifyRoles
-        }
+        avatar
       })
       setProfile(updated.data)
       toast.success('Cập nhật hồ sơ thành công!')
@@ -141,7 +137,7 @@ export default function Profile() {
       {/* Title */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-800">Cài đặt cá nhân</h1>
-        <p className="text-sm text-slate-500 mt-1">Quản lý thông tin hồ sơ, mật khẩu và nhận thông báo.</p>
+        <p className="text-sm text-slate-500 mt-1">Quản lý thông tin hồ sơ và mật khẩu tài khoản của bạn.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
@@ -170,17 +166,6 @@ export default function Profile() {
               <KeyRound size={18} />
               Đổi mật khẩu
             </button>
-            <button
-              onClick={() => setActiveTab('notifications')}
-              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition cursor-pointer ${
-                activeTab === 'notifications'
-                  ? 'bg-indigo-50 text-indigo-600'
-                  : 'text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              <Bell size={18} />
-              Cài đặt thông báo
-            </button>
           </nav>
         </div>
 
@@ -196,38 +181,25 @@ export default function Profile() {
                   <p className="text-xs text-slate-400 mt-0.5">Cập nhật họ tên, ảnh đại diện và số điện thoại.</p>
                 </div>
 
-                {/* Avatar Selection */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-medium text-slate-700">Ảnh đại diện</label>
-                  <div className="flex flex-wrap items-center gap-4">
+                {/* Avatar Display */}
+                <div className="flex items-center gap-4">
+                  {avatar ? (
                     <img
                       src={avatar}
-                      alt="Current avatar"
-                      className="h-16 w-16 rounded-full object-cover ring-2 ring-indigo-500/20"
+                      alt="User avatar"
+                      className="h-20 w-20 rounded-full object-cover ring-4 ring-indigo-50 shadow-sm"
                     />
-                    <div className="flex flex-wrap gap-2">
-                      {PRESET_AVATARS.map((url, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => setAvatar(url)}
-                          className={`h-10 w-10 rounded-full overflow-hidden border-2 cursor-pointer transition ${
-                            avatar === url ? 'border-indigo-600 scale-105' : 'border-transparent hover:scale-105'
-                          }`}
-                        >
-                          <img src={url} alt={`Preset ${idx}`} className="h-full w-full object-cover" />
-                        </button>
-                      ))}
+                  ) : (
+                    <div
+                      className="h-20 w-20 rounded-full flex items-center justify-center text-white text-2xl font-bold ring-4 ring-indigo-50 shadow-sm"
+                      style={{ backgroundColor: avatarColor }}
+                    >
+                      {initials}
                     </div>
-                  </div>
+                  )}
                   <div>
-                    <input
-                      type="url"
-                      value={avatar}
-                      onChange={(e) => setAvatar(e.target.value)}
-                      placeholder="Hoặc nhập đường dẫn ảnh (URL)..."
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 bg-white"
-                    />
+                    <h3 className="text-sm font-semibold text-slate-800">Ảnh đại diện</h3>
+                    <p className="text-xs text-slate-400 mt-0.5">Ảnh hồ sơ hiện tại của tài khoản.</p>
                   </div>
                 </div>
 
@@ -378,80 +350,6 @@ export default function Profile() {
                   >
                     {saving ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} />}
                     Cập nhật mật khẩu
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* NOTIFICATIONS TAB */}
-            {activeTab === 'notifications' && (
-              <form onSubmit={handleUpdateProfile} className="space-y-6">
-                <div>
-                  <h2 className="text-lg font-semibold text-slate-800">Cấu hình thông báo</h2>
-                  <p className="text-xs text-slate-400 mt-0.5">Tùy chọn cách thức và nội dung nhận thông báo của bạn.</p>
-                </div>
-
-                <div className="space-y-4 divide-y divide-slate-50">
-                  {/* Option 1 */}
-                  <div className="flex items-start justify-between py-4 first:pt-0">
-                    <div className="space-y-0.5">
-                      <h4 className="text-sm font-semibold text-slate-800">Thông báo hệ thống</h4>
-                      <p className="text-xs text-slate-400">Nhận cập nhật về trạng thái tài khoản, thay đổi chính sách.</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={notifySystem}
-                        onChange={(e) => setNotifySystem(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                    </label>
-                  </div>
-
-                  {/* Option 2 */}
-                  <div className="flex items-start justify-between py-4">
-                    <div className="space-y-0.5">
-                      <h4 className="text-sm font-semibold text-slate-800">Thay đổi cơ sở hạ tầng mạng</h4>
-                      <p className="text-xs text-slate-400">Thông báo khi có VLAN hoặc IP mới được tạo, chỉnh sửa.</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={notifyNetwork}
-                        onChange={(e) => setNotifyNetwork(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                    </label>
-                  </div>
-
-                  {/* Option 3 */}
-                  <div className="flex items-start justify-between py-4">
-                    <div className="space-y-0.5">
-                      <h4 className="text-sm font-semibold text-slate-800">Thay đổi phân quyền hệ thống</h4>
-                      <p className="text-xs text-slate-400">Nhận thông báo khi được gán vai trò mới hoặc thu hồi quyền.</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={notifyRoles}
-                        onChange={(e) => setNotifyRoles(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                    </label>
-                  </div>
-                </div>
-
-                <div className="flex justify-end pt-6 border-t border-slate-50">
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition cursor-pointer disabled:opacity-50"
-                  >
-                    {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                    Lưu cấu hình
                   </button>
                 </div>
               </form>
