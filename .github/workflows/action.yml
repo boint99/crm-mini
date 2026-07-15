@@ -2,14 +2,12 @@ name: Github CI
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ "deploy" ]
 
 jobs:
   lint:
     name: Lint Code
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,13 +19,66 @@ jobs:
             exit 1
           fi
 
-      - name: Setup Node.js for Backend
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'yarn'
+
+      - name: Install backend dependencies
+        run: yarn install
+
+      - name: Run backend lint
+        run: yarn lint
+
+      - name: Install frontend dependencies
+        working-directory: ./web
+        run: npm ci
+
+      - name: Run frontend lint
+        working-directory: ./web
+        run: npm run lint
+
+  setup:
+    name: Setup & Build
+    needs: lint
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
 
       - name: Install backend dependencies
-        run: yarn install
+        run: npm install
 
-      - name: Run Backend Lint (yarn lint)
-        run: yarn lint
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Install frontend dependencies
+        working-directory: ./web
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: ./web
+        run: npm run build
+
+  deploy:
+    name: Deploy Application
+    needs: setup
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy application
+        run: |
+          #Docker Compose Deployment
+          docker compose -f docker-compose.prod.yml down
+          docker compose -f docker-compose.prod.yml up -d --build
+
+      - name: Remove dangling images
+        run: docker image prune -af

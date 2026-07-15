@@ -1,0 +1,106 @@
+services:
+  web:
+    build:
+      context: ./web
+      dockerfile: docker/Dockerfile.prod
+    container_name: web
+    restart: always
+    depends_on:
+      - backend
+    networks:
+      - app-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`it-heodesk.vienthongact.vn`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.services.frontend.loadbalancer.server.port=8080"
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: backend
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=${PORT_BE}
+      - DATABASE_URL=${DATABASE_URL}
+    ports:
+      - "${PORT_BE}:${PORT_BE}"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: sh -c "npm install && npx prisma generate && node src/server.js"
+    restart: always
+    depends_on:
+      - db
+    networks:
+      - app-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`it-heodesk.vienthongact.vn`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.tls.certresolver=myresolver"
+      - "traefik.http.services.backend.loadbalancer.server.port=${PORT_BE}"
+
+  db:
+    image: postgres:18
+    container_name: database
+    profiles:
+      - local-db
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    restart: always
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      # Định nghĩa 2 cổng HTTP (80) và HTTPS (443)
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Tự động chuyển hướng (Redirect) từ HTTP (80) -> HTTPS (443)
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      # Cấu hình tự động sinh SSL Let's Encrypt
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.email=boint@vienthongact.vn" # Thay bằng email của bạn
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"       # Bắt buộc mở cổng 80 để Let's Encrypt xác thực và redirect
+      - "443:443"     # Cổng HTTPS chính
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt # Lưu trữ certificate để không bị mất khi restart container
+    networks:
+      - app-net
+
+volumes:
+  pgdata:
+
+networks:
+  app-net:
+    driver: bridge
