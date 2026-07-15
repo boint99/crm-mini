@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { getCookie, setCookie, deleteCookie } from '@/utils/cookie'
 import { authAPI } from '@/api/auth'

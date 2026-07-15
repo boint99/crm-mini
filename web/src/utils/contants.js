@@ -1,21 +1,19 @@
 export const ROOT_DOMAIN = import.meta.env.VITE_API_URL
 
 export const dispatchAsync = async (dispatch, action, options = {}) => {
-    const { onSuccess, onError, successMessage, errorMessage } = options;
+  const { onSuccess, onError } = options
 
-    try {
-      const result = await dispatch(action).unwrap();
+  try {
 
-      if (successMessage) console.log(successMessage);
-      if (onSuccess) onSuccess(result);
+    const result = await dispatch(action).unwrap()
+    if (onSuccess) onSuccess(result)
 
-      return result;
-    } catch (error) {
-      console.error(errorMessage || error);
-      if (onError) onError(error);
-      throw error;
-    }
-  };
+    return result
+  } catch (error) {
+    if (onError) onError(error)
+    throw error
+  }
+}
 
 
 export const formatDateTime = (isoString) => {
@@ -37,45 +35,45 @@ export const formatDateTime = (isoString) => {
 
 export const CUSTOM_MESSAGES = {
   get: {
-    pending: "Đang tải danh sách...",
-    success: "Lấy danh sách thành công!",
-    error: "Không thể tải danh sách!",
+    pending: 'Đang tải danh sách...',
+    success: 'Lấy danh sách thành công!',
+    error: 'Không thể tải danh sách!'
   },
   create: {
-    pending: "Đang thêm...",
-    success: "Thêm thành công!",
-    error: "Thêm thất bại!",
+    pending: 'Đang thêm...',
+    success: 'Thêm thành công!',
+    error: 'Thêm thất bại!'
   },
   update: {
-    pending: "Đang cập nhật...",
-    success: "Cập nhật thành công!",
-    error: "Cập nhật thất bại!",
+    pending: 'Đang cập nhật...',
+    success: 'Cập nhật thành công!',
+    error: 'Cập nhật thất bại!'
   },
   delete: {
-    pending: "Đang xóa...",
-    success: "Xóa thành công!",
-    error: "Xóa thất bại!",
-  },
-};
+    pending: 'Đang xóa...',
+    success: 'Xóa thành công!',
+    error: 'Xóa thất bại!'
+  }
+}
 
 
 export const customStyles = {
   overlay: {
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    zIndex: 50,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 50
   },
   content: {
-    top: "10%",
-    left: "50%",
-    right: "auto",
-    bottom: "auto",
-    transform: "translateX(-50%)",
+    top: '10%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    transform: 'translateX(-50%)',
     padding: 0,
-    border: "none",
-    borderRadius: "0.75rem",
-    maxWidth: "520px",
-    width: "100%",
-    maxHeight: "90vh",
-    overflow: "auto",
-  },
-};
+    border: 'none',
+    borderRadius: '0.75rem',
+    maxWidth: '520px',
+    width: '100%',
+    maxHeight: '90vh',
+    overflow: 'auto'
+  }
+}

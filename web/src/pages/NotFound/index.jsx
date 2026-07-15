@@ -1,8 +1,8 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 function NotFound() {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate = useNavigate()
+  const location = useLocation()
 
   return (
     <div className="not-found w-full">
@@ -15,10 +15,10 @@ function NotFound() {
                 Không tìm thấy trang
               </h1>
               <p className="mt-2 text-sm text-gray-600">
-                Đường dẫn{" "}
+                Đường dẫn{' '}
                 <span className="font-mono text-[13px]">
                   {location.pathname}
-                </span>{" "}
+                </span>{' '}
                 không tồn tại hoặc bạn không có quyền truy cập.
               </p>
             </div>
@@ -48,7 +48,7 @@ function NotFound() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default NotFound;
+export default NotFound

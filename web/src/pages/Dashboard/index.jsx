@@ -65,7 +65,7 @@ export default function Dashboard() {
     { name: 'Sep', Activity: 1100 },
     { name: 'Oct', Activity: 1300 },
     { name: 'Nov', Activity: 1200 },
-    { name: 'Dec', Activity: 1400 },
+    { name: 'Dec', Activity: 1400 }
   ]
 
   // Donut chart data đại diện cho các VLAN Categories
@@ -136,7 +136,7 @@ export default function Dashboard() {
             Dashboard
           </h1>
           <p className="text-slate-500 mt-1 font-medium">
-            Welcome back! Here's what's happening with your network & IT infrastructure today.
+            {'Welcome back! Here\'s what\'s happening with your network & IT infrastructure today.'}
           </p>
         </div>
 
@@ -362,8 +362,8 @@ export default function Dashboard() {
                         ip.status === 'ACTIVE'
                           ? 'text-emerald-700 bg-emerald-50'
                           : ip.status === 'ASSIGNED'
-                          ? 'text-blue-700 bg-blue-50'
-                          : 'text-slate-600 bg-slate-100'
+                            ? 'text-blue-700 bg-blue-50'
+                            : 'text-slate-600 bg-slate-100'
                       }`}>
                         {ip.status || 'ACTIVE'}
                       </span>

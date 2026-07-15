@@ -1,18 +1,18 @@
-import { NavLink } from "react-router-dom";
+import { NavLink } from 'react-router-dom'
 
 /* ── NavItem (leaf) ─────────────────────────────────── */
 function NavItem({ item, collapsed }) {
-  const Icon = item.icon;
+  const Icon = item.icon
   return (
     <NavLink
       to={item.path}
       title={collapsed ? item.label : undefined}
       className={({ isActive }) =>
         [
-          "sidebar-nav-item",
-          collapsed ? "justify-center" : "",
-          isActive ? "active" : "",
-        ].join(" ")
+          'sidebar-nav-item',
+          collapsed ? 'justify-center' : '',
+          isActive ? 'active' : ''
+        ].join(' ')
       }
     >
       {({ isActive }) => (
@@ -26,7 +26,7 @@ function NavItem({ item, collapsed }) {
         </>
       )}
     </NavLink>
-  );
+  )
 }
 
-export default NavItem;
+export default NavItem

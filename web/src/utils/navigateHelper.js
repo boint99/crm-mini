@@ -11,8 +11,6 @@ export const navigateTo = (path, options) => {
   if (navigateRef) {
     navigateRef(path, options)
   } else {
-    // Fallback nếu chưa set navigate (không nên xảy ra)
-    console.warn('navigateRef chưa được set, fallback về window.location')
     window.location.href = path
   }
 }

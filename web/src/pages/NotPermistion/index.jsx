@@ -1,8 +1,8 @@
-import { ShieldAlert, ArrowLeft, Home } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ShieldAlert, ArrowLeft, Home } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 export default function NotPermissionPage() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center">
@@ -32,7 +32,7 @@ export default function NotPermissionPage() {
         {/* Action Buttons */}
         <div className="space-y-3">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate('/')}
             className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-100 hover:opacity-95 transition cursor-pointer"
           >
             <Home className="h-4 w-4" />
@@ -49,5 +49,5 @@ export default function NotPermissionPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

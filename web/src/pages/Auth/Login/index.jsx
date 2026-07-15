@@ -165,7 +165,7 @@ function LoginPage() {
         </button>
 
         <div className={styles.registerLink}>
-          Don't have an account?{' '}
+          {'Don\'t have an account?'}{' '}
           <button
             type="button"
             onClick={() => navigate('/auth/register')}

@@ -1,73 +1,73 @@
 
-import { positionsAPI } from "@/api/positionsAPI";
-import { CUSTOM_MESSAGES } from "@/utils/contants";
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { positionsAPI } from '@/api/positionsAPI'
+import { CUSTOM_MESSAGES } from '@/utils/contants'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 
-const getErrorMessage = (error, fallback = "Có lỗi xảy ra") => {
-  return error?.response?.data?.message || error?.message || fallback;
-};
+const getErrorMessage = (error, fallback = 'Có lỗi xảy ra') => {
+  return error?.response?.data?.message || error?.message || fallback
+}
 
 // GET LIST
 export const getPositions = createAsyncThunk(
-  "positions/getPositions",
+  'positions/getPositions',
   async (_, { rejectWithValue }) => {
     try {
-      const data = await positionsAPI.getLists();
-      return data.data || [];
+      const data = await positionsAPI.getLists()
+      return data.data || []
     } catch (error) {
-      return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.get.error));
+      return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.get.error))
     }
   }
-);
+)
 
 // CREATE
 export const createPosition = createAsyncThunk(
-  "positions/createPosition",
+  'positions/createPosition',
   async (payload, { rejectWithValue }) => {
     try {
-      const data = await positionsAPI.create(payload);
-      return data.data;
+      const data = await positionsAPI.create(payload)
+      return data.data
     } catch (error) {
-      return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.create.error));
+      return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.create.error))
     }
   }
-);
+)
 
 // UPDATE
 export const updatePosition = createAsyncThunk(
-  "positions/updatePosition",
+  'positions/updatePosition',
   async (payload , { rejectWithValue }) => {
     try {
-      await positionsAPI.update(payload);
-      return payload;
+      await positionsAPI.update(payload)
+      return payload
     } catch (error) {
-      return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.update.error));
+      return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.update.error))
     }
   }
-);
+)
 
 // DELETE
 export const deletePosition = createAsyncThunk(
-  "positions/deletePosition",
+  'positions/deletePosition',
   async (id, { rejectWithValue }) => {
     try {
-      await positionsAPI.delete(id);
-      return id;
+      await positionsAPI.delete(id)
+      return id
     } catch (error) {
-      return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.delete.error));
+      return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.delete.error))
     }
   }
-);
+)
 
 const initialState = {
   items: [],
   loading: false,
   error: null,
-  message: null,
-};
+  message: null
+}
 
 const positionsSlice = createSlice({
-  name: "positions",
+  name: 'positions',
   initialState,
   reducers: {},
 
@@ -75,67 +75,67 @@ const positionsSlice = createSlice({
     builder
       // GET
       .addCase(getPositions.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-        state.message = CUSTOM_MESSAGES.get.pending;
+        state.loading = true
+        state.error = null
+        state.message = CUSTOM_MESSAGES.get.pending
       })
       .addCase(getPositions.fulfilled, (state, action) => {
-        state.loading = false;
-        state.items = action.payload;
-        state.message = CUSTOM_MESSAGES.get.success;
+        state.loading = false
+        state.items = action.payload
+        state.message = CUSTOM_MESSAGES.get.success
       })
       .addCase(getPositions.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-        state.message = action.payload || CUSTOM_MESSAGES.get.error;
+        state.loading = false
+        state.error = action.payload
+        state.message = action.payload || CUSTOM_MESSAGES.get.error
       })
 
       // CREATE
       .addCase(createPosition.fulfilled, (state, action) => {
         if (action.payload) {
-          state.items.unshift(action.payload);
+          state.items.unshift(action.payload)
         }
-        state.message = CUSTOM_MESSAGES.create.success;
+        state.message = CUSTOM_MESSAGES.create.success
       })
       .addCase(createPosition.rejected, (state, action) => {
-        state.error = action.payload;
-        state.message = action.payload || CUSTOM_MESSAGES.create.error;
+        state.error = action.payload
+        state.message = action.payload || CUSTOM_MESSAGES.create.error
       })
 
       // UPDATE
       .addCase(updatePosition.fulfilled, (state, action) => {
         const index = state.items.findIndex(
           (item) => item.id === action.payload.id
-        );
+        )
         if (index !== -1) {
           state.items[index] = {
             ...state.items[index],
-            ...action.payload,
-          };
+            ...action.payload
+          }
         }
-        state.message = CUSTOM_MESSAGES.update.success;
+        state.message = CUSTOM_MESSAGES.update.success
       })
       .addCase(updatePosition.rejected, (state, action) => {
-        state.error = action.payload;
-        state.message = action.payload || CUSTOM_MESSAGES.update.error;
+        state.error = action.payload
+        state.message = action.payload || CUSTOM_MESSAGES.update.error
       })
 
       // DELETE
       .addCase(deletePosition.fulfilled, (state, action) => {
-          state.items = state.items.filter(
+        state.items = state.items.filter(
           (item) => item.id !== action.payload
-        );
-        state.message = CUSTOM_MESSAGES.delete.success;
+        )
+        state.message = CUSTOM_MESSAGES.delete.success
       })
       .addCase(deletePosition.rejected, (state, action) => {
-        state.error = action.payload;
-        state.message = action.payload || CUSTOM_MESSAGES.delete.error;
-      });
-  },
-});
+        state.error = action.payload
+        state.message = action.payload || CUSTOM_MESSAGES.delete.error
+      })
+  }
+})
 
-export const selectPositions = (state) => state.positions.items || [];
-export const selectLoading = (state) => state.positions.loading || false;
-export const selectPositionMessage = (state) => state.positions.message || "";
+export const selectPositions = (state) => state.positions.items || []
+export const selectLoading = (state) => state.positions.loading || false
+export const selectPositionMessage = (state) => state.positions.message || ''
 
-export default positionsSlice.reducer;
+export default positionsSlice.reducer

@@ -20,20 +20,20 @@ import {
 
 
 function stringToColor(str) {
-  if (!str) return 'hsl(220, 60%, 55%)';
-  let hash = 0;
+  if (!str) return 'hsl(220, 60%, 55%)'
+  let hash = 0
   for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
   }
-  const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 55%, 50%)`;
+  const h = Math.abs(hash) % 360
+  return `hsl(${h}, 55%, 50%)`
 }
 
 function getInitials(name) {
-  if (!name) return '?';
-  const parts = name.trim().split(' ');
-  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  if (!name) return '?'
+  const parts = name.trim().split(' ')
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
 }
 
 export default function Profile() {

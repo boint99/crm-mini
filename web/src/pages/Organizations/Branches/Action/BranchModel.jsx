@@ -1,65 +1,65 @@
-import { customStyles } from "@/utils/contants";
-import { X } from "lucide-react";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import Modal from "react-modal";
+import { customStyles } from '@/utils/contants'
+import { X } from 'lucide-react'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import Modal from 'react-modal'
 
 export default function BranchModel({
   open,
   isOpen = open,
   onClose,
   onSubmit,
-  mode = "create",
+  mode = 'create',
   initialValues,
-  data = initialValues,
+  data = initialValues
 }) {
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
-  } = useForm();
+    formState: { errors, isSubmitting }
+  } = useForm()
 
   useEffect(() => {
     if (isOpen) {
-      if (mode === "edit" && data) {
+      if (mode === 'edit' && data) {
         reset({
-          branchName: data.branchName || "",
-          branchCode: data.branchCode || "",
-          location: data.location || "",
-          status: data.status || "ENABLE",
-        });
-      } else if (mode === "create") {
+          branchName: data.branchName || '',
+          branchCode: data.branchCode || '',
+          location: data.location || '',
+          status: data.status || 'ENABLE'
+        })
+      } else if (mode === 'create') {
         reset({
-          branchName: "",
-          branchCode: "",
-          location: "",
-          status: "ENABLE",
-        });
+          branchName: '',
+          branchCode: '',
+          location: '',
+          status: 'ENABLE'
+        })
       }
     }
-  }, [isOpen, mode, data, reset]);
+  }, [isOpen, mode, data, reset])
 
   const handleFormSubmit = (formData) => {
-    if (mode === "delete") {
-      onSubmit?.(data?.id || data?.branchId);
-      return;
+    if (mode === 'delete') {
+      onSubmit?.(data?.id || data?.branchId)
+      return
     }
     const payload = {
       ...formData,
       branchName: formData.branchName.trim(),
       branchCode: formData.branchCode.trim(),
       location: formData.location?.trim() || null,
-      status: formData.status,
-    };
-    if (mode === "edit" && data) {
-      if (data.id) payload.id = data.id;
-      if (data.branchId) payload.branchId = Number(data.branchId);
+      status: formData.status
     }
-    onSubmit?.(payload);
-  };
+    if (mode === 'edit' && data) {
+      if (data.id) payload.id = data.id
+      if (data.branchId) payload.branchId = Number(data.branchId)
+    }
+    onSubmit?.(payload)
+  }
 
-  if (mode === "delete") {
+  if (mode === 'delete') {
     return (
       <Modal
         isOpen={isOpen}
@@ -80,8 +80,8 @@ export default function BranchModel({
             </button>
           </div>
           <p className="text-sm text-gray-600 mb-6">
-            Bạn có chắc muốn xóa chi nhánh{" "}
-            <span className="font-semibold">{data?.branchName}</span> —{" "}
+            Bạn có chắc muốn xóa chi nhánh{' '}
+            <span className="font-semibold">{data?.branchName}</span> —{' '}
             <span className="font-medium">{data?.branchCode}</span>? Thao tác này
             không thể hoàn tác.
           </p>
@@ -101,12 +101,12 @@ export default function BranchModel({
           </div>
         </div>
       </Modal>
-    );
+    )
   }
 
   const inputClass =
-    "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none";
-  const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+    'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none'
+  const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
 
   return (
     <Modal
@@ -118,7 +118,7 @@ export default function BranchModel({
       <div className="p-6">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-semibold text-gray-900">
-            {mode === "edit" ? "Chỉnh sửa chi nhánh" : "Thêm chi nhánh mới"}
+            {mode === 'edit' ? 'Chỉnh sửa chi nhánh' : 'Thêm chi nhánh mới'}
           </h3>
           <button
             onClick={onClose}
@@ -136,7 +136,7 @@ export default function BranchModel({
                 type="text"
                 placeholder="VD: Chi nhánh Tp.HCM"
                 className={inputClass}
-                {...register("branchName", { required: "Bắt buộc" })}
+                {...register('branchName', { required: 'Bắt buộc' })}
               />
               {errors.branchName && (
                 <p className="mt-1 text-xs text-rose-500">
@@ -150,7 +150,7 @@ export default function BranchModel({
                 type="text"
                 placeholder="VD: CN-HCM"
                 className={inputClass}
-                {...register("branchCode", { required: "Bắt buộc" })}
+                {...register('branchCode', { required: 'Bắt buộc' })}
               />
               {errors.branchCode && (
                 <p className="mt-1 text-xs text-rose-500">
@@ -166,13 +166,13 @@ export default function BranchModel({
               type="text"
               placeholder="VD: 123 Đường ABC, Tp.HCM"
               className={inputClass}
-              {...register("location")}
+              {...register('location')}
             />
           </div>
 
           <div>
             <label className={labelClass}>Trạng thái</label>
-            <select className={inputClass} {...register("status")}>
+            <select className={inputClass} {...register('status')}>
               <option value="ENABLE">ENABLE (Hoạt động)</option>
               <option value="DISABLED">DISABLED</option>
             </select>
@@ -191,11 +191,11 @@ export default function BranchModel({
               disabled={isSubmitting}
               className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
             >
-              {mode === "edit" ? "Cập nhật" : "Tạo chi nhánh"}
+              {mode === 'edit' ? 'Cập nhật' : 'Tạo chi nhánh'}
             </button>
           </div>
         </form>
       </div>
     </Modal>
-  );
+  )
 }

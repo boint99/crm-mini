@@ -1,106 +1,78 @@
 import {
   LayoutDashboard,
   Users,
-  Mail,
   Network,
   BriefcaseBusiness,
   KeyRound,
-  MessageCircle,
   Folder,
-  CheckSquare,
   Shield,
-  Group,
   Building2,
-  MapPinned,
-  GitBranch,
-  FolderTree,
-} from "lucide-react";
+  MapPinned
+} from 'lucide-react'
 
 export const NAV_GROUPS = [
   {
-    group: "DASHBOARDS",
+    group: 'DASHBOARDS',
     items: [
-      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/" },
-    ],
+      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/' }
+    ]
   },
-  // {
-  //   group: "HOME",
-  //   items: [
-  //     { id: "tasklist", label: "Task List", icon: CheckSquare, path: "/tasklist" },
-  //     { id: "chat", label: "Chat", icon: MessageCircle, path: "/chat" },
-  //     { id: "files", label: "Files", icon: Folder, path: "/files" },
-  //     { id: "group", label: "Group Mail", icon: Group, path: "/group" },
-  //     {
-  //       id: "mail", label: "Mail", icon: Mail,
-  //       children: [
-  //         { id: "mail-inbox", label: "Inbox", icon: Mail, path: "/mail/inbox" },
-  //         { id: "mail-sent", label: "Sent", icon: Mail, path: "/mail/sent" },
-  //       ],
-  //     },
-  //   ],
-  // },
   {
-    group: "NETWORKS",
+    group: 'NETWORKS',
     items: [
-      { id: "network",   label: "Networks", icon: Network, path: "/network-management" },
-    ],
+      { id: 'network',   label: 'Networks', icon: Network, path: '/network-management' }
+    ]
   },
   {
-    group: "Organizations",
-items: [
-  // {
-  //   id: "organizations",
-  //   label: "Organization",
-  //   icon: FolderTree,
-  //   path: "/organizations/organization",
-  // },
+    group: 'Organizations',
+    items: [
 
-  {
-    id: "employees",
-    label: "Employees",
-    icon: Users,
-    path: "/organizations/employees",
-  },
+      {
+        id: 'employees',
+        label: 'Employees',
+        icon: Users,
+        path: '/organizations/employees'
+      },
 
-  {
-    id: "positions",
-    label: "Positions",
-    icon: BriefcaseBusiness,
-    path: "/organizations/positions",
-  },
-{
-    id: "departments",
-    label: "Departments",
-    icon: Folder,
-    path: "/organizations/departments",
-  },
-  {
-    id: "branches",
-    label: "Branches",
-    icon: MapPinned,
-    path: "/organizations/branches",
-  },
+      {
+        id: 'positions',
+        label: 'Positions',
+        icon: BriefcaseBusiness,
+        path: '/organizations/positions'
+      },
+      {
+        id: 'departments',
+        label: 'Departments',
+        icon: Folder,
+        path: '/organizations/departments'
+      },
+      {
+        id: 'branches',
+        label: 'Branches',
+        icon: MapPinned,
+        path: '/organizations/branches'
+      },
 
-  {
-    id: "companies",
-    label: "Companies",
-    icon: Building2,
-    path: "/organizations/companies",
+      {
+        id: 'companies',
+        label: 'Companies',
+        icon: Building2,
+        path: '/organizations/companies'
+      }
+    ]
   },
+  {
+    group: 'VIETTEL',
+    items: [
+      { id: 'employee',   label: 'Employee',   icon: Users, path: '/viettel-employees' },
+      { id: 'branch',   label: 'Branch',   icon: MapPinned, path: '/viettel-branches' }
+    ]
+  },
+  {
+    group: 'MANAGEMENT',
+    items: [
+      { id: 'accounts',    label: 'Accounts',   icon: KeyRound, path: '/accounts' },
+      { id: 'permissions', label: 'Permissions',  icon: Shield,   path: '/permissions' }
+    ]
+  }
 ]
-  },
-  {
-    group: "VIETTEL",
-    items: [
-      { id: "employee",   label: "Employee",   icon: Users, path: "/viettel-employees" },
-      { id: "branch",   label: "Branch",   icon: MapPinned, path: "/viettel-branches" },
-    ],
-  },
-  {
-    group: "MANAGEMENT",
-    items: [
-      { id: "accounts",    label: "Accounts",   icon: KeyRound, path: "/accounts" },
-      { id: "permissions", label: "Permissions",  icon: Shield,   path: "/permissions" },
-    ],
-  },
-];

@@ -1,23 +1,23 @@
-import LoadingItem from "@/components/ui/LoadingItem";
-import { dispatchWithToast } from "@/components/ui/dispatchWithToast";
-import { useAppDispatch } from "@/hook/useAppDispatch";
+import LoadingItem from '@/components/ui/LoadingItem'
+import { dispatchWithToast } from '@/components/ui/dispatchWithToast'
+import { useAppDispatch } from '@/hook/useAppDispatch'
 import {
   getVlans,
   createVlan,
   updateVlan,
   deleteVlan,
   selectVlans,
-  selectVlansLoading,
-} from "@/redux/slice/vlansSlice";
+  selectVlansLoading
+} from '@/redux/slice/vlansSlice'
 import {
   getIps,
   createIp,
   updateIp,
   deleteIp,
   selectIps,
-  selectIpsLoading,
-} from "@/redux/slice/ipsSlice";
-import { CUSTOM_MESSAGES } from "@/utils/contants";
+  selectIpsLoading
+} from '@/redux/slice/ipsSlice'
+import { CUSTOM_MESSAGES } from '@/utils/contants'
 import {
   Plus,
   Search,
@@ -25,139 +25,141 @@ import {
   Network,
   Pencil,
   Trash2,
-  ChevronDown,
-} from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useSearchParams } from "react-router-dom";
-import VlanModal from "./VlanModal";
-import IpModal from "./IpModal";
-import { StatusBadge, TableHeader, TableHeaderRight } from "@/components/ui/PageLayout";
+  ChevronDown
+} from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useSearchParams } from 'react-router-dom'
+import VlanModal from './VlanModal'
+import IpModal from './IpModal'
+import { StatusBadge, TableHeader, TableHeaderRight } from '@/components/ui/PageLayout'
 
 function LocalStatusBadge({ status }) {
-  const isActive = status === "ACTIVE" || status === "ENABLE";
+  const isActive = status === 'ACTIVE' || status === 'ENABLE'
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-bold ring-1 ${
-        isActive ? "bg-emerald-50 text-emerald-700 ring-emerald-200" : "bg-rose-50 text-rose-600 ring-rose-200"
+        isActive ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-rose-50 text-rose-600 ring-rose-200'
       }`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${isActive ? "bg-emerald-500" : "bg-rose-500"}`} />
-      {isActive ? "Online" : "Offline"}
+      <span className={`h-1.5 w-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+      {isActive ? 'Online' : 'Offline'}
     </span>
-  );
+  )
 }
 
 function DeviceTypeBadge({ type }) {
-  if (!type) return <span className="text-gray-400">—</span>;
-  const isStatic = type.toUpperCase() === "STATIC";
+  if (!type) return <span className="text-gray-400">—</span>
+  const isStatic = type.toUpperCase() === 'STATIC'
   return (
     <span
       className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${
-        isStatic ? "bg-slate-100 text-slate-700 border border-slate-200" : "bg-blue-50 text-blue-700 border border-blue-200"
+        isStatic ? 'bg-slate-100 text-slate-700 border border-slate-200' : 'bg-blue-50 text-blue-700 border border-blue-200'
       }`}
     >
       {type}
     </span>
-  );
+  )
 }
 
 export default function Networks() {
-  const [vlanDropdownOpen, setVlanDropdownOpen] = useState(false);
-  const [selectedVlanId, setSelectedVlanId] = useState(null);
-  const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [vlanDropdownOpen, setVlanDropdownOpen] = useState(false)
+  const [selectedVlanId, setSelectedVlanId] = useState(null)
+  const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('ALL')
 
   // VLAN modal
-  const [vlanModalOpen, setVlanModalOpen] = useState(false);
-  const [vlanMode, setVlanMode] = useState("create");
-  const [selectedVlanData, setSelectedVlanData] = useState(null);
+  const [vlanModalOpen, setVlanModalOpen] = useState(false)
+  const [vlanMode, setVlanMode] = useState('create')
+  const [selectedVlanData, setSelectedVlanData] = useState(null)
 
   // IP modal
-  const [ipModalOpen, setIpModalOpen] = useState(false);
-  const [ipMode, setIpMode] = useState("create");
-  const [selectedIpData, setSelectedIpData] = useState(null);
+  const [ipModalOpen, setIpModalOpen] = useState(false)
+  const [ipMode, setIpMode] = useState('create')
+  const [selectedIpData, setSelectedIpData] = useState(null)
 
-  const dispatchAsync = useAppDispatch();
-  const dispatch = useDispatch();
-  const vlans = useSelector(selectVlans);
+  const dispatchAsync = useAppDispatch()
+  const dispatch = useDispatch()
+  const vlans = useSelector(selectVlans)
 
-  const vlansLoading = useSelector(selectVlansLoading);
-  const ips = useSelector(selectIps);
-  const ipsLoading = useSelector(selectIpsLoading);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const vlansLoading = useSelector(selectVlansLoading)
+  const ips = useSelector(selectIps)
+  const ipsLoading = useSelector(selectIpsLoading)
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const dropdownRef = useRef(null);
-  const initializedRef = useRef(false);
+  const dropdownRef = useRef(null)
+  const initializedRef = useRef(false)
 
   useEffect(() => {
-    const status = searchParams.get("status");
-    const vlanId = searchParams.get("vlanId");
-    const all = searchParams.get("all");
+    const status = searchParams.get('status')
+    const vlanId = searchParams.get('vlanId')
+    const all = searchParams.get('all')
 
-    const params = {};
-    if (status) params.status = status;
-    if (vlanId) params.vlanId = vlanId;
-    if (all) params.all = all;
+    const params = {}
+    if (status) params.status = status
+    if (vlanId) params.vlanId = vlanId
+    if (all) params.all = all
 
-    dispatchAsync(getVlans(params));
-  }, []);
+    dispatchAsync(getVlans(params))
+  }, [])
 
   // Close dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setVlanDropdownOpen(false);
+        setVlanDropdownOpen(false)
       }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   // Auto-select VLAN from URL on initial load only
   useEffect(() => {
-    if (vlans.length === 0 || initializedRef.current) return;
-    initializedRef.current = true;
-    const idFromUrl = searchParams.get("vlanid");
+    if (vlans.length === 0 || initializedRef.current) return
+    initializedRef.current = true
+    const idFromUrl = searchParams.get('vlanid')
     if (idFromUrl) {
-      const match = vlans.find((v) => String(v.id) === idFromUrl);
+      const match = vlans.find((v) => String(v.id) === idFromUrl)
       if (match) {
-        setSelectedVlanId(match.id);
-        return;
+        Promise.resolve().then(() => {
+          setSelectedVlanId(match.id)
+        })
+        return
       }
     }
-    dispatchAsync(getIps({}));
-  }, [vlans]);
+    dispatchAsync(getIps({}))
+  }, [vlans])
 
   // Sync URL + fetch IPs when selectedVlanId changes
   useEffect(() => {
-    if (!initializedRef.current) return;
+    if (!initializedRef.current) return
     if (selectedVlanId === null) {
-      const newParams = new URLSearchParams(searchParams);
-      newParams.delete("vlanid");
-      setSearchParams(newParams, { replace: true });
-      dispatchAsync(getIps({}));
+      const newParams = new URLSearchParams(searchParams)
+      newParams.delete('vlanid')
+      setSearchParams(newParams, { replace: true })
+      dispatchAsync(getIps({}))
     } else {
-      const newParams = new URLSearchParams(searchParams);
-      newParams.set("vlanid", String(selectedVlanId));
-      setSearchParams(newParams, { replace: true });
-      dispatchAsync(getIps({ vlanid: selectedVlanId }));
+      const newParams = new URLSearchParams(searchParams)
+      newParams.set('vlanid', String(selectedVlanId))
+      setSearchParams(newParams, { replace: true })
+      dispatchAsync(getIps({ vlanid: selectedVlanId }))
     }
-  }, [selectedVlanId]);
+  }, [selectedVlanId])
 
   const selectedVlan = useMemo(
     () => vlans.find((v) => v.id === selectedVlanId),
-    [vlans, selectedVlanId],
-  );
+    [vlans, selectedVlanId]
+  )
 
   // Filter IPs for the selected VLAN
   const filteredIps = useMemo(() => {
-    let list = [...ips];
-    if (statusFilter !== "ALL") {
-      list = list.filter((ip) => ip.status === statusFilter);
+    let list = [...ips]
+    if (statusFilter !== 'ALL') {
+      list = list.filter((ip) => ip.status === statusFilter)
     }
     if (query.trim()) {
-      const q = query.trim().toLowerCase();
+      const q = query.trim().toLowerCase()
       list = list.filter((ip) => {
         const hay = [
           ip.host,
@@ -165,163 +167,163 @@ export default function Networks() {
           ip.employee?.employeeCode,
           ip.employee?.firstName,
           ip.employee?.lastName,
-          ip.status,
+          ip.status
         ]
           .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-        return hay.includes(q);
-      });
+          .join(' ')
+          .toLowerCase()
+        return hay.includes(q)
+      })
     }
-    return list;
-  }, [ips, statusFilter, query]);
+    return list
+  }, [ips, statusFilter, query])
 
   // ── VLAN actions ──
   const openCreateVlan = () => {
-    setVlanMode("create");
-    setSelectedVlanData(null);
-    setVlanModalOpen(true);
-  };
+    setVlanMode('create')
+    setSelectedVlanData(null)
+    setVlanModalOpen(true)
+  }
 
   const openEditVlan = () => {
-    if (!selectedVlan) return;
-    setVlanMode("edit");
-    setSelectedVlanData(selectedVlan);
-    setVlanModalOpen(true);
-  };
+    if (!selectedVlan) return
+    setVlanMode('edit')
+    setSelectedVlanData(selectedVlan)
+    setVlanModalOpen(true)
+  }
 
   const openDeleteVlan = () => {
-    if (!selectedVlan) return;
-    setVlanMode("delete");
-    setSelectedVlanData(selectedVlan);
-    setVlanModalOpen(true);
-  };
+    if (!selectedVlan) return
+    setVlanMode('delete')
+    setSelectedVlanData(selectedVlan)
+    setVlanModalOpen(true)
+  }
 
   const handleVlanSubmit = async (payload) => {
-    if (vlanMode === "delete") {
+    if (vlanMode === 'delete') {
       await dispatchWithToast({
         dispatch,
         action: deleteVlan,
         payload,
-        messages: CUSTOM_MESSAGES.delete,
-      });
-      const remaining = vlans.filter((v) => v.id !== payload);
-      setSelectedVlanId(remaining.length > 0 ? remaining[0].id : null);
-    } else if (vlanMode === "edit") {
+        messages: CUSTOM_MESSAGES.delete
+      })
+      const remaining = vlans.filter((v) => v.id !== payload)
+      setSelectedVlanId(remaining.length > 0 ? remaining[0].id : null)
+    } else if (vlanMode === 'edit') {
       await dispatchWithToast({
         dispatch,
         action: updateVlan,
         payload,
-        messages: CUSTOM_MESSAGES.update,
-      });
+        messages: CUSTOM_MESSAGES.update
+      })
     } else {
       await dispatchWithToast({
         dispatch,
         action: createVlan,
         payload,
-        messages: CUSTOM_MESSAGES.create,
-      });
+        messages: CUSTOM_MESSAGES.create
+      })
     }
-    setVlanModalOpen(false);
-    setSelectedVlanData(null);
-  };
+    setVlanModalOpen(false)
+    setSelectedVlanData(null)
+  }
 
   // ── IP actions ──
   const openCreateIp = () => {
-    setIpMode("create");
-    setSelectedIpData(null);
-    setIpModalOpen(true);
-  };
+    setIpMode('create')
+    setSelectedIpData(null)
+    setIpModalOpen(true)
+  }
 
   const openEditIp = (ip) => {
-    setIpMode("edit");
-    setSelectedIpData(ip);
-    setIpModalOpen(true);
-  };
+    setIpMode('edit')
+    setSelectedIpData(ip)
+    setIpModalOpen(true)
+  }
 
   const openDeleteIp = (ip) => {
-    setIpMode("delete");
-    setSelectedIpData(ip);
-    setIpModalOpen(true);
-  };
+    setIpMode('delete')
+    setSelectedIpData(ip)
+    setIpModalOpen(true)
+  }
 
   const handleIpSubmit = async (payload) => {
-    if (ipMode === "delete") {
+    if (ipMode === 'delete') {
       await dispatchWithToast({
         dispatch,
         action: deleteIp,
         payload,
-        messages: CUSTOM_MESSAGES.delete,
-      });
-    } else if (ipMode === "edit") {
+        messages: CUSTOM_MESSAGES.delete
+      })
+    } else if (ipMode === 'edit') {
       await dispatchWithToast({
         dispatch,
         action: updateIp,
         payload,
-        messages: CUSTOM_MESSAGES.update,
-      });
+        messages: CUSTOM_MESSAGES.update
+      })
     } else {
       await dispatchWithToast({
         dispatch,
         action: createIp,
         payload,
-        messages: CUSTOM_MESSAGES.create,
-      });
+        messages: CUSTOM_MESSAGES.create
+      })
     }
-    setIpModalOpen(false);
-    setSelectedIpData(null);
+    setIpModalOpen(false)
+    setSelectedIpData(null)
     if (selectedVlanId) {
-      dispatchAsync(getIps({ vlanid: selectedVlanId }));
+      dispatchAsync(getIps({ vlanid: selectedVlanId }))
     } else {
-      dispatchAsync(getIps({}));
+      dispatchAsync(getIps({}))
     }
-  };
+  }
 
   // CSV export
   const handleExport = () => {
-    if (!filteredIps.length) return;
+    if (!filteredIps.length) return
 
     const headers = [
-      "IP Address",
-      "Device Type",
-      "Employee code",
-      "Full Name",
-      "Type",
-      "Status",
-    ];
+      'IP Address',
+      'Device Type',
+      'Employee code',
+      'Full Name',
+      'Type',
+      'Status'
+    ]
 
     const escapeCSV = (value) => {
-      if (!value) return "";
-      const str = String(value).replace(/"/g, '""');
-      return `"${str}"`;
-    };
+      if (!value) return ''
+      const str = String(value).replace(/"/g, '""')
+      return `"${str}"`
+    }
 
     const rows = filteredIps.map((ip) => [
       escapeCSV(ip.host),
       escapeCSV(ip.deviceType),
       escapeCSV(ip.employee?.employeeCode),
       escapeCSV(
-        `${ip.employee?.firstName || ""} ${ip.employee?.lastName || ""}`.trim(),
+        `${ip.employee?.firstName || ''} ${ip.employee?.lastName || ''}`.trim()
       ),
       escapeCSV(ip.type),
-      escapeCSV(ip.status),
-    ]);
+      escapeCSV(ip.status)
+    ])
 
     const csvContent = [headers, ...rows]
-      .map((row) => row.join(","))
-      .join("\n");
+      .map((row) => row.join(','))
+      .join('\n')
 
-    const blob = new Blob(["\uFEFF" + csvContent], {
-      type: "text/csv;charset=utf-8;",
-    });
+    const blob = new Blob(['\uFEFF' + csvContent], {
+      type: 'text/csv;charset=utf-8;'
+    })
 
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `vlan-${selectedVlan?.VLAN_CODE || "ips"}-export.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `vlan-${selectedVlan?.VLAN_CODE || 'ips'}-export.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -387,9 +389,9 @@ export default function Networks() {
                   <Network className="h-3.5 w-3.5" />
                   {selectedVlan
                     ? `VLAN ${selectedVlan.vlanId}`
-                    : "Tất cả VLANs"}
+                    : 'Tất cả VLANs'}
                   <ChevronDown
-                    className={`h-3.5 w-3.5 transition-transform ${vlanDropdownOpen ? "rotate-180" : ""}`}
+                    className={`h-3.5 w-3.5 transition-transform ${vlanDropdownOpen ? 'rotate-180' : ''}`}
                   />
                 </button>
                 {vlanDropdownOpen && (
@@ -403,18 +405,18 @@ export default function Networks() {
                       {/* All VLANs option */}
                       <button
                         onClick={() => {
-                          setSelectedVlanId(null);
-                          setVlanDropdownOpen(false);
+                          setSelectedVlanId(null)
+                          setVlanDropdownOpen(false)
                         }}
                         className={`w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-slate-50 cursor-pointer transition-colors ${
-                          selectedVlanId === null ? "bg-indigo-50/50" : ""
+                          selectedVlanId === null ? 'bg-indigo-50/50' : ''
                         }`}
                       >
                         <div
                           className={`h-4 w-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
                             selectedVlanId === null
-                              ? "border-indigo-600"
-                              : "border-slate-300"
+                              ? 'border-indigo-600'
+                              : 'border-slate-300'
                           }`}
                         >
                           {selectedVlanId === null && (
@@ -434,18 +436,18 @@ export default function Networks() {
                         <button
                           key={vlan.id}
                           onClick={() => {
-                            setSelectedVlanId(vlan.id);
-                            setVlanDropdownOpen(false);
+                            setSelectedVlanId(vlan.id)
+                            setVlanDropdownOpen(false)
                           }}
                           className={`w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-slate-50 cursor-pointer transition-colors ${
-                            vlan.id === selectedVlanId ? "bg-indigo-50/50" : ""
+                            vlan.id === selectedVlanId ? 'bg-indigo-50/50' : ''
                           }`}
                         >
                           <div
                             className={`h-4 w-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
                               vlan.id === selectedVlanId
-                                ? "border-indigo-600"
-                                : "border-slate-300"
+                                ? 'border-indigo-600'
+                                : 'border-slate-300'
                             }`}
                           >
                             {vlan.id === selectedVlanId && (
@@ -460,7 +462,7 @@ export default function Networks() {
                               </span>
                             </p>
                             <p className="text-[11px] text-slate-400">
-                              {vlan.network || "—"}
+                              {vlan.network || '—'}
                             </p>
                           </div>
                         </button>
@@ -501,41 +503,41 @@ export default function Networks() {
               selectedVlan.defaultGateway ||
               selectedVlan.subnetMask ||
               selectedVlan.ipRange) && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
-                <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+              <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                     Network
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-slate-800">
-                    {selectedVlan.network || "—"}
-                  </p>
-                </div>
-                <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Gateway
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-slate-800">
-                    {selectedVlan.defaultGateway || "—"}
-                  </p>
-                </div>
-                <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Subnet Mask
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-slate-800">
-                    /{selectedVlan.subnetMask || "—"}
-                  </p>
-                </div>
-                <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    IP Range
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-slate-800">
-                    {selectedVlan.ipRange || "—"}
-                  </p>
-                </div>
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-800">
+                  {selectedVlan.network || '—'}
+                </p>
               </div>
-            )}
+              <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Gateway
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-800">
+                  {selectedVlan.defaultGateway || '—'}
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Subnet Mask
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-800">
+                    /{selectedVlan.subnetMask || '—'}
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    IP Range
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-800">
+                  {selectedVlan.ipRange || '—'}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -636,7 +638,7 @@ export default function Networks() {
                         </span>
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap text-slate-700">
-                        {ip.deviceType || "—"}
+                        {ip.deviceType || '—'}
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap">
                         {ip.employee?.employeeCode ? (
@@ -648,8 +650,8 @@ export default function Networks() {
                         )}
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap text-slate-600 font-medium">
-                        {ip.employee?.firstName || "—"}{" "}
-                        {ip.employee?.lastName || ""}
+                        {ip.employee?.firstName || '—'}{' '}
+                        {ip.employee?.lastName || ''}
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap">
                         <DeviceTypeBadge type={ip.deviceType} />
@@ -690,8 +692,8 @@ export default function Networks() {
       <VlanModal
         isOpen={vlanModalOpen}
         onClose={() => {
-          setVlanModalOpen(false);
-          setSelectedVlanData(null);
+          setVlanModalOpen(false)
+          setSelectedVlanData(null)
         }}
         onSubmit={handleVlanSubmit}
         mode={vlanMode}
@@ -700,8 +702,8 @@ export default function Networks() {
       <IpModal
         isOpen={ipModalOpen}
         onClose={() => {
-          setIpModalOpen(false);
-          setSelectedIpData(null);
+          setIpModalOpen(false)
+          setSelectedIpData(null)
         }}
         onSubmit={handleIpSubmit}
         mode={ipMode}
@@ -709,5 +711,5 @@ export default function Networks() {
         vlanId={selectedVlanId}
       />
     </div>
-  );
+  )
 }

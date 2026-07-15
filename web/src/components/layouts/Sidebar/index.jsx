@@ -1,23 +1,23 @@
-import { useState } from "react";
-import { NAV_GROUPS } from "@/utils/menuConfig";
-import NavGroupItem from "@/components/navigate/NavGroupItem";
-import NavItem from "@/components/navigate/NavItem";
-import NavGroupCollapsed from "@/components/navigate/NavGroupCollapsed";
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import logoImg from "@/assets/images/logo.png";
+import { useState } from 'react'
+import { NAV_GROUPS } from '@/utils/menuConfig'
+import NavGroupItem from '@/components/navigate/NavGroupItem'
+import NavItem from '@/components/navigate/NavItem'
+import NavGroupCollapsed from '@/components/navigate/NavGroupCollapsed'
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import logoImg from '@/assets/images/logo.png'
 
 export default function Sidebar({ collapsed, setCollapsed }) {
-  const [openId, setOpenId] = useState(null);
+  const [openId, setOpenId] = useState(null)
 
   return (
     <aside
       className={[
-        "sidebar flex h-screen flex-shrink-0 flex-col overflow-y-auto overflow-x-hidden",
-        collapsed ? "w-[68px]" : "w-[260px]",
-      ].join(" ")}
+        'sidebar flex h-screen flex-shrink-0 flex-col overflow-y-auto overflow-x-hidden',
+        collapsed ? 'w-[68px]' : 'w-[260px]'
+      ].join(' ')}
     >
       {/* Logo */}
-      <div className={`flex items-center gap-3 px-5 py-5 ${collapsed ? "justify-center" : ""}`}>
+      <div className={`flex items-center gap-3 px-5 py-5 ${collapsed ? 'justify-center' : ''}`}>
         {collapsed ? (
           <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 border border-slate-100 shadow-sm">
             <img src={logoImg} alt="IT-HELPDESK" className="w-full h-full object-cover" />
@@ -66,12 +66,12 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                   <li key={item.id}>
                     <NavItem item={item} collapsed={collapsed} />
                   </li>
-                ),
+                )
               )}
             </ul>
           </div>
         ))}
       </nav>
     </aside>
-  );
+  )
 }

@@ -86,7 +86,7 @@ export default function ForgotPasswordPage() {
         toast.error('Đặt lại mật khẩu thất bại!')
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.error('Lỗi đặt lại mật khẩu:', err)
       toast.error(err?.response?.data?.message || err?.message || 'Đặt lại mật khẩu thất bại!')
     } finally {

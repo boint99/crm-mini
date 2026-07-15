@@ -8,7 +8,7 @@ export function StatCard({ label, value, icon: Icon, accentColor = 'indigo', bad
     emerald: { border: 'bg-emerald-500', iconBg: 'bg-emerald-50', iconText: 'text-emerald-500' },
     rose: { border: 'bg-rose-400', iconBg: 'bg-rose-50', iconText: 'text-rose-400' },
     amber: { border: 'bg-amber-500', iconBg: 'bg-amber-50', iconText: 'text-amber-500' },
-    blue: { border: 'bg-blue-500', iconBg: 'bg-blue-50', iconText: 'text-blue-500' },
+    blue: { border: 'bg-blue-500', iconBg: 'bg-blue-50', iconText: 'text-blue-500' }
   }
   const c = colors[accentColor] || colors.indigo
 
@@ -148,7 +148,7 @@ export function ActionButton({ icon: Icon, onClick, variant = 'edit', title }) {
   const styles = {
     edit: 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50',
     delete: 'text-slate-500 hover:text-rose-600 hover:bg-rose-50',
-    warning: 'text-slate-500 hover:text-amber-600 hover:bg-amber-50',
+    warning: 'text-slate-500 hover:text-amber-600 hover:bg-amber-50'
   }
   return (
     <button

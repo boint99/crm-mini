@@ -1,14 +1,14 @@
-import { Outlet, Navigate, useLocation } from "react-router-dom"
+import { Outlet, Navigate, useLocation } from 'react-router-dom'
 
 const Organizations = () => {
-    const location = useLocation();
+  const location = useLocation()
 
-    if (location.pathname === "/organizations" || location.pathname === "/organizations/") {
-        return <Navigate to="/organizations/organization" replace />
-    }
+  if (location.pathname === '/organizations' || location.pathname === '/organizations/') {
+    return <Navigate to="/organizations/organization" replace />
+  }
 
-    return (
-        <Outlet />
-    )
+  return (
+    <Outlet />
+  )
 }
 export default Organizations

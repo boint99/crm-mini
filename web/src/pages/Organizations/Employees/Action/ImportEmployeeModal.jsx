@@ -176,7 +176,7 @@ export default function ImportEmployeeModal({ isOpen, onClose, onImportSuccess }
               }`}
             >
               <Upload className={`h-10 w-10 ${importResult && importResult.summary.invalidCount > 0 ? 'text-rose-400' : 'text-gray-400'}`} />
-               <div className="text-center">
+              <div className="text-center">
                 <p className={`text-sm font-medium ${importResult && importResult.summary.invalidCount > 0 ? 'text-rose-900' : 'text-gray-700'}`}>
                   {file ? file.name : 'Kéo thả hoặc nhấp để chọn tệp CSV/Excel'}
                 </p>

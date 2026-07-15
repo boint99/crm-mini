@@ -1,58 +1,58 @@
-import { customStyles } from "@/utils/contants";
-import { X } from "lucide-react";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import Modal from "react-modal";
+import { customStyles } from '@/utils/contants'
+import { X } from 'lucide-react'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import Modal from 'react-modal'
 
 export default function CompanyModel({
   open,
   isOpen = open,
   onClose,
   onSubmit,
-  mode = "create",
+  mode = 'create',
   initialValues,
-  data = initialValues,
+  data = initialValues
 }) {
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
-  } = useForm();
+    formState: { errors, isSubmitting }
+  } = useForm()
 
   useEffect(() => {
     if (isOpen) {
-      if (mode === "edit" && data) {
+      if (mode === 'edit' && data) {
         reset({
-          companyName: data.companyName || "",
-          status: data.status || "ENABLE",
-        });
-      } else if (mode === "create") {
+          companyName: data.companyName || '',
+          status: data.status || 'ENABLE'
+        })
+      } else if (mode === 'create') {
         reset({
-          companyName: "",
-          status: "ENABLE",
-        });
+          companyName: '',
+          status: 'ENABLE'
+        })
       }
     }
-  }, [isOpen, mode, data, reset]);
+  }, [isOpen, mode, data, reset])
 
   const handleFormSubmit = (formData) => {
-    if (mode === "delete") {
-      onSubmit?.(data?.id || data?.companyId);
-      return;
+    if (mode === 'delete') {
+      onSubmit?.(data?.id || data?.companyId)
+      return
     }
     const payload = {
       companyName: formData.companyName.trim(),
-      status: formData.status,
-    };
-    if (mode === "edit" && data) {
-      payload.id = data.id;
-      payload.companyId = data.companyId;
+      status: formData.status
     }
-    onSubmit?.(payload);
-  };
+    if (mode === 'edit' && data) {
+      payload.id = data.id
+      payload.companyId = data.companyId
+    }
+    onSubmit?.(payload)
+  }
 
-  if (mode === "delete") {
+  if (mode === 'delete') {
     return (
       <Modal
         isOpen={isOpen}
@@ -73,7 +73,7 @@ export default function CompanyModel({
             </button>
           </div>
           <p className="text-sm text-gray-600 mb-6">
-            Bạn có chắc muốn xóa công ty{" "}
+            Bạn có chắc muốn xóa công ty{' '}
             <span className="font-semibold">{data?.companyName}</span>? Thao tác này
             không thể hoàn tác.
           </p>
@@ -93,12 +93,12 @@ export default function CompanyModel({
           </div>
         </div>
       </Modal>
-    );
+    )
   }
 
   const inputClass =
-    "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none";
-  const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+    'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none'
+  const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
 
   return (
     <Modal
@@ -110,7 +110,7 @@ export default function CompanyModel({
       <div className="p-6">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-semibold text-gray-900">
-            {mode === "edit" ? "Chỉnh sửa công ty" : "Thêm công ty mới"}
+            {mode === 'edit' ? 'Chỉnh sửa công ty' : 'Thêm công ty mới'}
           </h3>
           <button
             onClick={onClose}
@@ -127,9 +127,9 @@ export default function CompanyModel({
               type="text"
               placeholder="VD: Công ty ABC"
               className={inputClass}
-              {...register("companyName", {
-                required: "Vui lòng nhập tên công ty",
-                validate: (v) => !!v.trim() || "Vui lòng nhập tên công ty",
+              {...register('companyName', {
+                required: 'Vui lòng nhập tên công ty',
+                validate: (v) => !!v.trim() || 'Vui lòng nhập tên công ty'
               })}
             />
             {errors.companyName && (
@@ -141,7 +141,7 @@ export default function CompanyModel({
 
           <div>
             <label className={labelClass}>Trạng thái *</label>
-            <select className={inputClass} {...register("status")}>
+            <select className={inputClass} {...register('status')}>
               <option value="ENABLE">Enable</option>
               <option value="DISABLED">Disable</option>
             </select>
@@ -160,11 +160,11 @@ export default function CompanyModel({
               disabled={isSubmitting}
               className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
             >
-              {mode === "edit" ? "Cập nhật" : "Tạo công ty"}
+              {mode === 'edit' ? 'Cập nhật' : 'Tạo công ty'}
             </button>
           </div>
         </form>
       </div>
     </Modal>
-  );
+  )
 }

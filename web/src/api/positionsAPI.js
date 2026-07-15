@@ -3,19 +3,19 @@ import axios from 'axios'
 
 export const positionsAPI = {
   getLists: async (params) => {
-    const res = await axios.get(`/positions`, { params })
+    const res = await axios.get('/positions', { params })
     return res.data
   },
 
   // CREATE
   create: async (payload) => {
-    const res = await axios.post(`/positions/create`, payload)
+    const res = await axios.post('/positions/create', payload)
     return res.data
   },
 
   // UPDATE
   update: async (payload) => {
-    const res = await axios.put(`/positions/update`, payload)
+    const res = await axios.put('/positions/update', payload)
     return res.data
   },
 
@@ -27,13 +27,13 @@ export const positionsAPI = {
 
   // IMPORT PREVIEW
   importPreview: async (payload) => {
-    const res = await axios.post(`/positions/import-preview`, payload)
+    const res = await axios.post('/positions/import-preview', payload)
     return res.data
   },
 
   // IMPORT CONFIRM
   importConfirm: async (payload) => {
-    const res = await axios.post(`/positions/import-confirm`, payload)
+    const res = await axios.post('/positions/import-confirm', payload)
     return res.data
   }
 }
