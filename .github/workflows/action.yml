@@ -78,7 +78,7 @@ jobs:
           ./server.sh
 
       - name: Install backend dependencies
-        run: yarn install
+        run: npm  install
 
       - name: Generate Prisma Client
         run: npx prisma generate
