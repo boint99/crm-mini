@@ -23,7 +23,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
-          cache: 'npm'
 
       - name: Install backend dependencies
         run: |
@@ -34,7 +33,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: ./web
-        run: npm ci
+        run: npm install
 
       - name: Run frontend lint
         working-directory: ./web
@@ -56,27 +55,32 @@ jobs:
       - name: create .env
         run: |
           touch .env
-          echo "PORT=${{ env.PORT }}" >> .env
-          echo "NODE_ENV=${{ env.NODE_ENV }}" >> .env
-          echo "DATABASE_URL=${{ env.DATABASE_URL }}" >> .env
-          echo "DB_USER=${{ env.DB_USER }}" >> .env
-          echo "DB_PASSWORD=${{ env.DB_PASSWORD }}" >> .env
-          echo "DB_NAME=${{ env.DB_NAME }}" >> .env
-          echo "DB_HOST=${{ env.DB_HOST }}" >> .env
-          echo "DB_PORT=${{ env.DB_PORT }}" >> .env
-          echo "JWT_ACCESS_SECRET=${{ env.JWT_ACCESS_SECRET }}" >> .env
-          echo "JWT_EXPIRES_IN=${{ env.JWT_EXPIRES_IN }}" >> .env
-          echo "JWT_REFRESH_SECRET=${{ env.JWT_REFRESH_SECRET }}" >> .env
-          echo "JWT_REFRESH_EXPIRES_IN=${{ env.JWT_REFRESH_EXPIRES_IN }}" >> .env
-          echo "MAIL_HOST=${{ env.MAIL_HOST }}" >> .env
-          echo "MAIL_PORT=${{ env.MAIL_PORT }}" >> .env
-          echo "SMTP_USER=${{ env.SMTP_USER }}" >> .env
-          echo "SMTP_PASS=${{ env.SMTP_PASS }}" >> .env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+          echo "DATABASE_URL=\"${{ secrets.DATABASE_URL }}\"" >> .env
+          echo "PORT_BE=${{ secrets.PORT_BE }}" >> .env
+          echo "PORT_FE=${{ secrets.PORT_FE }}" >> .env
+          echo "MAIL_HOST=${{ secrets.MAIL_HOST }}" >> .env
+          echo "MAIL_PORT=${{ secrets.MAIL_PORT }}" >> .env
+          echo "SMTP_USER=${{ secrets.SMTP_USER }}" >> .env
+          echo "SMTP_PASS=${{ secrets.SMTP_PASS }}" >> .env
+          echo "JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}" >> .env
+          echo "JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}" >> .env
+          echo "JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}" >> .env
+          echo "JWT_REFRESH_EXPIRES_IN=${{ secrets.JWT_REFRESH_EXPIRES_IN }}" >> .env
 
       - name: check ip server
         run: |
           chmod +x server.sh
           ./server.sh
+
+      - name: create web/.env
+        run: |
+          cat << 'EOF' > web/.env
+          VITE_API_URL=/api
+          EOF
 
       - name: Install backend dependencies
         run: npm  install
@@ -86,7 +90,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: ./web
-        run: npm ci
+        run: npm install
 
       - name: Build frontend
         working-directory: ./web
@@ -99,6 +103,36 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: create .env
+        run: |
+          touch .env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+          echo "DATABASE_URL=\"${{ secrets.DATABASE_URL }}\"" >> .env
+          echo "PORT_BE=${{ secrets.PORT_BE }}" >> .env
+          echo "PORT_FE=${{ secrets.PORT_FE }}" >> .env
+          echo "MAIL_HOST=${{ secrets.MAIL_HOST }}" >> .env
+          echo "MAIL_PORT=${{ secrets.MAIL_PORT }}" >> .env
+          echo "SMTP_USER=${{ secrets.SMTP_USER }}" >> .env
+          echo "SMTP_PASS=${{ secrets.SMTP_PASS }}" >> .env
+          echo "JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}" >> .env
+          echo "JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}" >> .env
+          echo "JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}" >> .env
+          echo "JWT_REFRESH_EXPIRES_IN=${{ secrets.JWT_REFRESH_EXPIRES_IN }}" >> .env
+
+      - name: check ip server
+        run: |
+          chmod +x server.sh
+          ./server.sh
+
+      - name: create web/.env
+        run: |
+          cat << 'EOF' > web/.env
+          VITE_API_URL=/api
+          EOF
 
       - name: Deploy application
         run: |
