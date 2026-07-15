@@ -1,7 +1,7 @@
 import { customStyles } from '@/utils/contants'
 import { X } from 'lucide-react'
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import Modal from 'react-modal'
 import { useSelector } from 'react-redux'
 import { useAppDispatch } from '@/hook/useAppDispatch'
@@ -22,7 +22,7 @@ export default function DepartmentModel({
     register,
     handleSubmit,
     reset,
-    watch,
+    control,
     formState: { errors, isSubmitting }
   } = useForm()
 
@@ -33,7 +33,7 @@ export default function DepartmentModel({
   const branches = useSelector(selectBranches)
   const departments = useSelector(selectDepartments)
 
-  const watchCompanyId = watch('companyId')
+  const watchCompanyId = useWatch({ control, name: 'companyId' })
 
   useEffect(() => {
     if (isOpen) {

@@ -119,7 +119,7 @@ class VlansService {
    * UPDATE
    */
   async update(data) {
-    const { id, vlanId, ...payload } = data
+    const { id, ...payload } = data
 
     const existing = await vlansModel.findByUnique(id, 'id')
 

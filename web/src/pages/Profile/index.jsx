@@ -42,21 +42,21 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState('profile')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  
+
   // Data States
   const [profile, setProfile] = useState(null)
-  
+
   // Edit Profile States
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
   const [avatar, setAvatar] = useState('')
-  
+
   // Change Password States
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  
+
   // Visibility States
   const [showOldPassword, setShowOldPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
@@ -66,17 +66,13 @@ export default function Profile() {
   const initials = getInitials(fullName)
   const avatarColor = stringToColor(fullName)
 
-  useEffect(() => {
-    fetchProfile()
-  }, [])
-
   const fetchProfile = async () => {
     setLoading(true)
     try {
       const res = await authAPI.getProfile()
       const data = res.data
       setProfile(data)
-      
+
       // Populate fields
       if (data.employee) {
         setFirstName(data.employee.firstName || '')
@@ -91,6 +87,10 @@ export default function Profile() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchProfile()
+  }, [])
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault()
@@ -121,7 +121,7 @@ export default function Profile() {
       toast.error('Mật khẩu mới phải có ít nhất 8 ký tự!')
       return
     }
-    
+
     setSaving(true)
     try {
       await authAPI.changePassword({ oldPassword, newPassword })
@@ -186,7 +186,7 @@ export default function Profile() {
         {/* Right Content */}
         <div className="md:col-span-3">
           <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-            
+
             {/* PROFILE TAB */}
             {activeTab === 'profile' && (
               <form onSubmit={handleUpdateProfile} className="space-y-6">

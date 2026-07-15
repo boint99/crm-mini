@@ -1,7 +1,7 @@
 import { customStyles } from '@/utils/contants'
 import { X } from 'lucide-react'
 import { useEffect, useState, useMemo, useRef } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import Modal from 'react-modal'
 import { positionsAPI } from '@/api/positionsAPI'
 import { departmentsAPI } from '@/api/departmentsAPI'
@@ -138,16 +138,16 @@ export default function EmployeeModel({
     handleSubmit,
     reset,
     setValue,
-    watch,
+    control,
     formState: { errors, isSubmitting }
   } = useForm()
 
   const isEdit = mode === 'edit'
 
-  const companyId = watch('companyId')
-  const unitId = watch('unitId')
-  const positionId = watch('positionId')
-  const watchIsAccount = watch('isAccount')
+  const companyId = useWatch({ control, name: 'companyId' })
+  const unitId = useWatch({ control, name: 'unitId' })
+  const positionId = useWatch({ control, name: 'positionId' })
+  const watchIsAccount = useWatch({ control, name: 'isAccount' })
 
   const [companies, setCompanies] = useState([])
   const [units, setUnits] = useState([])
@@ -243,8 +243,10 @@ export default function EmployeeModel({
           })
           .catch((err) => console.error('Failed to load positions:', err))
       } else {
-        setUnits([])
-        setPositions([])
+        Promise.resolve().then(() => {
+          setUnits([])
+          setPositions([])
+        })
       }
     }
   }, [isOpen, companyId])

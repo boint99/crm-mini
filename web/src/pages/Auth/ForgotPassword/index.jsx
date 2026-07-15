@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { authAPI } from '@/api/auth'
 import { toast } from 'react-toastify'
 import { ArrowLeft } from 'lucide-react'
@@ -16,7 +16,7 @@ export default function ForgotPasswordPage() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     trigger,
     getValues,
     formState: { errors }
@@ -30,8 +30,8 @@ export default function ForgotPasswordPage() {
     mode: 'onTouched'
   })
 
-  const emailValue = watch('email')
-  const passwordValue = watch('password')
+  const emailValue = useWatch({ control, name: 'email' })
+  const passwordValue = useWatch({ control, name: 'password' })
 
   // Handle countdown for resending OTP
   useEffect(() => {

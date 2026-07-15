@@ -14,13 +14,13 @@ const prismaBase = new PrismaClient({
 const PRISMA = prismaBase.$extends({
   query: {
     $allModels: {
-      async create({ model, args, query }) {
+      async create({ _model, args, query }) {
         if (args.data && !args.data.id) {
           args.data.id = uuidv7()
         }
         return query(args)
       },
-      async createMany({ model, args, query }) {
+      async createMany({ _model, args, query }) {
         if (Array.isArray(args.data)) {
           for (const item of args.data) {
             if (item && !item.id) {
@@ -32,7 +32,7 @@ const PRISMA = prismaBase.$extends({
         }
         return query(args)
       },
-      async upsert({ model, args, query }) {
+      async upsert({ _model, args, query }) {
         if (args.create && !args.create.id) {
           args.create.id = uuidv7()
         }

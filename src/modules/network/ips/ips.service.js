@@ -226,8 +226,6 @@ class IpsService {
     // =========================================================
     const finalVlanId = updateData.vlanId ?? existing.vlanId
 
-    const finalHost = updateData.host ?? existing.host
-
     const finalVlan = await vlansModel.findByUnique(
       finalVlanId,
       'vlanId'
