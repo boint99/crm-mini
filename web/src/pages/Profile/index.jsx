@@ -89,7 +89,9 @@ export default function Profile() {
   }
 
   useEffect(() => {
-    fetchProfile()
+    Promise.resolve().then(() => {
+      fetchProfile()
+    })
   }, [])
 
   const handleUpdateProfile = async (e) => {
