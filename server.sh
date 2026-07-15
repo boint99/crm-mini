@@ -8,10 +8,10 @@ if [ ! -f "$ENV_FILE" ]; then
     touch "$ENV_FILE"
 fi
 
-if grep -q "^SERVER_IP=" "$ENV_FILE"; then
-    sed -i "s/^SERVER_IP=.*/SERVER_IP=$IP/" "$ENV_FILE"
+if grep -q "^HOST=" "$ENV_FILE"; then
+    sed -i "s/^HOST=.*/HOST=$IP/" "$ENV_FILE"
 else
-    echo "SERVER_IP=$IP" >> "$ENV_FILE"
+    echo "HOST=$IP" >> "$ENV_FILE"
 fi
 
-echo "SERVER_IP=$IP"
+echo "HOST=$IP"

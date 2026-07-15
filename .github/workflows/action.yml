@@ -52,8 +52,33 @@ jobs:
         with:
           node-version: 22.x
 
+      - name: create .env
+        run: |
+          touch .env
+          echo "PORT=${{ env.PORT }}" >> .env
+          echo "NODE_ENV=${{ env.NODE_ENV }}" >> .env
+          echo "DATABASE_URL=${{ env.DATABASE_URL }}" >> .env
+          echo "DB_USER=${{ env.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ env.DB_PASSWORD }}" >> .env
+          echo "DB_NAME=${{ env.DB_NAME }}" >> .env
+          echo "DB_HOST=${{ env.DB_HOST }}" >> .env
+          echo "DB_PORT=${{ env.DB_PORT }}" >> .env
+          echo "JWT_ACCESS_SECRET=${{ env.JWT_ACCESS_SECRET }}" >> .env
+          echo "JWT_EXPIRES_IN=${{ env.JWT_EXPIRES_IN }}" >> .env
+          echo "JWT_REFRESH_SECRET=${{ env.JWT_REFRESH_SECRET }}" >> .env
+          echo "JWT_REFRESH_EXPIRES_IN=${{ env.JWT_REFRESH_EXPIRES_IN }}" >> .env
+          echo "MAIL_HOST=${{ env.MAIL_HOST }}" >> .env
+          echo "MAIL_PORT=${{ env.MAIL_PORT }}" >> .env
+          echo "SMTP_USER=${{ env.SMTP_USER }}" >> .env
+          echo "SMTP_PASS=${{ env.SMTP_PASS }}" >> .env
+
+      - name: check ip server
+        run: |
+          chmod +x server.sh
+          ./server.sh
+
       - name: Install backend dependencies
-        run: npm install
+        run: yarn install
 
       - name: Generate Prisma Client
         run: npx prisma generate

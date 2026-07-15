@@ -31,7 +31,7 @@ services:
     ports:
       - "${PORT_BE}:${PORT_BE}"
     volumes:
-      - .:/app
+      - ./backend:/app
       - /app/node_modules
     command: sh -c "npm install && npx prisma generate && node src/server.js"
     restart: always
