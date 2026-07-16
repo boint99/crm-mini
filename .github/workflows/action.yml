@@ -5,6 +5,7 @@ on:
     branches: [ "deploy" ]
 
 jobs:
+  # ==================== JOB 1: LINT ====================
   lint:
     name: Lint Code
     runs-on: self-hosted
@@ -25,8 +26,7 @@ jobs:
           node-version: 22.x
 
       - name: Install backend dependencies
-        run: |
-          npm install
+        run: npm install
 
       - name: Run backend lint
         run: npm run lint
@@ -39,10 +39,54 @@ jobs:
         working-directory: ./web
         run: npm run lint
 
-  setup:
-    name: Setup & Build
-    needs: lint
+  # ==================== JOB 2: SETUP ENV ====================
+  setup-env:
+    name: Setup Environment Variables
     runs-on: self-hosted
+    needs: lint
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create .env for backend
+        run: |
+          touch .env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+          echo "PORT_BE=${{ secrets.PORT_BE }}" >> .env
+          echo "PORT_FE=${{ secrets.PORT_FE }}" >> .env
+          echo "MAIL_HOST=${{ secrets.MAIL_HOST }}" >> .env
+          echo "MAIL_PORT=${{ secrets.MAIL_PORT }}" >> .env
+          echo "SMTP_USER=${{ secrets.SMTP_USER }}" >> .env
+          echo "SMTP_PASS=${{ secrets.SMTP_PASS }}" >> .env
+          echo "JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}" >> .env
+          echo "JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}" >> .env
+          echo "JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}" >> .env
+          echo "JWT_REFRESH_EXPIRES_IN=${{ secrets.JWT_REFRESH_EXPIRES_IN }}" >> .env
+          echo "HOST=$(hostname -I | awk '{print $1}')" >> .env
+
+      - name: Create web/.env for frontend
+        run: |
+          cat << 'EOF' > web/.env
+          VITE_API_URL=/api
+          EOF
+
+      - name: Upload .env files
+        uses: actions/upload-artifact@v4
+        with:
+          name: env-files
+          path: |
+            .env
+            web/.env
+          retention-days: 1
+
+  # ==================== JOB 3: BUILD BACKEND ====================
+  build-backend:
+    name: Build Backend
+    runs-on: self-hosted
+    needs: setup-env
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -52,41 +96,44 @@ jobs:
         with:
           node-version: 22.x
 
-      - name: create .env
-        run: |
-          touch .env
-          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
-          echo "DATABASE_URL=\"${{ secrets.DATABASE_URL }}\"" >> .env
-          echo "PORT_BE=${{ secrets.PORT_BE }}" >> .env
-          echo "PORT_FE=${{ secrets.PORT_FE }}" >> .env
-          echo "MAIL_HOST=${{ secrets.MAIL_HOST }}" >> .env
-          echo "MAIL_PORT=${{ secrets.MAIL_PORT }}" >> .env
-          echo "SMTP_USER=${{ secrets.SMTP_USER }}" >> .env
-          echo "SMTP_PASS=${{ secrets.SMTP_PASS }}" >> .env
-          echo "JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}" >> .env
-          echo "JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}" >> .env
-          echo "JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}" >> .env
-          echo "JWT_REFRESH_EXPIRES_IN=${{ secrets.JWT_REFRESH_EXPIRES_IN }}" >> .env
-
-      - name: check ip server
-        run: |
-          chmod +x server.sh
-          ./server.sh
-
-      - name: create web/.env
-        run: |
-          cat << 'EOF' > web/.env
-          VITE_API_URL=/api
-          EOF
+      - name: Download .env files
+        uses: actions/download-artifact@v4
+        with:
+          name: env-files
+          path: .
 
       - name: Install backend dependencies
-        run: npm  install
+        run: npm install
 
       - name: Generate Prisma Client
         run: npx prisma generate
+
+      - name: Build backend
+        run: npm run build || echo "No build script for backend"
+
+      - name: Deploy Backend
+        run: |
+          docker compose -f docker-compose.prod.yml up -d --build backend
+
+  # ==================== JOB 4: BUILD FRONTEND ====================
+  build-frontend:
+    name: Build Frontend
+    runs-on: self-hosted
+    needs: setup-env
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: Download .env files
+        uses: actions/download-artifact@v4
+        with:
+          name: env-files
+          path: .
 
       - name: Install frontend dependencies
         working-directory: ./web
@@ -96,49 +143,16 @@ jobs:
         working-directory: ./web
         run: npm run build
 
-  deploy:
-    name: Deploy Application
-    needs: setup
+      - name: Deploy Frontend
+        run: |
+          docker compose -f docker-compose.prod.yml up -d --build web
+
+  # ==================== JOB 5: CLEANUP ====================
+  cleanup:
+    name: Cleanup
     runs-on: self-hosted
+    needs: [build-backend, build-frontend]
+    if: always()
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: create .env
-        run: |
-          touch .env
-          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
-          echo "DATABASE_URL=\"${{ secrets.DATABASE_URL }}\"" >> .env
-          echo "PORT_BE=${{ secrets.PORT_BE }}" >> .env
-          echo "PORT_FE=${{ secrets.PORT_FE }}" >> .env
-          echo "MAIL_HOST=${{ secrets.MAIL_HOST }}" >> .env
-          echo "MAIL_PORT=${{ secrets.MAIL_PORT }}" >> .env
-          echo "SMTP_USER=${{ secrets.SMTP_USER }}" >> .env
-          echo "SMTP_PASS=${{ secrets.SMTP_PASS }}" >> .env
-          echo "JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}" >> .env
-          echo "JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}" >> .env
-          echo "JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}" >> .env
-          echo "JWT_REFRESH_EXPIRES_IN=${{ secrets.JWT_REFRESH_EXPIRES_IN }}" >> .env
-
-      - name: check ip server
-        run: |
-          chmod +x server.sh
-          ./server.sh
-
-      - name: create web/.env
-        run: |
-          cat << 'EOF' > web/.env
-          VITE_API_URL=/api
-          EOF
-
-      - name: Deploy application
-        run: |
-          #Docker Compose Deployment
-          docker compose -f docker-compose.prod.yml down
-          docker compose -f docker-compose.prod.yml up -d --build
-
       - name: Remove dangling images
         run: docker image prune -af
