@@ -1,15 +1,40 @@
-FROM node:22-alpine
+# Stage 1: Builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
 COPY package*.json ./
 COPY prisma ./prisma/
 
-RUN npm install --omit=dev
-
+RUN npm ci --no-audit --no-fund
 RUN npx prisma generate
 
 COPY . .
+RUN npm run build || echo "No build script"
+
+
+# Stage 2: Production
+FROM node:22-alpine
+
+WORKDIR /app
+
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 -h /home/nodejs
+
+COPY --from=builder --chown=nodejs:nodejs /app/package*.json ./
+COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nodejs:nodejs /app/src ./
+COPY --from=builder --chown=nodejs:nodejs /app/docs ./
+
+RUN chown -R nodejs:nodejs /app && \
+    chmod -R 755 /app && \
+    mkdir -p /app/logs /app/uploads /home/nodejs/.npm && \
+    chown -R nodejs:nodejs /app/logs /app/uploads /home/nodejs && \
+    chmod -R 775 /app/logs /app/uploads && \
+    npm config set cache /home/nodejs/.npm --global
+
+USER nodejs
 
 EXPOSE 8017
 

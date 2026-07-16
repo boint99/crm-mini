@@ -4,9 +4,9 @@ services:
       context: ./web
       dockerfile: docker/Dockerfile.prod
     container_name: web
+    ports:
+      - "${PORT_FE}:${PORT_FE}"
     restart: always
-    depends_on:
-      - backend
     networks:
       - app-net
     labels:
@@ -18,6 +18,12 @@ services:
       - "traefik.http.services.frontend.loadbalancer.server.port=8080"
 
   backend:
+    command: >
+      sh -c "
+        echo 'DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?schema=public' > /app/.env &&
+        npx prisma migrate deploy &&
+        node src/server.js
+      "
     build:
       context: .
       dockerfile: docker/Dockerfile.prod
@@ -27,13 +33,17 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=${PORT_BE}
-      - DATABASE_URL=${DATABASE_URL}
+      - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN}
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?schema=public
     ports:
       - "${PORT_BE}:${PORT_BE}"
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    command: sh -c "npm install && npx prisma generate && node src/server.js"
     restart: always
     networks:
       - app-net
@@ -46,10 +56,8 @@ services:
       - "traefik.http.services.backend.loadbalancer.server.port=${PORT_BE}"
 
   db:
-    image: postgres:18
+    image: postgres:17-alpine
     container_name: database
-    profiles:
-      - local-db
     restart: always
     env_file:
       - .env
@@ -69,6 +77,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
   traefik:
     image: traefik:v3.0
     container_name: traefik
@@ -76,28 +85,17 @@ services:
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      # Entrypoints
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-
-      # Redirect HTTP → HTTPS
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-
-      # Let's Encrypt
       - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
       - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
       - "--certificatesresolvers.myresolver.acme.email=boint@vienthongact.vn"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-
-      # IP Whitelist middleware (global)
       - "--entrypoints.websecure.ipwhitelist.sourcerange=10.0.0.0/8, 192.168.0.0/16"
-
-      # Rate limiting (global)
       - "--entrypoints.websecure.ratelimit.average=100"
       - "--entrypoints.websecure.ratelimit.burst=50"
-
-      # Security headers (global)
       - "--entrypoints.websecure.headers.customframeoptionsvalue=SAMEORIGIN"
       - "--entrypoints.websecure.headers.contenttypenosniff=true"
       - "--entrypoints.websecure.headers.browserxssfilter=true"
@@ -105,26 +103,20 @@ services:
       - "--entrypoints.websecure.headers.stsseconds=31536000"
       - "--entrypoints.websecure.headers.stsincludesubdomains=true"
       - "--entrypoints.websecure.headers.stspreload=true"
-
-      # Logging
       - "--log.level=INFO"
       - "--accesslog=true"
       - "--accesslog.filepath=/var/log/traefik/access.log"
-
-      # API Dashboard (optional - production need off)
       - "--api.dashboard=false"
-      # - "--api.dashboard=true"  # only need debug
-      # - "--api.insecure=true"   # only need debug
-
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./letsencrypt:/letsencrypt
-      - ./logs:/var/log/traefik # save logs
+      - ./logs:/var/log/traefik
     networks:
       - app-net
+
 volumes:
   pgdata:
 
