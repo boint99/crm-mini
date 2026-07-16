@@ -14,5 +14,3 @@ else
 fi
 
 echo "HOST=$IP"
-
-# run project

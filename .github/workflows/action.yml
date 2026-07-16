@@ -2,7 +2,7 @@ name: Github CI
 
 on:
   push:
-    branches: [ "deploy" ]
+    branches: [ "deploy_stop" ]
 
 jobs:
   # ==================== JOB 1: LINT ====================
