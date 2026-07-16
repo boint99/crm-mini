@@ -1,17 +1,17 @@
-import { configureStore } from "@reduxjs/toolkit";
-import companiesReducer from "./slice/companiesSilce";
-import employeesReducer from "./slice/employeesSlice";
-import branchesReducer from "./slice/branchesSlice";
-import positionsReducer from "./slice/positionsSlice";
-import vlansReducer from "./slice/vlansSlice";
-import ipsReducer from "./slice/ipsSlice";
-import employeesViettelReducer from "./slice/employeesViettelSlice";
-import viettelBranchReducer from "./slice/viettelBranchSlice";
-import accountsReducer from "./slice/accountsSlice";
-import departmentsReducer from "./slice/departmentsSlice";
-import authReducer from "./slice/authSlice";
+import { configureStore } from '@reduxjs/toolkit'
+import companiesReducer from './slice/companiesSilce'
+import employeesReducer from './slice/employeesSlice'
+import branchesReducer from './slice/branchesSlice'
+import positionsReducer from './slice/positionsSlice'
+import vlansReducer from './slice/vlansSlice'
+import ipsReducer from './slice/ipsSlice'
+import employeesViettelReducer from './slice/employeesViettelSlice'
+import viettelBranchReducer from './slice/viettelBranchSlice'
+import accountsReducer from './slice/accountsSlice'
+import departmentsReducer from './slice/departmentsSlice'
+import authReducer from './slice/authSlice'
 
-const isProduction = import.meta.env.PROD;
+const isProduction = import.meta.env.PROD
 
 export const store = configureStore({
   reducer: {
@@ -25,8 +25,8 @@ export const store = configureStore({
     vlans: vlansReducer,
     ips: ipsReducer,
     accounts: accountsReducer,
-    departments: departmentsReducer,
+    departments: departmentsReducer
   },
   // Tắt Redux DevTools khi build production để bảo mật và giảm bundle size
-  devTools: !isProduction,
-});
+  devTools: !isProduction
+})

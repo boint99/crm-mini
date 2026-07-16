@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react'
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
@@ -119,25 +119,25 @@ const styles = `
     0%, 100% { opacity: 0.6; }
     50%       { opacity: 1; }
   }
-`;
+`
 
-export default function Loading({ label = "loading..." }) {
-  const styleRef = useRef(null);
+export default function Loading({ label = 'loading...' }) {
+  const styleRef = useRef(null)
 
   useEffect(() => {
-    if (!document.getElementById("cyber-spinner-styles")) {
-      const tag = document.createElement("style");
-      tag.id = "cyber-spinner-styles";
-      tag.textContent = styles;
-      document.head.appendChild(tag);
-      styleRef.current = tag;
+    if (!document.getElementById('cyber-spinner-styles')) {
+      const tag = document.createElement('style')
+      tag.id = 'cyber-spinner-styles'
+      tag.textContent = styles
+      document.head.appendChild(tag)
+      styleRef.current = tag
     }
     return () => {
       if (styleRef.current) {
-        styleRef.current.remove();
+        styleRef.current.remove()
       }
-    };
-  }, []);
+    }
+  }, [])
 
   return (
     <div className="cyber-wrap">
@@ -152,5 +152,5 @@ export default function Loading({ label = "loading..." }) {
 
       {label && <div className="cyber-label">{label}</div>}
     </div>
-  );
+  )
 }

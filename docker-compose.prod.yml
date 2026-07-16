@@ -35,8 +35,6 @@ services:
       - /app/node_modules
     command: sh -c "npm install && npx prisma generate && node src/server.js"
     restart: always
-    depends_on:
-      - db
     networks:
       - app-net
     labels:

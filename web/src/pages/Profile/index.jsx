@@ -20,20 +20,20 @@ import {
 
 
 function stringToColor(str) {
-  if (!str) return 'hsl(220, 60%, 55%)';
-  let hash = 0;
+  if (!str) return 'hsl(220, 60%, 55%)'
+  let hash = 0
   for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
   }
-  const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 55%, 50%)`;
+  const h = Math.abs(hash) % 360
+  return `hsl(${h}, 55%, 50%)`
 }
 
 function getInitials(name) {
-  if (!name) return '?';
-  const parts = name.trim().split(' ');
-  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  if (!name) return '?'
+  const parts = name.trim().split(' ')
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
 }
 
 export default function Profile() {
@@ -42,21 +42,21 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState('profile')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  
+
   // Data States
   const [profile, setProfile] = useState(null)
-  
+
   // Edit Profile States
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
   const [avatar, setAvatar] = useState('')
-  
+
   // Change Password States
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  
+
   // Visibility States
   const [showOldPassword, setShowOldPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
@@ -66,17 +66,13 @@ export default function Profile() {
   const initials = getInitials(fullName)
   const avatarColor = stringToColor(fullName)
 
-  useEffect(() => {
-    fetchProfile()
-  }, [])
-
   const fetchProfile = async () => {
     setLoading(true)
     try {
       const res = await authAPI.getProfile()
       const data = res.data
       setProfile(data)
-      
+
       // Populate fields
       if (data.employee) {
         setFirstName(data.employee.firstName || '')
@@ -91,6 +87,12 @@ export default function Profile() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      fetchProfile()
+    })
+  }, [])
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault()
@@ -121,7 +123,7 @@ export default function Profile() {
       toast.error('Mật khẩu mới phải có ít nhất 8 ký tự!')
       return
     }
-    
+
     setSaving(true)
     try {
       await authAPI.changePassword({ oldPassword, newPassword })
@@ -186,7 +188,7 @@ export default function Profile() {
         {/* Right Content */}
         <div className="md:col-span-3">
           <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-            
+
             {/* PROFILE TAB */}
             {activeTab === 'profile' && (
               <form onSubmit={handleUpdateProfile} className="space-y-6">

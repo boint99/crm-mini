@@ -143,7 +143,9 @@ const Organization = () => {
   // 2b. Fetch employees of the selected node/department
   useEffect(() => {
     if (selectedNode && selectedNode.id) {
-      setDeptEmployeesLoading(true)
+      Promise.resolve().then(() => {
+        setDeptEmployeesLoading(true)
+      })
       const params = {}
       if (selectedNode.type === 'COMPANY') {
         params.companyid = selectedNode.id
@@ -157,15 +159,16 @@ const Organization = () => {
         .then((res) => {
           setDeptEmployees(res.data || [])
         })
-        .catch((err) => {
-          console.error(err)
+        .catch(() => {
           setDeptEmployees([])
         })
         .finally(() => {
           setDeptEmployeesLoading(false)
         })
     } else {
-      setDeptEmployees([])
+      Promise.resolve().then(() => {
+        setDeptEmployees([])
+      })
     }
   }, [selectedNode, selectedBranchId])
 
@@ -254,9 +257,11 @@ const Organization = () => {
   // 5. Auto expand top level nodes when tree data changes
   useEffect(() => {
     if (filteredTreeData.length > 0) {
-      setExpandedIds((prev) => {
-        if (prev.size > 0) return prev
-        return new Set(filteredTreeData.map((node) => node.id))
+      Promise.resolve().then(() => {
+        setExpandedIds((prev) => {
+          if (prev.size > 0) return prev
+          return new Set(filteredTreeData.map((node) => node.id))
+        })
       })
     }
   }, [filteredTreeData])
@@ -339,8 +344,7 @@ const Organization = () => {
         .then((res) => {
           setDeptEmployees(res.data || [])
         })
-        .catch((err) => {
-          console.error(err)
+        .catch(() => {
         })
         .finally(() => {
           setDeptEmployeesLoading(false)

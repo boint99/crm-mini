@@ -5,7 +5,6 @@ import { accountsModel } from '../accounts/accounts.model.js'
 import { employeesModel } from '../employees/employees.model.js'
 import { saltRoundsPassword } from '../../utils/constants.js'
 import { signAccessToken, signRefreshToken, verifyRefreshToken, decodeToken } from '../../utils/jwt.js'
-import Serializer from '../../utils/Serializer.js'
 import { refreshTokenModel } from './refreshToken.model.js'
 import { PRISMA } from '../../configs/db.config.js'
 import { otpModel } from '../otp/otp.model.js'
@@ -567,7 +566,7 @@ class AuthService {
     if (!account) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
     }
-    
+
     await PRISMA.$transaction(async (tx) => {
       // Update account fields
       await tx.aCCOUNTS.update({

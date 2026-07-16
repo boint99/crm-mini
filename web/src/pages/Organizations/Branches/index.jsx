@@ -1,150 +1,150 @@
-import LoadingItem from "@/components/ui/LoadingItem";
-import { StatCard, StatusBadge, SearchBar, ActionButton, EmptyState, TableHeader, TableHeaderRight, Pagination } from "@/components/ui/PageLayout";
-import { dispatchWithToast } from "@/components/ui/dispatchWithToast";
-import { useAppDispatch } from "@/hook/useAppDispatch";
-import BranchModel from "@/pages/Organizations/Branches/Action/BranchModel";
+import LoadingItem from '@/components/ui/LoadingItem'
+import { StatCard, StatusBadge, SearchBar, ActionButton, EmptyState, TableHeader, TableHeaderRight, Pagination } from '@/components/ui/PageLayout'
+import { dispatchWithToast } from '@/components/ui/dispatchWithToast'
+import { useAppDispatch } from '@/hook/useAppDispatch'
+import BranchModel from '@/pages/Organizations/Branches/Action/BranchModel'
 import {
   createBranch,
   deleteBranch,
   getBranches,
   selectBranches,
   selectLoading,
-  updateBranch,
-} from "@/redux/slice/branchesSlice";
-import { formatDateTime, CUSTOM_MESSAGES } from "@/utils/contants";
-import { Building2, Pencil, Plus, Trash2, MapPin, UserCheck, UserX } from "lucide-react";
-import { useEffect, useMemo, useState, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useSearchParams } from "react-router-dom";
+  updateBranch
+} from '@/redux/slice/branchesSlice'
+import { formatDateTime, CUSTOM_MESSAGES } from '@/utils/contants'
+import { Building2, Pencil, Plus, Trash2, MapPin, UserCheck, UserX } from 'lucide-react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useSearchParams } from 'react-router-dom'
 
 function Branches() {
-  const [openModal, setOpenModal] = useState(false);
-  const [query, setQuery] = useState("");
-  const [mode, setMode] = useState("create");
-  const [selectedBranch, setSelectedBranch] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [searchParams, setSearchParams] = useSearchParams();
-  const page = Number(searchParams.get("page")) || 1;
+  const [openModal, setOpenModal] = useState(false)
+  const [query, setQuery] = useState('')
+  const [mode, setMode] = useState('create')
+  const [selectedBranch, setSelectedBranch] = useState(null)
+  const [selectedStatus, setSelectedStatus] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const page = Number(searchParams.get('page')) || 1
 
   const setPage = useCallback((newPage) => {
     setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.set("page", String(newPage));
-      return next;
-    });
-  }, [setSearchParams]);
+      const next = new URLSearchParams(prev)
+      next.set('page', String(newPage))
+      return next
+    })
+  }, [setSearchParams])
 
-  const PAGE_SIZE = 10;
+  const PAGE_SIZE = 10
 
-  const dispatchAsync = useAppDispatch();
-  const dispatch = useDispatch();
-  const branches = useSelector(selectBranches);
-  const loading = useSelector(selectLoading);
-
-  useEffect(() => {
-    dispatchAsync(getBranches());
-  }, []);
+  const dispatchAsync = useAppDispatch()
+  const dispatch = useDispatch()
+  const branches = useSelector(selectBranches)
+  const loading = useSelector(selectLoading)
 
   useEffect(() => {
-    if (!searchParams.get("page")) {
+    dispatchAsync(getBranches())
+  }, [])
+
+  useEffect(() => {
+    if (!searchParams.get('page')) {
       setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        next.set("page", "1");
-        return next;
-      }, { replace: true });
+        const next = new URLSearchParams(prev)
+        next.set('page', '1')
+        return next
+      }, { replace: true })
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams])
 
   const filteredRows = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    let list = branches;
+    const q = query.trim().toLowerCase()
+    let list = branches
     if (selectedStatus) {
-      list = list.filter((b) => b.status === selectedStatus);
+      list = list.filter((b) => b.status === selectedStatus)
     }
-    if (!q) return list;
+    if (!q) return list
     return list.filter((branch) => {
       const hay = [
         branch.branchId,
         branch.branchName,
         branch.branchCode,
         branch.location,
-        branch.status,
+        branch.status
       ]
         .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return hay.includes(q);
-    });
-  }, [branches, query, selectedStatus]);
+        .join(' ')
+        .toLowerCase()
+      return hay.includes(q)
+    })
+  }, [branches, query, selectedStatus])
 
-  const totalBranches = branches.length;
+  const totalBranches = branches.length
   const activeBranches = branches.filter(
-    (branch) => branch.status === "ENABLE",
-  ).length;
-  const inactiveBranches = totalBranches - activeBranches;
+    (branch) => branch.status === 'ENABLE'
+  ).length
+  const inactiveBranches = totalBranches - activeBranches
 
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
-  const currentPage = Math.min(page, totalPages);
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
   const pagedItems = filteredRows.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
-  );
+  )
 
   const openCreateModal = () => {
-    setMode("create");
-    setSelectedBranch(null);
-    setOpenModal(true);
-  };
+    setMode('create')
+    setSelectedBranch(null)
+    setOpenModal(true)
+  }
 
   const openEditModal = (branch) => {
-    setMode("edit");
-    setSelectedBranch(branch);
-    setOpenModal(true);
-  };
+    setMode('edit')
+    setSelectedBranch(branch)
+    setOpenModal(true)
+  }
 
   const openDeleteModal = (branch) => {
-    setMode("delete");
-    setSelectedBranch(branch);
-    setOpenModal(true);
-  };
+    setMode('delete')
+    setSelectedBranch(branch)
+    setOpenModal(true)
+  }
 
   const handleCloseModal = () => {
-    setOpenModal(false);
-    setSelectedBranch(null);
-    setMode("create");
-  };
+    setOpenModal(false)
+    setSelectedBranch(null)
+    setMode('create')
+  }
 
   const handleSubmit = async (payload) => {
-    if (mode === "delete") {
+    if (mode === 'delete') {
       await dispatchWithToast({
         dispatch,
         action: deleteBranch,
         payload,
-        messages: CUSTOM_MESSAGES.delete,
-      });
-      handleCloseModal();
-      return;
+        messages: CUSTOM_MESSAGES.delete
+      })
+      handleCloseModal()
+      return
     }
 
-    if (mode === "edit") {
+    if (mode === 'edit') {
       await dispatchWithToast({
         dispatch,
         action: updateBranch,
         payload,
-        messages: CUSTOM_MESSAGES.update,
-      });
-      handleCloseModal();
-      return;
+        messages: CUSTOM_MESSAGES.update
+      })
+      handleCloseModal()
+      return
     }
 
     await dispatchWithToast({
       dispatch,
       action: createBranch,
       payload,
-      messages: CUSTOM_MESSAGES.create,
-    });
-    handleCloseModal();
-  };
+      messages: CUSTOM_MESSAGES.create
+    })
+    handleCloseModal()
+  }
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -175,25 +175,25 @@ function Branches() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => { setSelectedStatus(""); setPage(1); }}
+            onClick={() => { setSelectedStatus(''); setPage(1) }}
             className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
-              selectedStatus === "" ? "bg-indigo-50 border-indigo-200 text-indigo-600" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+              selectedStatus === '' ? 'bg-indigo-50 border-indigo-200 text-indigo-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
             }`}
           >
             Tất cả
           </button>
           <button
-            onClick={() => { setSelectedStatus("ENABLE"); setPage(1); }}
+            onClick={() => { setSelectedStatus('ENABLE'); setPage(1) }}
             className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
-              selectedStatus === "ENABLE" ? "bg-emerald-50 border-emerald-200 text-emerald-600" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+              selectedStatus === 'ENABLE' ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
             }`}
           >
             Hoạt động
           </button>
           <button
-            onClick={() => { setSelectedStatus("DISABLE"); setPage(1); }}
+            onClick={() => { setSelectedStatus('DISABLE'); setPage(1) }}
             className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
-              selectedStatus === "DISABLE" ? "bg-rose-50 border-rose-200 text-rose-600" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+              selectedStatus === 'DISABLE' ? 'bg-rose-50 border-rose-200 text-rose-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
             }`}
           >
             Ngưng hoạt động
@@ -206,7 +206,7 @@ function Branches() {
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
-        <SearchBar value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} placeholder="Tìm theo tên, địa điểm, mã..." />
+        <SearchBar value={query} onChange={(e) => { setQuery(e.target.value); setPage(1) }} placeholder="Tìm theo tên, địa điểm, mã..." />
         <div className="flex-1 min-h-0 overflow-auto">
           <table className="min-w-full text-sm">
             <thead>
@@ -233,7 +233,7 @@ function Branches() {
             ) : (
               <tbody className="divide-y divide-slate-50">
                 {pagedItems.map((branch, index) => {
-                  const stt = (currentPage - 1) * PAGE_SIZE + index + 1;
+                  const stt = (currentPage - 1) * PAGE_SIZE + index + 1
                   return (
                     <tr key={branch.id} className="hover:bg-slate-50/60 transition-colors">
                       <td className="px-5 py-4 text-slate-500 font-medium whitespace-nowrap">
@@ -261,7 +261,7 @@ function Branches() {
                         </div>
                       </td>
                     </tr>
-                  );
+                  )
                 })}
               </tbody>
             )}
@@ -282,7 +282,7 @@ function Branches() {
         initialValues={selectedBranch}
       />
     </div>
-  );
+  )
 }
 
-export default Branches;
+export default Branches

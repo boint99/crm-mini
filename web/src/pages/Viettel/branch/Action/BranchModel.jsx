@@ -1,66 +1,66 @@
-import { customStyles } from "@/utils/contants";
-import { X } from "lucide-react";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import Modal from "react-modal";
+import { customStyles } from '@/utils/contants'
+import { X } from 'lucide-react'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import Modal from 'react-modal'
 
 export default function BranchModel({
   open,
   isOpen = open,
   onClose,
   onSubmit,
-  mode = "create",
+  mode = 'create',
   initialValues,
-  data = initialValues,
+  data = initialValues
 }) {
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
-  } = useForm();
+    formState: { errors, isSubmitting }
+  } = useForm()
 
-  const isEdit = mode === "edit";
+  const isEdit = mode === 'edit'
 
   useEffect(() => {
     if (isOpen) {
-      if (mode === "edit" && data) {
+      if (mode === 'edit' && data) {
         reset({
-          viettelBranchCode: data.viettelBranchCode || "",
-          viettelBranchName: data.viettelBranchName || "",
-          status: data.status || "ENABLE",
-        });
-      } else if (mode === "create") {
+          viettelBranchCode: data.viettelBranchCode || '',
+          viettelBranchName: data.viettelBranchName || '',
+          status: data.status || 'ENABLE'
+        })
+      } else if (mode === 'create') {
         reset({
-          viettelBranchCode: "",
-          viettelBranchName: "",
-          status: "ENABLE",
-        });
+          viettelBranchCode: '',
+          viettelBranchName: '',
+          status: 'ENABLE'
+        })
       }
     }
-  }, [isOpen, mode, data, reset]);
+  }, [isOpen, mode, data, reset])
 
   const handleFormSubmit = (formData) => {
-    if (mode === "delete") {
-      onSubmit?.(data?.id || data?.viettelBranchId);
-      return;
+    if (mode === 'delete') {
+      onSubmit?.(data?.id || data?.viettelBranchId)
+      return
     }
 
     const payload = {
       viettelBranchCode: formData.viettelBranchCode.trim(),
       viettelBranchName: formData.viettelBranchName?.trim() || null,
-      status: formData.status,
-    };
+      status: formData.status
+    }
 
     if (isEdit && (data?.id || data?.viettelBranchId)) {
       // In the backend, update endpoint uses the primary key or unique id
-      payload.id = data.id || data.viettelBranchId;
+      payload.id = data.id || data.viettelBranchId
     }
 
-    onSubmit?.(payload);
-  };
+    onSubmit?.(payload)
+  }
 
-  if (mode === "delete") {
+  if (mode === 'delete') {
     return (
       <Modal
         isOpen={isOpen}
@@ -81,7 +81,7 @@ export default function BranchModel({
             </button>
           </div>
           <p className="text-sm text-gray-600 mb-6">
-            Bạn có chắc muốn xóa chi nhánh Viettel với mã{" "}
+            Bạn có chắc muốn xóa chi nhánh Viettel với mã{' '}
             <span className="font-semibold">{data?.viettelBranchCode}</span>? Thao tác này
             không thể hoàn tác.
           </p>
@@ -101,12 +101,12 @@ export default function BranchModel({
           </div>
         </div>
       </Modal>
-    );
+    )
   }
 
   const inputClass =
-    "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed";
-  const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+    'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed'
+  const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
 
   return (
     <Modal
@@ -118,7 +118,7 @@ export default function BranchModel({
       <div className="p-6">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-semibold text-gray-900">
-            {isEdit ? "Chỉnh sửa chi nhánh" : "Thêm chi nhánh mới"}
+            {isEdit ? 'Chỉnh sửa chi nhánh' : 'Thêm chi nhánh mới'}
           </h3>
           <button
             onClick={onClose}
@@ -137,10 +137,10 @@ export default function BranchModel({
                 placeholder="VD: CN001"
                 disabled={isEdit}
                 className={inputClass}
-                {...register("viettelBranchCode", {
-                  required: "Mã chi nhánh là bắt buộc",
+                {...register('viettelBranchCode', {
+                  required: 'Mã chi nhánh là bắt buộc',
                   validate: (v) =>
-                    v.trim().length > 0 || "Mã chi nhánh không được để trống",
+                    v.trim().length > 0 || 'Mã chi nhánh không được để trống'
                 })}
               />
               {errors.viettelBranchCode && (
@@ -152,7 +152,7 @@ export default function BranchModel({
 
             <div>
               <label className={labelClass}>Trạng thái</label>
-              <select className={inputClass} {...register("status")}>
+              <select className={inputClass} {...register('status')}>
                 <option value="ENABLE">ENABLE (Hoạt động)</option>
                 <option value="DISABLED">DISABLED (Ngưng hoạt động)</option>
               </select>
@@ -165,7 +165,7 @@ export default function BranchModel({
               type="text"
               placeholder="VD: Viettel Chi nhánh 1"
               className={inputClass}
-              {...register("viettelBranchName")}
+              {...register('viettelBranchName')}
             />
           </div>
 
@@ -182,11 +182,11 @@ export default function BranchModel({
               disabled={isSubmitting}
               className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
             >
-              {isEdit ? "Cập nhật" : "Tạo mới"}
+              {isEdit ? 'Cập nhật' : 'Tạo mới'}
             </button>
           </div>
         </form>
       </div>
     </Modal>
-  );
+  )
 }

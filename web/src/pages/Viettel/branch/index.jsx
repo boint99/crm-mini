@@ -1,149 +1,149 @@
-import LoadingItem from "@/components/ui/LoadingItem";
-import { StatCard, StatusBadge, SearchBar, ActionButton, EmptyState, TableHeader, TableHeaderRight, Pagination } from "@/components/ui/PageLayout";
-import { dispatchWithToast } from "@/components/ui/dispatchWithToast";
-import { useAppDispatch } from "@/hook/useAppDispatch";
-import BranchModel from "@/pages/Viettel/branch/Action/BranchModel";
+import LoadingItem from '@/components/ui/LoadingItem'
+import { StatCard, StatusBadge, SearchBar, ActionButton, EmptyState, TableHeader, TableHeaderRight, Pagination } from '@/components/ui/PageLayout'
+import { dispatchWithToast } from '@/components/ui/dispatchWithToast'
+import { useAppDispatch } from '@/hook/useAppDispatch'
+import BranchModel from '@/pages/Viettel/branch/Action/BranchModel'
 import {
   createBranch,
   deleteBranch,
   getBranches,
   selectViettelBranches,
   selectLoadingViettelBranch,
-  updateBranch,
-} from "@/redux/slice/viettelBranchSlice";
-import { formatDateTime, CUSTOM_MESSAGES } from "@/utils/contants";
-import { Pencil, Plus, Trash2, GitBranch, UserCheck, UserX } from "lucide-react";
-import { useEffect, useMemo, useState, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useSearchParams } from "react-router-dom";
+  updateBranch
+} from '@/redux/slice/viettelBranchSlice'
+import { formatDateTime, CUSTOM_MESSAGES } from '@/utils/contants'
+import { Pencil, Plus, Trash2, GitBranch, UserCheck, UserX } from 'lucide-react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useSearchParams } from 'react-router-dom'
 
 function BranchList() {
-  const [openAdd, setOpenAdd] = useState(false);
-  const [query, setQuery] = useState("");
-  const [mode, setMode] = useState("create");
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [searchParams, setSearchParams] = useSearchParams();
-  const page = Number(searchParams.get("page")) || 1;
+  const [openAdd, setOpenAdd] = useState(false)
+  const [query, setQuery] = useState('')
+  const [mode, setMode] = useState('create')
+  const [selectedItem, setSelectedItem] = useState(null)
+  const [selectedStatus, setSelectedStatus] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const page = Number(searchParams.get('page')) || 1
 
   const setPage = useCallback((newPage) => {
     setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.set("page", String(newPage));
-      return next;
-    });
-  }, [setSearchParams]);
+      const next = new URLSearchParams(prev)
+      next.set('page', String(newPage))
+      return next
+    })
+  }, [setSearchParams])
 
-  const PAGE_SIZE = 10;
+  const PAGE_SIZE = 10
 
-  const dispatchAsync = useAppDispatch();
-  const dispatch = useDispatch();
-  const items = useSelector(selectViettelBranches);
-  const loading = useSelector(selectLoadingViettelBranch);
-
-  useEffect(() => {
-    dispatchAsync(getBranches());
-  }, []);
+  const dispatchAsync = useAppDispatch()
+  const dispatch = useDispatch()
+  const items = useSelector(selectViettelBranches)
+  const loading = useSelector(selectLoadingViettelBranch)
 
   useEffect(() => {
-    if (!searchParams.get("page")) {
+    dispatchAsync(getBranches())
+  }, [])
+
+  useEffect(() => {
+    if (!searchParams.get('page')) {
       setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        next.set("page", "1");
-        return next;
-      }, { replace: true });
+        const next = new URLSearchParams(prev)
+        next.set('page', '1')
+        return next
+      }, { replace: true })
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams])
 
   const filteredRows = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    let list = items;
+    const q = query.trim().toLowerCase()
+    let list = items
     if (selectedStatus) {
-      list = list.filter((item) => item.status === selectedStatus);
+      list = list.filter((item) => item.status === selectedStatus)
     }
-    if (!q) return list;
+    if (!q) return list
     return list.filter((item) => {
       const hay = [
         item.viettelBranchCode,
         item.viettelBranchName,
-        item.status,
+        item.status
       ]
         .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return hay.includes(q);
-    });
-  }, [items, query, selectedStatus]);
+        .join(' ')
+        .toLowerCase()
+      return hay.includes(q)
+    })
+  }, [items, query, selectedStatus])
 
-  const totalItems = items.length;
-  const activeItems = items.filter((item) => item.status === "ENABLE").length;
-  const inactiveItems = totalItems - activeItems;
+  const totalItems = items.length
+  const activeItems = items.filter((item) => item.status === 'ENABLE').length
+  const inactiveItems = totalItems - activeItems
 
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
-  const currentPage = Math.min(page, totalPages);
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
   const pagedItems = filteredRows.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
-  );
+  )
 
   const openCreateModal = () => {
-    setMode("create");
-    setSelectedItem(null);
-    setOpenAdd(true);
-  };
+    setMode('create')
+    setSelectedItem(null)
+    setOpenAdd(true)
+  }
 
   const openEditModal = (item) => {
-    setMode("edit");
-    setSelectedItem(item);
-    setOpenAdd(true);
-  };
+    setMode('edit')
+    setSelectedItem(item)
+    setOpenAdd(true)
+  }
 
   const openDeleteModal = (item) => {
-    setMode("delete");
-    setSelectedItem(item);
-    setOpenAdd(true);
-  };
+    setMode('delete')
+    setSelectedItem(item)
+    setOpenAdd(true)
+  }
 
   const handleCloseModal = () => {
-    setOpenAdd(false);
-    setSelectedItem(null);
-    setMode("create");
-  };
+    setOpenAdd(false)
+    setSelectedItem(null)
+    setMode('create')
+  }
 
   const handleSubmit = async (payload) => {
-    if (mode === "delete") {
+    if (mode === 'delete') {
       await dispatchWithToast({
         dispatch,
         action: deleteBranch,
         payload,
-        messages: CUSTOM_MESSAGES.delete,
-      });
-      handleCloseModal();
-      dispatchAsync(getBranches());
-      return;
+        messages: CUSTOM_MESSAGES.delete
+      })
+      handleCloseModal()
+      dispatchAsync(getBranches())
+      return
     }
 
-    if (mode === "edit") {
+    if (mode === 'edit') {
       await dispatchWithToast({
         dispatch,
         action: updateBranch,
         payload,
-        messages: CUSTOM_MESSAGES.update,
-      });
-      handleCloseModal();
-      dispatchAsync(getBranches());
-      return;
+        messages: CUSTOM_MESSAGES.update
+      })
+      handleCloseModal()
+      dispatchAsync(getBranches())
+      return
     }
 
     await dispatchWithToast({
       dispatch,
       action: createBranch,
       payload,
-      messages: CUSTOM_MESSAGES.create,
-    });
-    handleCloseModal();
-    dispatchAsync(getBranches());
-  };
+      messages: CUSTOM_MESSAGES.create
+    })
+    handleCloseModal()
+    dispatchAsync(getBranches())
+  }
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -178,25 +178,25 @@ function BranchList() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => { setSelectedStatus(""); setPage(1); }}
+            onClick={() => { setSelectedStatus(''); setPage(1) }}
             className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
-              selectedStatus === "" ? "bg-indigo-50 border-indigo-200 text-indigo-600" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+              selectedStatus === '' ? 'bg-indigo-50 border-indigo-200 text-indigo-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
             }`}
           >
             Tất cả
           </button>
           <button
-            onClick={() => { setSelectedStatus("ENABLE"); setPage(1); }}
+            onClick={() => { setSelectedStatus('ENABLE'); setPage(1) }}
             className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
-              selectedStatus === "ENABLE" ? "bg-emerald-50 border-emerald-200 text-emerald-600" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+              selectedStatus === 'ENABLE' ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
             }`}
           >
             Hoạt động
           </button>
           <button
-            onClick={() => { setSelectedStatus("DISABLE"); setPage(1); }}
+            onClick={() => { setSelectedStatus('DISABLE'); setPage(1) }}
             className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
-              selectedStatus === "DISABLE" ? "bg-rose-50 border-rose-200 text-rose-600" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+              selectedStatus === 'DISABLE' ? 'bg-rose-50 border-rose-200 text-rose-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
             }`}
           >
             Ngưng hoạt động
@@ -209,7 +209,7 @@ function BranchList() {
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
-        <SearchBar value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} placeholder="Tìm theo mã, tên..." />
+        <SearchBar value={query} onChange={(e) => { setQuery(e.target.value); setPage(1) }} placeholder="Tìm theo mã, tên..." />
         <div className="flex-1 min-h-0 overflow-auto">
           <table className="min-w-full text-sm">
             <thead>
@@ -235,17 +235,17 @@ function BranchList() {
             ) : (
               <tbody className="divide-y divide-slate-50">
                 {pagedItems.map((item, index) => {
-                  const stt = (currentPage - 1) * PAGE_SIZE + index + 1;
+                  const stt = (currentPage - 1) * PAGE_SIZE + index + 1
                   return (
                     <tr key={item.id || item.viettelBranchId} className="hover:bg-slate-50/60 transition-colors">
                       <td className="px-5 py-4 text-slate-500 font-medium whitespace-nowrap">
                         {String(stt).padStart(2, '0')}
                       </td>
                       <td className="px-5 py-4 font-semibold text-indigo-600 whitespace-nowrap">
-                        {item.viettelBranchCode || "-"}
+                        {item.viettelBranchCode || '-'}
                       </td>
                       <td className="px-5 py-4 font-semibold text-slate-900 whitespace-nowrap">
-                        {item.viettelBranchName || "-"}
+                        {item.viettelBranchName || '-'}
                       </td>
                       <td className="px-5 py-4 text-slate-500 whitespace-nowrap">
                         {item.createdAt ? formatDateTime(item.createdAt).split(' ')[0] : '-'}
@@ -260,7 +260,7 @@ function BranchList() {
                         </div>
                       </td>
                     </tr>
-                  );
+                  )
                 })}
               </tbody>
             )}
@@ -281,7 +281,7 @@ function BranchList() {
         initialValues={selectedItem}
       />
     </div>
-  );
+  )
 }
 
-export default BranchList;
+export default BranchList

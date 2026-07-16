@@ -1,67 +1,67 @@
-import { customStyles } from "@/utils/contants";
-import { X } from "lucide-react";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import Modal from "react-modal";
-import { useSelector } from "react-redux";
-import { useAppDispatch } from "@/hook/useAppDispatch";
-import { getBranches, selectViettelBranches } from "@/redux/slice/viettelBranchSlice";
+import { customStyles } from '@/utils/contants'
+import { X } from 'lucide-react'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import Modal from 'react-modal'
+import { useSelector } from 'react-redux'
+import { useAppDispatch } from '@/hook/useAppDispatch'
+import { getBranches, selectViettelBranches } from '@/redux/slice/viettelBranchSlice'
 
 export default function ViettelModel({
   open,
   isOpen = open,
   onClose,
   onSubmit,
-  mode = "create",
+  mode = 'create',
   initialValues,
-  data = initialValues,
+  data = initialValues
 }) {
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
-  } = useForm();
+    formState: { errors, isSubmitting }
+  } = useForm()
 
-  const isEdit = mode === "edit";
+  const isEdit = mode === 'edit'
 
-  const dispatchAsync = useAppDispatch();
-  const branches = useSelector(selectViettelBranches);
+  const dispatchAsync = useAppDispatch()
+  const branches = useSelector(selectViettelBranches)
 
   useEffect(() => {
     if (isOpen) {
-      dispatchAsync(getBranches());
+      dispatchAsync(getBranches())
     }
-  }, [isOpen]);
+  }, [isOpen])
 
   useEffect(() => {
     if (isOpen) {
-      if (mode === "edit" && data) {
+      if (mode === 'edit' && data) {
         reset({
-          viettelCode: data.viettelCode || "",
-          viettelEmail: data.viettelEmail || "",
-          employeeCode: data.employee?.employeeCode || "",
-          status: data.status || "ENABLE",
-          viettelPosition: data.viettelPosition || "",
-          viettelBranchId: data.viettelBranch?.id || "",
-        });
-      } else if (mode === "create") {
+          viettelCode: data.viettelCode || '',
+          viettelEmail: data.viettelEmail || '',
+          employeeCode: data.employee?.employeeCode || '',
+          status: data.status || 'ENABLE',
+          viettelPosition: data.viettelPosition || '',
+          viettelBranchId: data.viettelBranch?.id || ''
+        })
+      } else if (mode === 'create') {
         reset({
-          viettelCode: "",
-          viettelEmail: "",
-          employeeCode: "",
-          status: "ENABLE",
-          viettelPosition: "",
-          viettelBranchId: "",
-        });
+          viettelCode: '',
+          viettelEmail: '',
+          employeeCode: '',
+          status: 'ENABLE',
+          viettelPosition: '',
+          viettelBranchId: ''
+        })
       }
     }
-  }, [isOpen, mode, data, reset]);
+  }, [isOpen, mode, data, reset])
 
   const handleFormSubmit = (formData) => {
-    if (mode === "delete") {
-      onSubmit?.(data?.id);
-      return;
+    if (mode === 'delete') {
+      onSubmit?.(data?.id)
+      return
     }
 
     const payload = {
@@ -70,17 +70,17 @@ export default function ViettelModel({
       employeeCode: formData.employeeCode?.trim() || null,
       viettelPosition: formData.viettelPosition?.trim() || null,
       viettelBranchId: formData.viettelBranchId || null,
-      status: formData.status,
-    };
-
-    if (isEdit && data?.id) {
-      payload.id = data.id;
+      status: formData.status
     }
 
-    onSubmit?.(payload);
-  };
+    if (isEdit && data?.id) {
+      payload.id = data.id
+    }
 
-  if (mode === "delete") {
+    onSubmit?.(payload)
+  }
+
+  if (mode === 'delete') {
     return (
       <Modal
         isOpen={isOpen}
@@ -101,7 +101,7 @@ export default function ViettelModel({
             </button>
           </div>
           <p className="text-sm text-gray-600 mb-6">
-            Bạn có chắc muốn xóa nhân viên Viettel với mã{" "}
+            Bạn có chắc muốn xóa nhân viên Viettel với mã{' '}
             <span className="font-semibold">{data?.viettelCode}</span>? Thao tác này
             không thể hoàn tác.
           </p>
@@ -121,12 +121,12 @@ export default function ViettelModel({
           </div>
         </div>
       </Modal>
-    );
+    )
   }
 
   const inputClass =
-    "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed";
-  const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+    'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed'
+  const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
 
   return (
     <Modal
@@ -138,7 +138,7 @@ export default function ViettelModel({
       <div className="p-6">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-semibold text-gray-900">
-            {isEdit ? "Chỉnh sửa" : "Thêm mới"}
+            {isEdit ? 'Chỉnh sửa' : 'Thêm mới'}
           </h3>
           <button
             onClick={onClose}
@@ -157,10 +157,10 @@ export default function ViettelModel({
                 placeholder="VD: VT0001"
                 disabled={isEdit}
                 className={inputClass}
-                {...register("viettelCode", {
-                  required: "Bắt buộc",
+                {...register('viettelCode', {
+                  required: 'Bắt buộc',
                   validate: (v) =>
-                    v.trim().length === 6 || "Mã Viettel phải đúng 6 ký tự",
+                    v.trim().length === 6 || 'Mã Viettel phải đúng 6 ký tự'
                 })}
               />
               {errors.viettelCode && (
@@ -172,7 +172,7 @@ export default function ViettelModel({
 
             <div>
               <label className={labelClass}>Trạng thái (status)</label>
-              <select className={inputClass} {...register("status")}>
+              <select className={inputClass} {...register('status')}>
                 <option value="ENABLE">ENABLE (Hoạt động)</option>
                 <option value="DISABLED">DISABLED</option>
               </select>
@@ -185,11 +185,11 @@ export default function ViettelModel({
               type="text"
               placeholder="VD: user@viettel.com.vn"
               className={inputClass}
-              {...register("viettelEmail", {
+              {...register('viettelEmail', {
                 pattern: {
                   value: /^\S+@\S+\.\S+$/,
-                  message: "Email không hợp lệ",
-                },
+                  message: 'Email không hợp lệ'
+                }
               })}
             />
             {errors.viettelEmail && (
@@ -206,13 +206,13 @@ export default function ViettelModel({
                 type="text"
                 placeholder="VD: Chuyên viên"
                 className={inputClass}
-                {...register("viettelPosition")}
+                {...register('viettelPosition')}
               />
             </div>
 
             <div>
               <label className={labelClass}>Đơn vị Viettel</label>
-              <select className={inputClass} {...register("viettelBranchId")}>
+              <select className={inputClass} {...register('viettelBranchId')}>
                 <option value="">-- Chọn đơn vị --</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
@@ -229,7 +229,7 @@ export default function ViettelModel({
               type="text"
               placeholder="VD: NV001"
               className={inputClass}
-              {...register("employeeCode")}
+              {...register('employeeCode')}
             />
           </div>
 
@@ -246,11 +246,11 @@ export default function ViettelModel({
               disabled={isSubmitting}
               className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
             >
-              {isEdit ? "Cập nhật" : "Tạo mới"}
+              {isEdit ? 'Cập nhật' : 'Tạo mới'}
             </button>
           </div>
         </form>
       </div>
     </Modal>
-  );
+  )
 }

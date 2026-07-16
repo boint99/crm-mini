@@ -9,20 +9,20 @@ import Breadcrumb from '@/components/ui/Breadcrumb'
 import { authAPI } from '@/api/auth'
 
 function stringToColor(str) {
-  if (!str) return 'hsl(220, 60%, 55%)';
-  let hash = 0;
+  if (!str) return 'hsl(220, 60%, 55%)'
+  let hash = 0
   for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
   }
-  const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 55%, 50%)`;
+  const h = Math.abs(hash) % 360
+  return `hsl(${h}, 55%, 50%)`
 }
 
 function getInitials(name) {
-  if (!name) return '?';
-  const parts = name.trim().split(' ');
-  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  if (!name) return '?'
+  const parts = name.trim().split(' ')
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
 }
 
 function Header({ collapsed: _collapsed, setCollapsed: _setCollapsed }) {
@@ -96,7 +96,7 @@ function Header({ collapsed: _collapsed, setCollapsed: _setCollapsed }) {
           <button
             type="button"
             onClick={() => _setCollapsed((v) => !v)}
-            title={_collapsed ? "Mở rộng sidebar" : "Thu nhỏ sidebar"}
+            title={_collapsed ? 'Mở rộng sidebar' : 'Thu nhỏ sidebar'}
             className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer text-slate-600"
           >
             <Menu size={20} />

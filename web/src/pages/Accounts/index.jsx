@@ -202,7 +202,7 @@ function Accounts() {
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
-        <SearchBar value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} placeholder="Tìm theo tên tài khoản, mô tả..." />
+        <SearchBar value={query} onChange={(e) => { setQuery(e.target.value); setPage(1) }} placeholder="Tìm theo tên tài khoản, mô tả..." />
         <div className="flex-1 min-h-0 overflow-auto">
           <table className="min-w-full text-sm">
             <thead>

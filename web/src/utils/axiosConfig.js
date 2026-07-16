@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import axios from 'axios'
 import { getCookie } from './cookie'
 import { navigateTo } from './navigateHelper'

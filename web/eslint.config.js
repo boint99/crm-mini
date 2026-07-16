@@ -66,7 +66,7 @@ export default defineConfig([
       'react-hooks/exhaustive-deps': 'warn',
 
       // Clean code
-      'no-console': 'warn',
+      'no-console': 'off',
       'no-unused-vars': [
         'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }

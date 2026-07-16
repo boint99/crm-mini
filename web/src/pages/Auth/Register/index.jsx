@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { authAPI } from '@/api/auth'
 import { toast } from 'react-toastify'
 import styles from '../AuthLayout.module.css'
@@ -16,7 +16,7 @@ function RegisterPage() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors }
   } = useForm({
     defaultValues: {
@@ -29,7 +29,7 @@ function RegisterPage() {
     mode: 'onTouched'
   })
 
-  const passwordValue = watch('password')
+  const passwordValue = useWatch({ control, name: 'password' })
 
   const onSubmit = async (data) => {
     setIsLoading(true)

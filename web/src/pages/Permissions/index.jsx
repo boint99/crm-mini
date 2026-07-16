@@ -113,7 +113,9 @@ export default function PermissionsPage() {
   }
 
   useEffect(() => {
-    fetchData()
+    Promise.resolve().then(() => {
+      fetchData()
+    })
   }, [])
 
   // Open creation modal

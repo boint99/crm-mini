@@ -1,188 +1,188 @@
-import { customStyles } from "@/utils/contants";
-import { X, CloudUpload, Trash2, FileSpreadsheet } from "lucide-react";
-import { useState, useRef } from "react";
-import Modal from "react-modal";
-import { toast } from "react-toastify";
+import { customStyles } from '@/utils/contants'
+import { X, CloudUpload, Trash2, FileSpreadsheet } from 'lucide-react'
+import { useState, useRef } from 'react'
+import Modal from 'react-modal'
+import { toast } from 'react-toastify'
 
 export default function UploadCompanyModel({
   open,
   isOpen = open,
   onClose,
-  onSubmit,
+  onSubmit
 }) {
-  const [file, setFile] = useState(null);
-  const [parsedData, setParsedData] = useState([]);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
-  const [importProgress, setImportProgress] = useState(0);
-  const [error, setError] = useState(null);
-  const [importResults, setImportResults] = useState(null);
-  const fileInputRef = useRef(null);
+  const [file, setFile] = useState(null)
+  const [parsedData, setParsedData] = useState([])
+  const [isDragging, setIsDragging] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
+  const [importProgress, setImportProgress] = useState(0)
+  const [error, setError] = useState(null)
+  const [importResults, setImportResults] = useState(null)
+  const fileInputRef = useRef(null)
 
   const resetState = () => {
-    setFile(null);
-    setParsedData([]);
-    setError(null);
-    setIsImporting(false);
-    setImportProgress(0);
-    setImportResults(null);
-  };
+    setFile(null)
+    setParsedData([])
+    setError(null)
+    setIsImporting(false)
+    setImportProgress(0)
+    setImportResults(null)
+  }
 
   const handleClose = () => {
-    if (isImporting) return;
-    resetState();
-    onClose?.();
-  };
+    if (isImporting) return
+    resetState()
+    onClose?.()
+  }
 
   const handleFileChange = (selectedFile) => {
-    if (!selectedFile) return;
+    if (!selectedFile) return
 
-    const fileType = selectedFile.name.split(".").pop().toLowerCase();
-    if (fileType !== "csv" && fileType !== "xlsx" && fileType !== "xls") {
-      setError("Vui lòng chỉ chọn file Excel (.xlsx, .xls) hoặc CSV (.csv)");
-      return;
+    const fileType = selectedFile.name.split('.').pop().toLowerCase()
+    if (fileType !== 'csv' && fileType !== 'xlsx' && fileType !== 'xls') {
+      setError('Vui lòng chỉ chọn file Excel (.xlsx, .xls) hoặc CSV (.csv)')
+      return
     }
 
-    setError(null);
-    setFile(selectedFile);
+    setError(null)
+    setFile(selectedFile)
 
-    const reader = new FileReader();
+    const reader = new FileReader()
     reader.onload = (e) => {
-      if (fileType === "csv") {
+      if (fileType === 'csv') {
         try {
-          const text = e.target.result;
-          const rows = text.split("\n").map((row) => row.split(","));
+          const text = e.target.result
+          const rows = text.split('\n').map((row) => row.split(','))
           if (rows.length < 2) {
-            setError("File không có dữ liệu hoặc định dạng không đúng!");
-            return;
+            setError('File không có dữ liệu hoặc định dạng không đúng!')
+            return
           }
 
-          const headers = rows[0].map((h) => h.trim().toLowerCase());
+          const headers = rows[0].map((h) => h.trim().toLowerCase())
           let nameIndex = headers.findIndex(
-            (h) => h.includes("tên") || h.includes("name"),
-          );
+            (h) => h.includes('tên') || h.includes('name')
+          )
           let statusIndex = headers.findIndex(
-            (h) => h.includes("trạng thái") || h.includes("status"),
-          );
+            (h) => h.includes('trạng thái') || h.includes('status')
+          )
 
           if (nameIndex === -1) {
-            nameIndex = 0; // fallback to first column
+            nameIndex = 0 // fallback to first column
           }
 
-          const companies = [];
+          const companies = []
           for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            if (row.length <= nameIndex || !row[nameIndex]?.trim()) continue;
+            const row = rows[i]
+            if (row.length <= nameIndex || !row[nameIndex]?.trim()) continue
 
             const companyName = row[nameIndex]
               .trim()
-              .replace(/^["']|["']$/g, "");
-            let status = "ENABLE";
+              .replace(/^["']|["']$/g, '')
+            let status = 'ENABLE'
             if (statusIndex !== -1 && row[statusIndex]) {
-              const s = row[statusIndex].trim().toLowerCase();
+              const s = row[statusIndex].trim().toLowerCase()
               if (
-                s.includes("disable") ||
-                s.includes("ngưng") ||
-                s.includes("tắt")
+                s.includes('disable') ||
+                s.includes('ngưng') ||
+                s.includes('tắt')
               ) {
-                status = "DISABLED";
+                status = 'DISABLED'
               }
             }
-            companies.push({ companyName, status });
+            companies.push({ companyName, status })
           }
-          setParsedData(companies);
+          setParsedData(companies)
         } catch (err) {
-          setError("Lỗi khi đọc file CSV: " + err.message);
+          setError('Lỗi khi đọc file CSV: ' + err.message)
         }
       } else {
         // Mock preview for Excel (.xlsx/.xls) files
-        const baseName = selectedFile.name.replace(/\.[^/.]+$/, "");
+        const baseName = selectedFile.name.replace(/\.[^/.]+$/, '')
         setParsedData([
-          { companyName: `${baseName} - Thành viên A`, status: "ENABLE" },
-          { companyName: `${baseName} - Thành viên B`, status: "ENABLE" },
-          { companyName: `${baseName} - Chi nhánh miền Nam`, status: "DISABLED" },
-        ]);
+          { companyName: `${baseName} - Thành viên A`, status: 'ENABLE' },
+          { companyName: `${baseName} - Thành viên B`, status: 'ENABLE' },
+          { companyName: `${baseName} - Chi nhánh miền Nam`, status: 'DISABLED' }
+        ])
       }
-    };
-
-    if (fileType === "csv") {
-      reader.readAsText(selectedFile, "UTF-8");
-    } else {
-      reader.readAsArrayBuffer(selectedFile);
     }
-  };
+
+    if (fileType === 'csv') {
+      reader.readAsText(selectedFile, 'UTF-8')
+    } else {
+      reader.readAsArrayBuffer(selectedFile)
+    }
+  }
 
   const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
+    e.preventDefault()
+    setIsDragging(true)
+  }
 
   const handleDragLeave = () => {
-    setIsDragging(false);
-  };
+    setIsDragging(false)
+  }
 
   const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
+    e.preventDefault()
+    setIsDragging(false)
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFileChange(e.dataTransfer.files[0]);
+      handleFileChange(e.dataTransfer.files[0])
     }
-  };
+  }
 
   const handleImport = async () => {
-    if (!parsedData || parsedData.length === 0) return;
-    setIsImporting(true);
-    setImportProgress(0);
+    if (!parsedData || parsedData.length === 0) return
+    setIsImporting(true)
+    setImportProgress(0)
 
-    const success = [];
-    const failed = [];
+    const success = []
+    const failed = []
 
     for (let i = 0; i < parsedData.length; i++) {
-      const item = parsedData[i];
+      const item = parsedData[i]
 
       // Simulate a mock backend conflict error if name contains " miền Nam"
-      if (item.companyName.includes(" miền Nam")) {
-        await new Promise((resolve) => setTimeout(resolve, 400));
+      if (item.companyName.includes(' miền Nam')) {
+        await new Promise((resolve) => setTimeout(resolve, 400))
         failed.push({
           ...item,
           rowIndex: i + 1,
-          reason: "Tên công ty đã tồn tại trên hệ thống (Conflict)",
-        });
-        setImportProgress(Math.round(((i + 1) / parsedData.length) * 100));
-        continue;
+          reason: 'Tên công ty đã tồn tại trên hệ thống (Conflict)'
+        })
+        setImportProgress(Math.round(((i + 1) / parsedData.length) * 100))
+        continue
       }
 
       try {
-        await onSubmit?.(item);
-        success.push(item);
+        await onSubmit?.(item)
+        success.push(item)
       } catch (err) {
-        console.error("Lỗi import dòng " + i, err);
-        const msg = err?.response?.data?.message || err?.message || "Lỗi hệ thống không xác định";
+        console.error('Lỗi import dòng ' + i, err)
+        const msg = err?.response?.data?.message || err?.message || 'Lỗi hệ thống không xác định'
         failed.push({
           ...item,
           rowIndex: i + 1,
-          reason: msg,
-        });
+          reason: msg
+        })
       }
-      setImportProgress(Math.round(((i + 1) / parsedData.length) * 100));
+      setImportProgress(Math.round(((i + 1) / parsedData.length) * 100))
     }
 
-    setImportResults({ success, failed });
-    setIsImporting(false);
+    setImportResults({ success, failed })
+    setIsImporting(false)
 
     if (failed.length === 0) {
-      toast.success(`Import thành công tất cả ${success.length} công ty!`);
+      toast.success(`Import thành công tất cả ${success.length} công ty!`)
     } else {
-      toast.warning(`Import hoàn tất. Thành công: ${success.length}, Thất bại: ${failed.length}`);
+      toast.warning(`Import hoàn tất. Thành công: ${success.length}, Thất bại: ${failed.length}`)
     }
-  };
+  }
 
   const triggerFileSelect = () => {
-    fileInputRef.current?.click();
-  };
+    fileInputRef.current?.click()
+  }
 
   if (importResults) {
-    const totalCount = importResults.success.length + importResults.failed.length;
+    const totalCount = importResults.success.length + importResults.failed.length
     return (
       <Modal
         isOpen={isOpen}
@@ -191,8 +191,8 @@ export default function UploadCompanyModel({
           ...customStyles,
           content: {
             ...customStyles.content,
-            maxWidth: "900px",
-          },
+            maxWidth: '900px'
+          }
         }}
         ariaHideApp={false}
       >
@@ -272,7 +272,7 @@ export default function UploadCompanyModel({
           </div>
         </div>
       </Modal>
-    );
+    )
   }
 
   return (
@@ -283,8 +283,8 @@ export default function UploadCompanyModel({
         ...customStyles,
         content: {
           ...customStyles.content,
-          maxWidth: "900px",
-        },
+          maxWidth: '900px'
+        }
       }}
       ariaHideApp={false}
     >
@@ -310,8 +310,8 @@ export default function UploadCompanyModel({
             onClick={triggerFileSelect}
             className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-8 cursor-pointer transition ${
               isDragging
-                ? "border-primary bg-blue-50"
-                : "border-gray-300 hover:border-primary hover:bg-gray-50"
+                ? 'border-primary bg-blue-50'
+                : 'border-gray-300 hover:border-primary hover:bg-gray-50'
             }`}
           >
             <CloudUpload className="h-12 w-12 text-gray-400 mb-3" />
@@ -381,12 +381,12 @@ export default function UploadCompanyModel({
                           <td className="px-4 py-2">
                             <span
                               className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                                row.status === "ENABLE"
-                                  ? "bg-green-50 text-green-700"
-                                  : "bg-gray-50 text-gray-700"
+                                row.status === 'ENABLE'
+                                  ? 'bg-green-50 text-green-700'
+                                  : 'bg-gray-50 text-gray-700'
                               }`}
                             >
-                              {row.status === "ENABLE" ? "Hoạt động" : "Ngừng"}
+                              {row.status === 'ENABLE' ? 'Hoạt động' : 'Ngừng'}
                             </span>
                           </td>
                         </tr>
@@ -441,5 +441,5 @@ export default function UploadCompanyModel({
         </div>
       </div>
     </Modal>
-  );
+  )
 }
