@@ -41,108 +41,69 @@ jobs:
 
   # ==================== JOB 2: SETUP ENV ====================
   setup-env:
-      name: Setup Environment Variables
-      runs-on: self-hosted
-      needs: lint
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
+    name: Setup Environment Variables
+    runs-on: self-hosted
+    needs: lint
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-        - name: Create .env files
-          run: |
-            cat > create_env.sh << 'SCRIPT'
-            #!/bin/bash
-            set -e
-            
-            echo "Creating backend .env..."
-            cat > .env << EOF
-            DB_USER=${{ secrets.DB_USER }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            DB_NAME=${{ secrets.DB_NAME }}
-            DB_PORT=${{ secrets.DB_PORT }}
-            PORT_BE=${{ secrets.PORT_BE }}
-            PORT_FE=${{ secrets.PORT_FE }}
-            MAIL_HOST=${{ secrets.MAIL_HOST }}
-            MAIL_PORT=${{ secrets.MAIL_PORT }}
-            SMTP_USER=${{ secrets.SMTP_USER }}
-            SMTP_PASS=${{ secrets.SMTP_PASS }}
-            JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}
-            JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}
-            JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
-            JWT_REFRESH_EXPIRES_IN=${{ secrets.JWT_REFRESH_EXPIRES_IN }}
-            HOST=$(hostname -I | awk '{print $1}')
-            EOF
-            
-            # Create web/.env for frontend
-            echo "Creating frontend .env..."
-            mkdir -p web
-            cat > web/.env << EOF
-            VITE_API_URL=/api
-            EOF
-            
-            echo "=== Verification ==="
-            echo "Backend .env:"
-            ls -la .env
-            echo "Size: $(stat -c%s .env) bytes"
-            echo "Lines: $(wc -l < .env)"
-            
-            echo "Frontend .env:"
-            ls -la web/.env
-            echo "Size: $(stat -c%s web/.env) bytes"
-            echo "Lines: $(wc -l < web/.env)"
-            
-            echo "Environment files created successfully"
-            SCRIPT
-            
-            chmod +x create_env.sh
-            ./create_env.sh
+      - name: Create .env files
+        run: |
+          cat > create_env.sh << 'SCRIPT'
+          #!/bin/bash
+          set -e
+          
+          echo "Creating backend .env..."
+          cat > .env << EOF
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_PORT=${{ secrets.DB_PORT }}
+          PORT_BE=${{ secrets.PORT_BE }}
+          PORT_FE=${{ secrets.PORT_FE }}
+          MAIL_HOST=${{ secrets.MAIL_HOST }}
+          MAIL_PORT=${{ secrets.MAIL_PORT }}
+          SMTP_USER=${{ secrets.SMTP_USER }}
+          SMTP_PASS=${{ secrets.SMTP_PASS }}
+          JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}
+          JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}
+          JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
+          JWT_REFRESH_EXPIRES_IN=${{ secrets.JWT_REFRESH_EXPIRES_IN }}
+          HOST=$(hostname -I | awk '{print $1}')
+          EOF
+          
+          echo "Creating frontend .env..."
+          mkdir -p web
+          cat > web/.env << EOF
+          VITE_API_URL=/api
+          EOF
+          
+          echo "=== Verification ==="
+          ls -la .env web/.env
+          SCRIPT
+          
+          chmod +x create_env.sh
+          ./create_env.sh
 
-        - name: Validate .env files
-          run: |
-            echo "=== Detailed validation ==="
-            
-            if [ ! -s .env ]; then
-              echo "❌ .env is empty or doesn't exist"
-              exit 1
-            fi
-            
-            # Count number of variables
-            COUNT=$(grep -c "=" .env)
-            echo "✅ Backend .env has $COUNT variables"
-            
-            # Check critical variables
-            for var in DB_USER DB_PASSWORD DB_NAME PORT_BE; do
-              if grep -q "^$var=" .env; then
-                echo "✅ $var is set"
-              else
-                echo "❌ $var is missing"
-                exit 1
-              fi
-            done
-            
-            # Check frontend .env
-            if grep -q "VITE_API_URL" web/.env; then
-              echo "✅ VITE_API_URL is set"
-            else
-              echo "❌ VITE_API_URL is missing"
-              exit 1
-            fi
-            
-            echo "✅ All validations passed!"
+      - name: Validate .env files
+        run: |
+          if [ ! -s .env ]; then echo "❌ .env is empty"; exit 1; fi
+          for var in DB_USER DB_PASSWORD DB_NAME PORT_BE; do
+            grep -q "^$var=" .env || { echo "❌ $var missing"; exit 1; }
+          done
+          grep -q "VITE_API_URL" web/.env || { echo "❌ VITE_API_URL missing"; exit 1; }
+          echo "✅ All validations passed!"
 
-        - name: Upload .env files
-          uses: actions/upload-artifact@v4
-          with:
-            name: env-files
-            path: |
-              .env
-              web/.env
-            retention-days: 1
+      - name: Upload .env files
+        uses: actions/upload-artifact@v4
+        with:
+          name: env-files
+          path: |
+            .env
+            web/.env
+          retention-days: 1
 
-        - name: Run server.sh
-          run: |
-            chmod +x server.sh
-            ./server.sh
   # ==================== JOB 3: BUILD BACKEND ====================
   build-backend:
     name: Build Backend
@@ -172,10 +133,6 @@ jobs:
       - name: Build backend
         run: npm run build || echo "No build script for backend"
 
-      - name: Deploy Backend
-        run: |
-          docker compose -f docker-compose.prod.yml up -d --build backend
-
   # ==================== JOB 4: BUILD FRONTEND ====================
   build-frontend:
     name: Build Frontend
@@ -204,15 +161,36 @@ jobs:
         working-directory: ./web
         run: npm run build
 
-      - name: Deploy Frontend
-        run: |
-          docker compose -f docker-compose.prod.yml up -d --build web
+  # ==================== JOB 5: DEPLOY ====================
+  deploy:
+    name: Deploy Application
+    runs-on: self-hosted
+    needs: [build-backend, build-frontend]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  # ==================== JOB 5: CLEANUP ====================
+      - name: Download .env files
+        uses: actions/download-artifact@v4
+        with:
+          name: env-files
+          path: .
+
+      - name: Deploy with Docker Compose
+        run: |
+          docker compose -f docker-compose.prod.yml down
+          docker compose -f docker-compose.prod.yml up -d --build
+
+      - name: Verify Deployment
+        run: |
+          sleep 10
+          docker compose -f docker-compose.prod.yml ps
+
+  # ==================== JOB 6: CLEANUP ====================
   cleanup:
     name: Cleanup
     runs-on: self-hosted
-    needs: [build-backend, build-frontend]
+    needs: [deploy]
     if: always()
     steps:
       - name: Remove dangling images
