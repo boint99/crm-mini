@@ -41,50 +41,108 @@ jobs:
 
   # ==================== JOB 2: SETUP ENV ====================
   setup-env:
-    name: Setup Environment Variables
-    runs-on: self-hosted
-    needs: lint
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      name: Setup Environment Variables
+      runs-on: self-hosted
+      needs: lint
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
 
-      - name: Create .env for backend
-        run: |
-          sudo touch .env
-          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
-          echo "PORT_BE=${{ secrets.PORT_BE }}" >> .env
-          echo "PORT_FE=${{ secrets.PORT_FE }}" >> .env
-          echo "MAIL_HOST=${{ secrets.MAIL_HOST }}" >> .env
-          echo "MAIL_PORT=${{ secrets.MAIL_PORT }}" >> .env
-          echo "SMTP_USER=${{ secrets.SMTP_USER }}" >> .env
-          echo "SMTP_PASS=${{ secrets.SMTP_PASS }}" >> .env
-          echo "JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}" >> .env
-          echo "JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}" >> .env
-          echo "JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}" >> .env
-          echo "JWT_REFRESH_EXPIRES_IN=${{ secrets.JWT_REFRESH_EXPIRES_IN }}" >> .env
-          echo "HOST=$(hostname -I | awk '{print $1}')" >> .env
+        - name: Create .env files
+          run: |
+            cat > create_env.sh << 'SCRIPT'
+            #!/bin/bash
+            set -e
+            
+            echo "Creating backend .env..."
+            cat > .env << EOF
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_PORT=${{ secrets.DB_PORT }}
+            PORT_BE=${{ secrets.PORT_BE }}
+            PORT_FE=${{ secrets.PORT_FE }}
+            MAIL_HOST=${{ secrets.MAIL_HOST }}
+            MAIL_PORT=${{ secrets.MAIL_PORT }}
+            SMTP_USER=${{ secrets.SMTP_USER }}
+            SMTP_PASS=${{ secrets.SMTP_PASS }}
+            JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}
+            JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}
+            JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
+            JWT_REFRESH_EXPIRES_IN=${{ secrets.JWT_REFRESH_EXPIRES_IN }}
+            HOST=$(hostname -I | awk '{print $1}')
+            EOF
+            
+            # Create web/.env for frontend
+            echo "Creating frontend .env..."
+            mkdir -p web
+            cat > web/.env << EOF
+            VITE_API_URL=/api
+            EOF
+            
+            echo "=== Verification ==="
+            echo "Backend .env:"
+            ls -la .env
+            echo "Size: $(stat -c%s .env) bytes"
+            echo "Lines: $(wc -l < .env)"
+            
+            echo "Frontend .env:"
+            ls -la web/.env
+            echo "Size: $(stat -c%s web/.env) bytes"
+            echo "Lines: $(wc -l < web/.env)"
+            
+            echo "Environment files created successfully"
+            SCRIPT
+            
+            chmod +x create_env.sh
+            ./create_env.sh
 
-      - name: Create web/.env for frontend
-        run: |
-          cat << 'EOF' > web/.env
-          VITE_API_URL=/api
-          EOF
+        - name: Validate .env files
+          run: |
+            echo "=== Detailed validation ==="
+            
+            if [ ! -s .env ]; then
+              echo "❌ .env is empty or doesn't exist"
+              exit 1
+            fi
+            
+            # Count number of variables
+            COUNT=$(grep -c "=" .env)
+            echo "✅ Backend .env has $COUNT variables"
+            
+            # Check critical variables
+            for var in DB_USER DB_PASSWORD DB_NAME PORT_BE; do
+              if grep -q "^$var=" .env; then
+                echo "✅ $var is set"
+              else
+                echo "❌ $var is missing"
+                exit 1
+              fi
+            done
+            
+            # Check frontend .env
+            if grep -q "VITE_API_URL" web/.env; then
+              echo "✅ VITE_API_URL is set"
+            else
+              echo "❌ VITE_API_URL is missing"
+              exit 1
+            fi
+            
+            echo "✅ All validations passed!"
 
-      - name: Upload .env files
-        uses: actions/upload-artifact@v4
-        with:
-          name: env-files
-          path: |
-            .env
-            web/.env
-          retention-days: 1
-      - name: Run server.sh
-        run: |
-          chmod +x server.sh
-          ./server.sh
+        - name: Upload .env files
+          uses: actions/upload-artifact@v4
+          with:
+            name: env-files
+            path: |
+              .env
+              web/.env
+            retention-days: 1
+
+        - name: Run server.sh
+          run: |
+            chmod +x server.sh
+            ./server.sh
   # ==================== JOB 3: BUILD BACKEND ====================
   build-backend:
     name: Build Backend
