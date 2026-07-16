@@ -30,5 +30,8 @@
   ],
   "[javascriptreact]": {
     "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+  },
+  "[dockercompose]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-containers"
   }
 }

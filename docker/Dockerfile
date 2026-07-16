@@ -12,6 +12,6 @@ RUN npx prisma generate
 
 COPY . .
 
-EXPOSE 8000
+EXPOSE 8017
 
 CMD ["sh", "-c", "npx prisma migrate deploy && node src/server.js"]

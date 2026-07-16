@@ -20,7 +20,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/Dockerfile.prod
     container_name: backend
     env_file:
       - .env
@@ -65,7 +65,7 @@ services:
     networks:
       - app-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER}" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -76,26 +76,55 @@ services:
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      # Định nghĩa 2 cổng HTTP (80) và HTTPS (443)
+      # Entrypoints
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-      # Tự động chuyển hướng (Redirect) từ HTTP (80) -> HTTPS (443)
+
+      # Redirect HTTP → HTTPS
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      # Cấu hình tự động sinh SSL Let's Encrypt
+
+      # Let's Encrypt
       - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
       - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.myresolver.acme.email=boint@vienthongact.vn" # Thay bằng email của bạn
+      - "--certificatesresolvers.myresolver.acme.email=boint@vienthongact.vn"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-    ports:
-      - "80:80"       # Bắt buộc mở cổng 80 để Let's Encrypt xác thực và redirect
-      - "443:443"     # Cổng HTTPS chính
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./letsencrypt:/letsencrypt # Lưu trữ certificate để không bị mất khi restart container
-    networks:
-      - app-net
 
+      # IP Whitelist middleware (global)
+      - "--entrypoints.websecure.ipwhitelist.sourcerange=10.0.0.0/8, 192.168.0.0/16"
+
+      # Rate limiting (global)
+      - "--entrypoints.websecure.ratelimit.average=100"
+      - "--entrypoints.websecure.ratelimit.burst=50"
+
+      # Security headers (global)
+      - "--entrypoints.websecure.headers.customframeoptionsvalue=SAMEORIGIN"
+      - "--entrypoints.websecure.headers.contenttypenosniff=true"
+      - "--entrypoints.websecure.headers.browserxssfilter=true"
+      - "--entrypoints.websecure.headers.forceststheader=true"
+      - "--entrypoints.websecure.headers.stsseconds=31536000"
+      - "--entrypoints.websecure.headers.stsincludesubdomains=true"
+      - "--entrypoints.websecure.headers.stspreload=true"
+
+      # Logging
+      - "--log.level=INFO"
+      - "--accesslog=true"
+      - "--accesslog.filepath=/var/log/traefik/access.log"
+
+      # API Dashboard (optional - production need off)
+      - "--api.dashboard=false"
+      # - "--api.dashboard=true"  # only need debug
+      # - "--api.insecure=true"   # only need debug
+
+  ports:
+    - "80:80"
+    - "443:443"
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+    - ./letsencrypt:/letsencrypt
+    - ./logs:/var/log/traefik # save logs
+  networks:
+    - app-net
 volumes:
   pgdata:
 
