@@ -116,15 +116,15 @@ services:
       # - "--api.dashboard=true"  # only need debug
       # - "--api.insecure=true"   # only need debug
 
-  ports:
-    - "80:80"
-    - "443:443"
-  volumes:
-    - /var/run/docker.sock:/var/run/docker.sock:ro
-    - ./letsencrypt:/letsencrypt
-    - ./logs:/var/log/traefik # save logs
-  networks:
-    - app-net
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+      - ./logs:/var/log/traefik # save logs
+    networks:
+      - app-net
 volumes:
   pgdata:
 
