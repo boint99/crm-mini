@@ -218,9 +218,48 @@ class AuthService {
       throw new ApiError(StatusCodes.UNAUTHORIZED, 'Account is not activated!')
     }
 
+    // Check lockout status
+    if (account.lockoutUntil && new Date(account.lockoutUntil) > new Date()) {
+      const remainingMs = new Date(account.lockoutUntil).getTime() - Date.now()
+      const remainingMin = Math.ceil(remainingMs / 60000)
+      throw new ApiError(
+        StatusCodes.UNAUTHORIZED,
+        `Account is temporarily locked. Please try again after ${remainingMin} minute(s).`
+      )
+    }
+
     const isMatch = await bcrypt.compare(password.trim(), account.password)
     if (!isMatch) {
-      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid email or password!')
+      const newFailedAttempts = (account.failedAttempts || 0) + 1
+      let lockoutUntil = null
+      let errorMessage = 'Invalid email or password!'
+
+      if (newFailedAttempts >= 5) {
+        const blockMinutes = 5 * Math.pow(2, newFailedAttempts - 5)
+        lockoutUntil = new Date(Date.now() + blockMinutes * 60000)
+        errorMessage = `Invalid email or password. Account is locked for ${blockMinutes} minutes.`
+      }
+
+      await PRISMA.aCCOUNTS.update({
+        where: { accountId: account.accountId },
+        data: {
+          failedAttempts: newFailedAttempts,
+          lockoutUntil
+        }
+      })
+
+      throw new ApiError(StatusCodes.UNAUTHORIZED, errorMessage)
+    }
+
+    // Reset failed login attempts on successful login
+    if ((account.failedAttempts || 0) > 0 || account.lockoutUntil) {
+      await PRISMA.aCCOUNTS.update({
+        where: { accountId: account.accountId },
+        data: {
+          failedAttempts: 0,
+          lockoutUntil: null
+        }
+      })
     }
 
     // ===== TẠO ACCESS TOKEN =====

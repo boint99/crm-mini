@@ -112,6 +112,8 @@ model ACCOUNTS {
   password    String?    @map("PASSWORD")
   isLogin     Boolean    @default(false) @map("IS_LOGIN")
   login       Int        @default(0) @map("LOGIN")
+  failedAttempts Int     @default(0) @map("FAILED_ATTEMPTS")
+  lockoutUntil   DateTime? @map("LOCKOUT_UNTIL") @db.Timestamp(6)
   description String?    @map("DESCRIPTION") @db.VarChar(255)
   employeeId  Int?       @unique @map("EMPLOYEE_ID")
   status      ENUMSTATUS @default(ENABLE) @map("STATUS")

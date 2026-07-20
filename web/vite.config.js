@@ -6,8 +6,12 @@ export default defineConfig(({ mode }) => {
   // Load env file from parent directory (root folder containing .env)
   const env = loadEnv(mode, path.resolve(__dirname, '..'), '')
   
-  const devPortBe = env.DEV_PORT_BE || '8017'
-  const targetUrl = `http://backend:${devPortBe}`
+  // Backend port from env
+  const devPortBe = env.PORT_BE || '8017'
+  
+  // Use domain from env (backend) or fallback to localhost
+  const backendHost = env.HOST || 'localhost'
+  const targetUrl = `http://${backendHost}:${devPortBe}`
 
   return {
     plugins: [react()],

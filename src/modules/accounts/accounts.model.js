@@ -17,6 +17,8 @@ class AccountsModel extends ModelCore {
       password: record.password,
       isLogin: record.isLogin,
       login: record.login,
+      failedAttempts: record.failedAttempts,
+      lockoutUntil: record.lockoutUntil,
       description: record.description,
       employeeId: record.employeeId,
       status: record.status,
@@ -133,6 +135,8 @@ class AccountsModel extends ModelCore {
       password: createData.password,
       isLogin: createData.isLogin || false,
       login: createData.login || 0,
+      failedAttempts: createData.failedAttempts || 0,
+      lockoutUntil: createData.lockoutUntil || null,
       description: createData.description,
       employeeId: createData.employeeId ? Number(createData.employeeId) : null,
       status: createData.status || 'ENABLE'
@@ -202,6 +206,8 @@ class AccountsModel extends ModelCore {
     if (updateData.description !== undefined) prismaData.description = updateData.description
     if (updateData.employeeId !== undefined) prismaData.employeeId = updateData.employeeId ? Number(updateData.employeeId) : null
     if (updateData.status !== undefined) prismaData.status = updateData.status
+    if (updateData.failedAttempts !== undefined) prismaData.failedAttempts = Number(updateData.failedAttempts)
+    if (updateData.lockoutUntil !== undefined) prismaData.lockoutUntil = updateData.lockoutUntil
 
     const { prismaField, queryVal } = this._resolveFieldAndValue(id, field)
 

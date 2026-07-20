@@ -5,8 +5,20 @@ dotenv.config({ override: true })
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN
-const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN
+
+function parseExpiresIn(val) {
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (trimmed.toLowerCase().endsWith('p')) {
+      return trimmed.slice(0, -1) + 'm';
+    }
+    return trimmed;
+  }
+  return val;
+}
+
+const JWT_EXPIRES_IN = parseExpiresIn(process.env.JWT_ACCESS_EXPIRES_IN || process.env.JWT_EXPIRES_IN)
+const JWT_REFRESH_EXPIRES_IN = parseExpiresIn(process.env.JWT_REFRESH_EXPIRES_IN)
 
 /**
  * Ký Access Token
