@@ -2,10 +2,10 @@ services:
   web:
     build:
       context: ./web
-      dockerfile: docker/Dockerfile.prod
+      dockerfile: ./docker/Dockerfile.prod
     container_name: web
     ports:
-      - "${PORT_FE}:${PORT_FE}"
+      - "${PORT_FE:-5173}:${PORT_FE:-5173}"
     restart: always
     networks:
       - app-net
@@ -20,19 +20,20 @@ services:
   backend:
     command: >
       sh -c "
-        echo 'DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?schema=public' > /app/.env &&
+        echo 'DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@database:5432/${DB_NAME}?schema=public' > /app/.env &&
         npx prisma migrate deploy &&
         node src/server.js
       "
     build:
       context: .
-      dockerfile: docker/Dockerfile.prod
+      dockerfile: ./docker/Dockerfile.prod
     container_name: backend
     env_file:
       - .env
     environment:
       - NODE_ENV=production
-      - PORT=${PORT_BE}
+      - PORT=${PORT_BE:-8017}
+      - HOST=${HOST}
       - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
@@ -41,10 +42,13 @@ services:
       - MAIL_PORT=${MAIL_PORT}
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?schema=public
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@database:5432/${DB_NAME}?schema=public
     ports:
-      - "${PORT_BE}:${PORT_BE}"
+      - "${PORT_BE:-8017}:${PORT_BE:-8017}"
     restart: always
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
       - app-net
     labels:
@@ -53,10 +57,10 @@ services:
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls=true"
       - "traefik.http.routers.backend.tls.certresolver=myresolver"
-      - "traefik.http.services.backend.loadbalancer.server.port=${PORT_BE}"
+      - "traefik.http.services.backend.loadbalancer.server.port=${PORT_BE:-8017}"
 
   db:
-    image: postgres:17-alpine
+    image: postgres:16-alpine
     container_name: database
     restart: always
     env_file:
@@ -66,17 +70,18 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - "${DB_PORT}:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - app-net
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER}" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
       interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 10s
 
   traefik:
     image: traefik:v3.0
