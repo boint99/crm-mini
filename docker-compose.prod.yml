@@ -1,11 +1,11 @@
+version: '3.8'
+
 services:
   web:
     build:
-      context: ./web
-      dockerfile: ./docker/Dockerfile.prod
+      context: .
+      dockerfile: docker/Dockerfile.web.prod
     container_name: web
-    ports:
-      - "${PORT_FE:-5173}:${PORT_FE:-5173}"
     restart: always
     networks:
       - app-net
@@ -15,25 +15,24 @@ services:
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.tls.certresolver=myresolver"
-      - "traefik.http.services.frontend.loadbalancer.server.port=8080"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   backend:
-    command: >
-      sh -c "
-        echo 'DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@database:5432/${DB_NAME}?schema=public' > /app/.env &&
-        npx prisma migrate deploy &&
-        node src/server.js
-      "
     build:
       context: .
-      dockerfile: ./docker/Dockerfile.prod
+      dockerfile: docker/Dockerfile.backend.prod
     container_name: backend
     env_file:
-      - .env
+      - .env.production
     environment:
       - NODE_ENV=production
       - PORT=${PORT_BE:-8017}
-      - HOST=${HOST}
+      - HOST=0.0.0.0
       - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
@@ -42,7 +41,7 @@ services:
       - MAIL_PORT=${MAIL_PORT}
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@database:5432/${DB_NAME}?schema=public
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?schema=public
     ports:
       - "${PORT_BE:-8017}:${PORT_BE:-8017}"
     restart: always
@@ -58,17 +57,23 @@ services:
       - "traefik.http.routers.backend.tls=true"
       - "traefik.http.routers.backend.tls.certresolver=myresolver"
       - "traefik.http.services.backend.loadbalancer.server.port=${PORT_BE:-8017}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   db:
     image: postgres:16-alpine
     container_name: database
     restart: always
     env_file:
-      - .env
+      - .env.production
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
@@ -78,29 +83,50 @@ services:
       - app-net
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
-      interval: 5s
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 5
       start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   traefik:
     image: traefik:v3.0
     container_name: traefik
     restart: always
     command:
+      # Docker provider
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=app-net"
+
+      # Entrypoints
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+
+      # Redirect HTTP -> HTTPS
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+
+      # Let's Encrypt
       - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
       - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
       - "--certificatesresolvers.myresolver.acme.email=boint@vienthongact.vn"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-      - "--entrypoints.websecure.ipwhitelist.sourcerange=10.0.0.0/8, 192.168.0.0/16"
+      - "--certificatesresolvers.myresolver.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
+
+      # Security - IP Whitelist
+      - "--entrypoints.websecure.ipwhitelist.sourcerange=10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16"
+
+      # Security - Rate Limit
       - "--entrypoints.websecure.ratelimit.average=100"
       - "--entrypoints.websecure.ratelimit.burst=50"
+
+      # Security - Headers
       - "--entrypoints.websecure.headers.customframeoptionsvalue=SAMEORIGIN"
       - "--entrypoints.websecure.headers.contenttypenosniff=true"
       - "--entrypoints.websecure.headers.browserxssfilter=true"
@@ -108,10 +134,19 @@ services:
       - "--entrypoints.websecure.headers.stsseconds=31536000"
       - "--entrypoints.websecure.headers.stsincludesubdomains=true"
       - "--entrypoints.websecure.headers.stspreload=true"
+
+      # Logging
       - "--log.level=INFO"
       - "--accesslog=true"
       - "--accesslog.filepath=/var/log/traefik/access.log"
+      - "--accesslog.format=json"
+
+      # Disable dashboard (production)
       - "--api.dashboard=false"
+
+      # Server transport (timeouts)
+      - "--serverstransport.maxidleconnsperhost=100"
+      - "--serverstransport.insecureskipverify=false"
     ports:
       - "80:80"
       - "443:443"
@@ -121,10 +156,17 @@ services:
       - ./logs:/var/log/traefik
     networks:
       - app-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   pgdata:
+    driver: local
 
 networks:
   app-net:
     driver: bridge
+    name: app-net
