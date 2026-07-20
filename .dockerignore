@@ -57,6 +57,5 @@ tmp
 temp
 *.tmp
 
-web
 node_modules
 .git
