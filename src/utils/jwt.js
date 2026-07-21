@@ -8,16 +8,16 @@ const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET
 
 function parseExpiresIn(val) {
   if (typeof val === 'string') {
-    const trimmed = val.trim();
+    const trimmed = val.trim()
     if (trimmed.toLowerCase().endsWith('p')) {
-      return trimmed.slice(0, -1) + 'm';
+      return trimmed.slice(0, -1) + 'm'
     }
-    return trimmed;
+    return trimmed
   }
-  return val;
+  return val
 }
 
-const JWT_EXPIRES_IN = parseExpiresIn(process.env.JWT_ACCESS_EXPIRES_IN || process.env.JWT_EXPIRES_IN)
+const JWT_EXPIRES_IN = parseExpiresIn(process.env.JWT_ACCESS_EXPIRES_IN)
 const JWT_REFRESH_EXPIRES_IN = parseExpiresIn(process.env.JWT_REFRESH_EXPIRES_IN)
 
 /**

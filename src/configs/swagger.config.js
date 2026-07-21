@@ -11,7 +11,22 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: `http://${environments.HOST}:${environments.API_PORT}`
+        url: `http://${environments.HOST}:${environments.API_PORT}/api`
+      }
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Nhập JWT Access Token để xác thực khi test API.'
+        }
+      }
+    },
+    security: [
+      {
+        bearerAuth: []
       }
     ]
   },

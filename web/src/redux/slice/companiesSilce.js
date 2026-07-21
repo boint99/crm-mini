@@ -32,7 +32,8 @@ export const updateCompany = createAsyncThunk(
   'companies/updateCompany',
   async (payload , { rejectWithValue }) => {
     try {
-      await companiesAPI.update(payload)
+      const id = payload.id || payload.COMPANY_ID || payload.companyId
+      await companiesAPI.update(id, payload)
       return payload
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message)

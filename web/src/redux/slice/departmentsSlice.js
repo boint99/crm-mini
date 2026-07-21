@@ -37,7 +37,8 @@ export const updateDepartment = createAsyncThunk(
   'departments/updateDepartment',
   async (payload, { rejectWithValue }) => {
     try {
-      await departmentsAPI.update(payload)
+      const id = payload.id || payload.ORG_UNIT_ID || payload.unitId
+      await departmentsAPI.update(id, payload)
       return payload
     } catch (error) {
       return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.update.error))

@@ -38,7 +38,8 @@ export const updateAccount = createAsyncThunk(
   'accounts/updateAccount',
   async (payload, { rejectWithValue }) => {
     try {
-      const data = await accountsAPI.update(payload)
+      const id = payload.id || payload.ACCOUNT_ID || payload.accountId
+      const data = await accountsAPI.update(id, payload)
       return data.data
     } catch (error) {
       return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.update.error))
@@ -51,7 +52,8 @@ export const resetAccountPassword = createAsyncThunk(
   'accounts/resetPassword',
   async (payload, { rejectWithValue }) => {
     try {
-      const data = await accountsAPI.resetPassword(payload)
+      const id = payload.id || payload.ACCOUNT_ID || payload.accountId
+      const data = await accountsAPI.resetPassword(id, payload)
       return data.data
     } catch (error) {
       return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.update.error))

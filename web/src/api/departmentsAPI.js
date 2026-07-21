@@ -2,27 +2,27 @@ import axios from 'axios'
 
 
 export const departmentsAPI = {
-  // GET list
+  // GET /api/organizations
   getLists: async (params) => {
     const res = await axios.get('/organizations', { params })
     return res.data
   },
 
-  // CREATE
+  // POST /api/organizations
   create: async (payload) => {
-    const res = await axios.post('/organizations/create', payload)
+    const res = await axios.post('/organizations', payload)
     return res.data
   },
 
-  // UPDATE
-  update: async (payload) => {
-    const res = await axios.put('/organizations/update', payload)
+  // PUT /api/organizations/:id
+  update: async (id, payload) => {
+    const res = await axios.put(`/organizations/${id}`, payload)
     return res.data
   },
 
-  // DELETE
-  delete: async (payload) => {
-    const res = await axios.delete(`/organizations/delete/${payload}`)
+  // DELETE /api/organizations/:id
+  delete: async (id) => {
+    const res = await axios.delete(`/organizations/${id}`)
     return res.data
   }
 }

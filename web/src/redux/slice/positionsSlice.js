@@ -38,7 +38,8 @@ export const updatePosition = createAsyncThunk(
   'positions/updatePosition',
   async (payload , { rejectWithValue }) => {
     try {
-      await positionsAPI.update(payload)
+      const id = payload.id || payload.POSITION_ID || payload.positionId
+      await positionsAPI.update(id, payload)
       return payload
     } catch (error) {
       return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.update.error))

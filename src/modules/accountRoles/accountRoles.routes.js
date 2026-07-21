@@ -4,13 +4,14 @@ import AccountRolesValidate from './accountRoles.validate.js'
 
 const Router = express.Router()
 
-// GET - Lấy danh sách gán vai trò - tài khoản
+// GET /api/account-roles
 Router.get('/', accountRolesController.lists)
 
-// POST - Gán vai trò cho tài khoản
-Router.post('/assign', AccountRolesValidate.assign, accountRolesController.assign)
+// POST /api/account-roles
+Router.post('/', AccountRolesValidate.assign, accountRolesController.assign)
 
-// DELETE - Thu hồi vai trò khỏi tài khoản
-Router.delete('/revoke/:id', AccountRolesValidate.revoke, accountRolesController.revoke)
+// DELETE /api/account-roles/:id
+Router.delete('/:id', AccountRolesValidate.revoke, accountRolesController.revoke)
 
 export const accountRolesRoutes = Router
+

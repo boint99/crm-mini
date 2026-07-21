@@ -2,7 +2,7 @@ paths:
   # ========================
   # IP ADDRESS APIs
   # ========================
-  /api/networks/ipaddress/all:
+  /api/ip-addresses:
     get:
       summary: Get all IP addresses
       description: Retrieve list of all IP addresses.
@@ -22,7 +22,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/networks/ipaddress/create:
     post:
       summary: Create IP address
       description: Create a new IP address inside a VLAN. HOST must be a valid IPv4 within the selected VLAN network, cannot match the VLAN gateway, and cannot be the network or broadcast address.
@@ -48,12 +47,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/networks/ipaddress/update:
+  /api/ip-addresses/{id}:
     put:
       summary: Update IP address
-      description: Update IP address information. IP_ID is required. The final HOST must remain valid for the selected VLAN network and employee assignment must remain valid.
+      description: Update IP address information. IP_ID is required as path parameter. The final HOST must remain valid for the selected VLAN network and employee assignment must remain valid.
       tags:
         - IP Addresses
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: IP_ID of the IP address to update
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
@@ -80,7 +86,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/networks/ipaddress/delete/{id}:
     delete:
       summary: Delete IP address
       description: Delete an IP address by IP_ID passed as path parameter.

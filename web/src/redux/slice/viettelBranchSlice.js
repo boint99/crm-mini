@@ -37,7 +37,8 @@ export const updateBranch = createAsyncThunk(
   'viettelBranch/updateBranch',
   async (payload, { rejectWithValue }) => {
     try {
-      await ViettelBranchAPI.update(payload)
+      const id = payload.id || payload.BRANCH_ID || payload.branchId
+      await ViettelBranchAPI.update(id, payload)
       return payload
     } catch (error) {
       return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.update.error))

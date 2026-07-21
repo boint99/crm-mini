@@ -34,7 +34,8 @@ export const updateVlan = createAsyncThunk(
   'vlans/updateVlan',
   async (payload, { rejectWithValue }) => {
     try {
-      await vlansAPI.update(payload)
+      const id = payload.id || payload.VLAN_ID || payload.vlanId
+      await vlansAPI.update(id, payload)
       return payload
     } catch (error) {
       return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.update.error))

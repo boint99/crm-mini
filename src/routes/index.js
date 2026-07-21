@@ -24,7 +24,7 @@ Router.get('/status', (req, res) => {
   res.status(200).json({ message: 'APIs are ready to use.' })
 })
 
-Router.use('/company', authMiddleware, dynamicPermissionMiddleware, companyRoutes)
+Router.use('/companies', authMiddleware, dynamicPermissionMiddleware, companyRoutes)
 
 Router.use('/organizations', authMiddleware, dynamicPermissionMiddleware, organizationRoutes)
 
@@ -39,9 +39,9 @@ Router.use('/viettel-employees', authMiddleware, dynamicPermissionMiddleware, em
 
 Router.use('/viettel-branches', authMiddleware, dynamicPermissionMiddleware, viettelBranchRoutes)
 
-Router.use('/networks', authMiddleware, dynamicPermissionMiddleware, vlansRoutes)
+Router.use('/vlans', authMiddleware, dynamicPermissionMiddleware, vlansRoutes)
 
-Router.use('/networks', authMiddleware, dynamicPermissionMiddleware, ipsRoutes)
+Router.use('/ip-addresses', authMiddleware, dynamicPermissionMiddleware, ipsRoutes)
 
 Router.use('/accounts', authMiddleware, dynamicPermissionMiddleware, accountsRoutes)
 

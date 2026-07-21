@@ -9,9 +9,6 @@ import { swaggerSpec } from './configs/swagger.config.js'
 import { errorMiddleware } from './middleware/error.middleware.js'
 import { corsOptions } from './configs/cors.config.js'
 
-import { authMiddleware } from './modules/auth/auth.middleware.js'
-import { dynamicPermissionMiddleware } from './middleware/permission.middleware.js'
-
 const START_SERVER = async () => {
   const app = express()
   const port = environments.API_PORT || 8017
@@ -32,7 +29,15 @@ const START_SERVER = async () => {
   })
 
   app.use('/api', APIs_Routes)
-  app.use('/api-docs', authMiddleware, dynamicPermissionMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+  app.use(
+    '/api/docs/v1',
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec, {
+      swaggerOptions: {
+        persistAuthorization: true
+      }
+    })
+  )
   app.use(errorMiddleware)
 
   const host = (process.env.NODE_ENV === 'production' || !environments.HOST || environments.HOST === 'localhost' || environments.HOST === '127.0.0.1')
@@ -41,7 +46,7 @@ const START_SERVER = async () => {
 
   app.listen(port, host, () => {
     console.log(`🚀 CRM mini APIs is running at http://${host}:${port}`)
-    console.log(`🚀 CRM mini DOCs is running at http://${host}:${port}/api-docs`)
+    console.log(`🚀 CRM mini DOCs is running at http://${host}:${port}/api/docs/v1`)
   })
 }
 (async () => {

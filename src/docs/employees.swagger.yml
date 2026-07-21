@@ -2,7 +2,7 @@ paths:
   # ========================
   # EMPLOYEE APIs
   # ========================
-  /api/employees/lists:
+  /api/employees:
     get:
       summary: Get employee list
       description: Retrieve list of all employees.
@@ -22,7 +22,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/employees:
     post:
       summary: Create employee
       description: Create a new employee using request body data.
@@ -54,11 +53,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/employees/{id}:
     put:
       summary: Update employee
-      description: Update employee information. EMPLOYEE_ID is required in request body.
+      description: Update employee information. EMPLOYEE_ID is required as path parameter.
       tags:
         - Employees
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: EMPLOYEE_ID of the employee to update
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
@@ -91,7 +98,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/employees/{id}:
     delete:
       summary: Delete employee
       description: Delete an employee by EMPLOYEE_ID passed as path parameter.

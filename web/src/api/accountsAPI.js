@@ -1,34 +1,33 @@
 import axios from 'axios'
 
 export const accountsAPI = {
-  // GET list
+  // GET /api/accounts
   getLists: async (params = {}) => {
-    const res = await axios.get('/accounts/', { params })
+    const res = await axios.get('/accounts', { params })
     return res.data
   },
 
-  // CREATE
+  // POST /api/accounts
   create: async (payload) => {
-    const res = await axios.post('/accounts/create', payload)
+    const res = await axios.post('/accounts', payload)
     return res.data
   },
 
-  // UPDATE
-  update: async (payload) => {
-    const res = await axios.put('/accounts/update', payload)
+  // PUT /api/accounts/:id
+  update: async (id, payload) => {
+    const res = await axios.put(`/accounts/${id}`, payload)
     return res.data
   },
 
-  // RESET PASSWORD
-  resetPassword: async (payload) => {
-    const res = await axios.patch('/accounts/reset-password', payload)
+  // PATCH /api/accounts/:id/reset-password
+  resetPassword: async (id, payload) => {
+    const res = await axios.patch(`/accounts/${id}/reset-password`, payload)
     return res.data
   },
 
-  // DELETE
+  // DELETE /api/accounts/:id
   delete: async (id) => {
-    const res = await axios.delete(`/accounts/delete/${id}`)
+    const res = await axios.delete(`/accounts/${id}`)
     return res.data
   }
 }
-
