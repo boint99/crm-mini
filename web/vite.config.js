@@ -3,14 +3,18 @@ import react from '@vitejs/plugin-react-swc'
 import path from 'path'
 
 export default defineConfig(({ mode }) => {
+  if (mode === 'development') {
+    process.env.NODE_ENV = 'development'
+  }
+
   // Load env file from parent directory (root folder containing .env)
   const env = loadEnv(mode, path.resolve(__dirname, '..'), '')
 
   // Backend port from env
   const devPortBe = env.PORT_BE || '8017'
 
-  // Use domain from env (backend) or fallback to localhost
-  const backendHost = env.BACKEND_HOST || 'localhost'
+  // Use valid connectable host (fallback 127.0.0.1 if 0.0.0.0 or empty)
+  const backendHost = (!env.HOST || env.HOST === '0.0.0.0' || env.HOST === 'localhost') ? '127.0.0.1' : env.HOST
   const targetUrl = `http://${backendHost}:${devPortBe}`
 
   return {
@@ -28,7 +32,7 @@ export default defineConfig(({ mode }) => {
           target: targetUrl,
           changeOrigin: true
         },
-        '/api-docs': {
+        '/api/docs/v1': {
           target: targetUrl,
           changeOrigin: true
         }

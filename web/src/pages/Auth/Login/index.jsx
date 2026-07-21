@@ -32,6 +32,7 @@ function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    dispatch(clearError())
 
     if (!email.trim() || !password.trim()) {
       toast.error('Vui lòng nhập đầy đủ thông tin!')

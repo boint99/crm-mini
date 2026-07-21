@@ -1,6 +1,8 @@
 import { authService } from './auth.services.js'
 import { CreatedResponse } from '../../utils/SuccessResponse.js'
 import { SuccessResponse } from '../../utils/SuccessResponse.js'
+import { environments } from '../../configs/env.config.js'
+import { parseExpiresToMs } from '../../utils/jwt.js'
 
 class AuthController {
   // POST /api/auth/register
@@ -19,9 +21,9 @@ class AuthController {
 
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: environments.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        maxAge: parseExpiresToMs(environments.JWT_REFRESH_EXPIRES_IN)
       })
 
       new SuccessResponse({ res, data, message: 'Login successful.' })

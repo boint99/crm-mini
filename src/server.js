@@ -9,6 +9,7 @@ import { swaggerSpec } from './configs/swagger.config.js'
 import { errorMiddleware } from './middleware/error.middleware.js'
 import { corsOptions } from './configs/cors.config.js'
 
+// Server entry point - CORS set to allow all
 const START_SERVER = async () => {
   const app = express()
   const port = environments.API_PORT || 8017

@@ -3,9 +3,13 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import { v7 as uuidv7 } from 'uuid'
 import 'dotenv/config'
 
-const adapter = new PrismaPg({
+import pg from 'pg'
+
+const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL
 })
+
+const adapter = new PrismaPg(pool)
 
 const prismaBase = new PrismaClient({
   adapter

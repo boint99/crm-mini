@@ -4,21 +4,20 @@ import ApiError from '../utils/ApiError.js'
 
 export const corsOptions = {
   origin: function (origin, callback) {
-    const isDev = process.env.NODE_ENV === 'development'
-
-    if (isDev) return callback(null, true)
-
+    // 1. Request không có origin (Postman, Same-Origin, Server-to-Server)
     if (!origin) return callback(null, true)
 
-    if (origin.startsWith('http://192.168')) {
+    // 2. Cho phép tất cả localhost (IPv4/IPv6), 127.0.0.1, IP mạng nội bộ và các Domain trong Whitelist
+    const isAllowed =
+      origin.includes('localhost') ||
+      origin.includes('127.0.0.1') ||
+      WHITELIST_DOMAINS.some(domain => origin.startsWith(domain))
+
+    if (isAllowed) {
       return callback(null, true)
     }
 
-    if (WHITELIST_DOMAINS.includes(origin)) {
-      return callback(null, true)
-    }
-
-    // ❌ Reject
+    // ❌ Chỉ từ chối trên Production khi Origin lạ không nằm trong danh sách
     return callback(
       new ApiError(
         StatusCodes.FORBIDDEN,
