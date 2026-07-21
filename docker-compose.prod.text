@@ -13,8 +13,8 @@ services:
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.tls.certresolver=myresolver"
-      - "traefik.http.services.frontend.loadbalancer.server.port=8080"
-      - "traefik.http.routers.frontend.middlewares=sec-headers,rate-limit,ip-allowlist"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+      - "traefik.http.routers.frontend.middlewares=sec-headers@docker,rate-limit@docker,ip-allowlist@docker"
     logging:
       driver: "json-file"
       options:
@@ -56,7 +56,7 @@ services:
       - "traefik.http.routers.backend.tls=true"
       - "traefik.http.routers.backend.tls.certresolver=myresolver"
       - "traefik.http.services.backend.loadbalancer.server.port=${PORT_BE:-8017}"
-      - "traefik.http.routers.backend.middlewares=sec-headers,rate-limit,ip-allowlist"
+      - "traefik.http.routers.backend.middlewares=sec-headers@docker,rate-limit@docker,ip-allowlist@docker"
     logging:
       driver: "json-file"
       options:
@@ -118,7 +118,6 @@ services:
       - "--certificatesresolvers.myresolver.acme.email=boint@vienthongact.vn"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
       - "--certificatesresolvers.myresolver.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
-      - "--certificatesresolvers.myresolver.acme.tlschallenge=false"
 
       # Logging
       - "--log.level=INFO"
@@ -134,20 +133,17 @@ services:
       - "--serverstransport.insecureskipverify=false"
     labels:
       - "traefik.enable=true"
-      
       # Security - Headers Middleware
       - "traefik.http.middlewares.sec-headers.headers.customframeoptionsvalue=SAMEORIGIN"
       - "traefik.http.middlewares.sec-headers.headers.contenttypenosniff=true"
       - "traefik.http.middlewares.sec-headers.headers.browserxssfilter=true"
-      - "traefik.http.middlewares.sec-headers.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.sec-headers.headers.forceststheader=true"
       - "traefik.http.middlewares.sec-headers.headers.stsseconds=31536000"
       - "traefik.http.middlewares.sec-headers.headers.stsincludesubdomains=true"
       - "traefik.http.middlewares.sec-headers.headers.stspreload=true"
-      
       # Security - Rate Limit Middleware
       - "traefik.http.middlewares.rate-limit.ratelimit.average=100"
       - "traefik.http.middlewares.rate-limit.ratelimit.burst=50"
-      
       # Security - IP Allowlist Middleware
       - "traefik.http.middlewares.ip-allowlist.ipallowlist.sourcerange=10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16"
     ports:

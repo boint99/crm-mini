@@ -1,4 +1,4 @@
-export const ROOT_DOMAIN = import.meta.env.VITE_API_URL
+export const ROOT_DOMAIN = import.meta.env.VITE_API_URL || '/api'
 
 export const dispatchAsync = async (dispatch, action, options = {}) => {
   const { onSuccess, onError } = options
