@@ -7,14 +7,17 @@ export const ALLOWED_STATUS_NETWORK = ['AVAILABLE', 'ASSIGNED', 'ACTIVE', 'INACT
 export const ALLOWED_EMAIL_DOMAINS = [
   'vienthongact.vn',
   'actes.vn',
-  'actids.vn'
+  'actids.vn',
+  'gmail.com'
 ]
 
 export const WHITELIST_DOMAINS = [
   'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  'http://127.0.0.1:8017',
   'http://localhost:8080',
+  'http://127.0.0.1:8080',
+  'http://localhost:8017',
+  'http://127.0.0.1:8017',
+  'http://[::1]:8017',
   'https://it-heodesk.vienthongact.vn',
   'http://it-heodesk.vienthongact.vn'
 ]

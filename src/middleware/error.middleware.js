@@ -3,27 +3,29 @@ import { StatusCodes } from 'http-status-codes'
 class PrismaErrorHandler {
   static handle(err) {
     let statusCode = StatusCodes.INTERNAL_SERVER_ERROR
-    let message = 'Đã xảy ra lỗi cơ sở dữ liệu. Vui lòng liên hệ quản trị viên.'
+    let message = err.message || 'Database error occurred'
 
     if (err.name === 'PrismaClientValidationError') {
       statusCode = StatusCodes.BAD_REQUEST
-      message = 'Internal Server Error'
+      message = 'Invalid query data'
     } else if (err.code === 'P2025') {
       statusCode = StatusCodes.NOT_FOUND
-      message = 'Internal Server Error'
+      message = 'Record not found'
     } else if (err.code === 'P2002') {
       statusCode = StatusCodes.CONFLICT
-      message = 'Internal Server Error'
-    } else if (err.code) {
+      message = 'Duplicate field value'
+    } else if (typeof err.code === 'string' && err.code.startsWith('P2')) {
       statusCode = StatusCodes.BAD_REQUEST
-      message = 'Internal Server Error'
+      message = 'Database query error'
+    } else {
+      statusCode = StatusCodes.INTERNAL_SERVER_ERROR
+      message = 'Database connection error'
     }
 
     return { statusCode, message }
   }
 }
 
-// eslint-disable-next-line no-unused-vars
 export const errorMiddleware = (err, req, res, next) => {
   let statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR
   let message = err.message || 'Internal Server Error'
@@ -31,18 +33,19 @@ export const errorMiddleware = (err, req, res, next) => {
 
   // Nhận diện lỗi Prisma
   const isPrismaError =
-    (err.name && err.name.startsWith('Prisma')) ||
+    (err.name && typeof err.name === 'string' && err.name.startsWith('Prisma')) ||
     (err.code && typeof err.code === 'string' && err.code.startsWith('P'))
 
   if (isPrismaError) {
     const prismaError = PrismaErrorHandler.handle(err)
     statusCode = prismaError.statusCode
-    message = prismaError.message
+    message = err.message || prismaError.message
   }
 
   res.status(statusCode).json({
     success: false,
     message,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    code: err.code || undefined,
+    stack: err.stack
   })
 }

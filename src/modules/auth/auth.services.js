@@ -194,11 +194,7 @@ class AuthService {
           include: {
             orgUnit: {
               include: {
-                company: {
-                  select: {
-                    id: true
-                  }
-                }
+                company: true
               }
             }
           }
@@ -272,11 +268,7 @@ class AuthService {
         include: {
           orgUnit: {
             include: {
-              company: {
-                select: {
-                  id: true
-                }
-              }
+              company: true
             }
           }
         }
@@ -349,11 +341,7 @@ class AuthService {
           include: {
             orgUnit: {
               include: {
-                company: {
-                  select: {
-                    id: true
-                  }
-                }
+                company: true
               }
             }
           }
@@ -382,11 +370,7 @@ class AuthService {
         include: {
           orgUnit: {
             include: {
-              company: {
-                select: {
-                  id: true
-                }
-              }
+              company: true
             }
           }
         }
@@ -511,6 +495,7 @@ class AuthService {
       where: { roleId: 1 },
       update: {},
       create: {
+        id: uuidv7(),
         roleId: 1,
         roleCode: 'ADMIN_ROLE',
         roleName: 'ADMIN_ROLE',
@@ -522,6 +507,7 @@ class AuthService {
     // Create Super Admin Account
     const superAdmin = await PRISMA.aCCOUNTS.create({
       data: {
+        id: uuidv7(),
         accountId: 1,
         accountName: cleanEmail,
         password: hashedPassword,
@@ -534,6 +520,7 @@ class AuthService {
     // Assign Role
     await PRISMA.aCCOUNT_ROLES.create({
       data: {
+        id: uuidv7(),
         accountId: superAdmin.accountId,
         roleId: adminRole.roleId
       }

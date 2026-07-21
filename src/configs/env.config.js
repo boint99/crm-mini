@@ -1,12 +1,14 @@
 import dotenv from 'dotenv'
 
+const cliNodeEnv = process.env.NODE_ENV
 dotenv.config({ override: true })
+if (cliNodeEnv) {
+  process.env.NODE_ENV = cliNodeEnv
+}
 
 export const environments = {
   // Backend dev
-  API_PORT: process.env.NODE_ENV === 'production'
-    ? process.env.PORT_BE
-    : process.env.PORT_FE,
+  API_PORT: process.env.PORT_BE || process.env.DEV_PORT_BE || 8017,
 
   // Database
   DB_HOST:  process.env.DB_HOST,
@@ -27,6 +29,6 @@ export const environments = {
   // JWT
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET,
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
-  JWT_EXPIRES_IN: process.env.JWT_ACCESS_EXPIRES_IN || process.env.JWT_EXPIRES_IN,
-  JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES || process.env.JWT_ACCESS_EXPIRES || process.env.JWT_ACCESS_EXPIRES_IN || '5m',
+  JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES || process.env.JWT_REFRESH_EXPIRES_IN || '7d'
 }

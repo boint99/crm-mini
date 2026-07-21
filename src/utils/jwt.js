@@ -1,12 +1,7 @@
 import jwt from 'jsonwebtoken'
-import dotenv from 'dotenv'
+import { environments } from '../configs/env.config.js'
 
-dotenv.config({ override: true })
-
-const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET
-
-function parseExpiresIn(val) {
+export function parseExpiresIn(val) {
   if (typeof val === 'string') {
     const trimmed = val.trim()
     if (trimmed.toLowerCase().endsWith('p')) {
@@ -17,8 +12,29 @@ function parseExpiresIn(val) {
   return val
 }
 
-const JWT_EXPIRES_IN = parseExpiresIn(process.env.JWT_ACCESS_EXPIRES_IN)
-const JWT_REFRESH_EXPIRES_IN = parseExpiresIn(process.env.JWT_REFRESH_EXPIRES_IN)
+export function parseExpiresToMs(expiresIn) {
+  if (typeof expiresIn === 'number') return expiresIn
+  if (!expiresIn || typeof expiresIn !== 'string') return 7 * 24 * 60 * 60 * 1000
+
+  const match = expiresIn.trim().match(/^(\d+)([smhdpy])?$/i)
+  if (!match) return 7 * 24 * 60 * 60 * 1000
+
+  const value = parseInt(match[1], 10)
+  const unit = (match[2] || 's').toLowerCase()
+
+  switch (unit) {
+  case 's': return value * 1000
+  case 'm':
+  case 'p': return value * 60 * 1000
+  case 'h': return value * 60 * 60 * 1000
+  case 'd': return value * 24 * 60 * 60 * 1000
+  case 'y': return value * 365 * 24 * 60 * 60 * 1000
+  default: return value * 1000
+  }
+}
+
+const JWT_EXPIRES_IN = parseExpiresIn(environments.JWT_EXPIRES_IN)
+const JWT_REFRESH_EXPIRES_IN = parseExpiresIn(environments.JWT_REFRESH_EXPIRES_IN)
 
 /**
  * Ký Access Token
@@ -26,7 +42,7 @@ const JWT_REFRESH_EXPIRES_IN = parseExpiresIn(process.env.JWT_REFRESH_EXPIRES_IN
  * @returns {string} JWT access token
  */
 export function signAccessToken(payload) {
-  return jwt.sign({ ...payload, type: 'access' }, JWT_ACCESS_SECRET, { expiresIn: JWT_EXPIRES_IN })
+  return jwt.sign({ ...payload, type: 'access' }, environments.JWT_ACCESS_SECRET, { expiresIn: JWT_EXPIRES_IN })
 }
 
 /**
@@ -35,7 +51,7 @@ export function signAccessToken(payload) {
  * @returns {Object} decoded payload
  */
 export function verifyAccessToken(token) {
-  return jwt.verify(token, JWT_ACCESS_SECRET)
+  return jwt.verify(token, environments.JWT_ACCESS_SECRET)
 }
 
 /**
@@ -44,7 +60,7 @@ export function verifyAccessToken(token) {
  * @returns {string} JWT refresh token
  */
 export function signRefreshToken(payload) {
-  return jwt.sign({ ...payload, type: 'refresh' }, JWT_REFRESH_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN })
+  return jwt.sign({ ...payload, type: 'refresh' }, environments.JWT_REFRESH_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN })
 }
 
 /**
@@ -53,7 +69,7 @@ export function signRefreshToken(payload) {
  * @returns {Object} decoded payload
  */
 export function verifyRefreshToken(token) {
-  return jwt.verify(token, JWT_REFRESH_SECRET)
+  return jwt.verify(token, environments.JWT_REFRESH_SECRET)
 }
 
 /**
