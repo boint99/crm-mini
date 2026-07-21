@@ -234,8 +234,8 @@ export default function Dashboard() {
             <span className="text-xs font-bold px-2.5 py-1 rounded bg-slate-100 text-slate-600">This Year</span>
           </div>
 
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-64 w-full min-w-0">
+            <ResponsiveContainer width="100%" height={240} initialDimension={{ width: 300, height: 240 }}>
               <LineChart data={lineChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
@@ -255,14 +255,14 @@ export default function Dashboard() {
         </div>
 
         {/* Donut chart for VLAN distribution */}
-        <div className="lg:col-span-3 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+        <div className="lg:col-span-3 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col justify-between min-w-0">
           <div>
             <h3 className="text-base font-bold text-slate-800">VLAN Segments</h3>
             <p className="text-xs text-slate-400">Total configured endpoints</p>
           </div>
 
-          <div className="h-40 flex items-center justify-center my-4 relative">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-40 flex items-center justify-center my-4 relative min-w-0">
+            <ResponsiveContainer width="100%" height={160} initialDimension={{ width: 200, height: 160 }}>
               <PieChart>
                 <Pie
                   data={donutData}

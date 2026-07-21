@@ -8,7 +8,8 @@ import {
   Shield,
   Building2,
   MapPinned,
-  ExternalLink
+  ExternalLink,
+  FileCode
 } from 'lucide-react'
 
 export const NAV_GROUPS = [
@@ -80,8 +81,9 @@ export const NAV_GROUPS = [
   {
     group: 'MANAGEMENT',
     items: [
-      { id: 'accounts',    label: 'Accounts',   icon: KeyRound, path: '/accounts' },
-      { id: 'permissions', label: 'Permissions',  icon: Shield,   path: '/permissions' }
+      { id: 'accounts',    label: 'Accounts',    icon: KeyRound, path: '/accounts' },
+      { id: 'permissions', label: 'Permissions', icon: Shield,   path: '/permissions' },
+      { id: 'api-docs',    label: 'API Docs',    icon: FileCode, path: '/api-docs' }
     ]
   }
 ]

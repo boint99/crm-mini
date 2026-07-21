@@ -10,17 +10,24 @@ import { accountsModel } from '../accounts/accounts.model.js'
 export const authMiddleware = async (req, res, next) => {
   try {
     // ===== TRÍCH XUẤT TOKEN =====
+    let token = null
     const authHeader = req.headers.authorization
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7)
+    } else if (req.cookies && req.cookies.accessToken) {
+      token = req.cookies.accessToken
+    } else if (req.query && req.query.token) {
+      token = req.query.token
+    }
+
+    if (!token) {
       return res.status(StatusCodes.UNAUTHORIZED).json({
         success: false,
         message: 'Token không được cung cấp hoặc định dạng không hợp lệ',
         code: 'MISSING_TOKEN'
       })
     }
-
-    const token = authHeader.substring(7)
 
     // ===== VERIFY TOKEN =====
     let decoded

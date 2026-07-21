@@ -9,6 +9,9 @@ import { swaggerSpec } from './configs/swagger.config.js'
 import { errorMiddleware } from './middleware/error.middleware.js'
 import { corsOptions } from './configs/cors.config.js'
 
+import { authMiddleware } from './modules/auth/auth.middleware.js'
+import { dynamicPermissionMiddleware } from './middleware/permission.middleware.js'
+
 const START_SERVER = async () => {
   const app = express()
   const port = environments.API_PORT || 8017
@@ -29,7 +32,7 @@ const START_SERVER = async () => {
   })
 
   app.use('/api', APIs_Routes)
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+  app.use('/api-docs', authMiddleware, dynamicPermissionMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerSpec))
   app.use(errorMiddleware)
 
   app.listen(port, environments.HOST, () => {

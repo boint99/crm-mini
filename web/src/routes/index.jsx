@@ -23,6 +23,7 @@ const Profile = lazy(() => import('@/pages/Profile'))
 const HostingVienThongACT = lazy(() => import('@/pages/Hosting/VienThongACT'))
 const HostingACTES = lazy(() => import('@/pages/Hosting/ACTES'))
 const HostingACTIDS = lazy(() => import('@/pages/Hosting/ACTIDS'))
+const ApiDocs = lazy(() => import('@/pages/ApiDocs'))
 
 const Login = lazy(() => import('@/pages/Auth/Login'))
 const Register = lazy(() => import('@/pages/Auth/Register'))
@@ -185,6 +186,15 @@ const routes = [
         element: (
           <WithSpinner>
             <HostingACTIDS />
+          </WithSpinner>
+        )
+      },
+
+      {
+        path: 'api-docs',
+        element: (
+          <WithSpinner>
+            <ApiDocs />
           </WithSpinner>
         )
       },

@@ -53,7 +53,7 @@ services:
       - app-net
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`it-heodesk.vienthongact.vn`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.rule=Host(`it-heodesk.vienthongact.vn`) && (PathPrefix(`/api`) || PathPrefix(`/api-docs`))"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls=true"
       - "traefik.http.routers.backend.tls.certresolver=myresolver"

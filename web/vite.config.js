@@ -27,6 +27,10 @@ export default defineConfig(({ mode }) => {
         '/api': {
           target: targetUrl,
           changeOrigin: true
+        },
+        '/api-docs': {
+          target: targetUrl,
+          changeOrigin: true
         }
       }
     },

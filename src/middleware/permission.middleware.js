@@ -115,7 +115,9 @@ export const dynamicPermissionMiddleware = async (req, res, next) => {
       const regExp = new RegExp(`^${pathPattern}$`, 'i')
 
       const methodMatches = permission.method.toUpperCase() === currentMethod.toUpperCase()
-      const pathMatches = regExp.test(currentPath)
+      const pathMatches = regExp.test(currentPath) ||
+        currentPath.startsWith(dbPath + '/') ||
+        currentPath === dbPath
 
       return methodMatches && pathMatches
     })
