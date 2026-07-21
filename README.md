@@ -103,21 +103,21 @@ Tạo file `.env` tại thư mục gốc của dự án (`crm-mini/.env`) dựa 
 ```env
 # Database Configuration
 DB_USER=postgres
-DB_PASSWORD=YourPassword123
+DB_PASSWORD=your_postgres_password
 DB_NAME=DB_CRM
 DB_PORT=5432
 DB_HOST=localhost
 
-DATABASE_URL="postgresql://postgres:YourPassword123@localhost:5432/DB_CRM?schema=public"
+DATABASE_URL="postgresql://postgres:your_postgres_password@localhost:5432/DB_CRM?schema=public"
 
 # Server Port
 PORT_BE=8017
 HOST=0.0.0.0
 
-# JWT Configuration
-JWT_ACCESS_SECRET=d384844321edc165126e4cc1a6048c9bd7afd00be2665c481a3a486fc90d8645
+# JWT Configuration (Sinh bằng: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+JWT_ACCESS_SECRET=your_jwt_access_secret_key_here
 JWT_EXPIRES=5m
-JWT_REFRESH_SECRET=d8c090768d02594e733aa94da701d98eeaff8c4582d05cb89a395cd5a234b59d
+JWT_REFRESH_SECRET=your_jwt_refresh_secret_key_here
 JWT_REFRESH_EXPIRES=7d
 
 # Environment & Frontend API Prefix
@@ -153,7 +153,7 @@ npx prisma db push
 
 **Khởi tạo Tài khoản Superadmin mặc định:**
 ```bash
-npm run create-superadmin -- --email=admin@crm.com --password=password123
+npm run create-superadmin -- --email=admin@example.com --password=YourStrongPassword123
 ```
 
 ---
