@@ -2,27 +2,27 @@ import axios from 'axios'
 
 
 export const companiesAPI = {
-  // GET list
+  // GET /api/companies
   getLists: async () => {
-    const res = await axios.get('/company')
+    const res = await axios.get('/companies')
     return res.data
   },
 
-  // CREATE
+  // POST /api/companies
   create: async (payload) => {
-    const res = await axios.post('/company/create', payload)
+    const res = await axios.post('/companies', payload)
     return res.data
   },
 
-  // UPDATE
-  update: async (payload) => {
-    const res = await axios.put('/company/update', payload)
+  // PUT /api/companies/:id
+  update: async (id, payload) => {
+    const res = await axios.put(`/companies/${id}`, payload)
     return res.data
   },
 
-  // DELETE
-  delete: async (payload) => {
-    const res = await axios.delete(`/company/delete/${payload}`)
+  // DELETE /api/companies/:id
+  delete: async (id) => {
+    const res = await axios.delete(`/companies/${id}`)
     return res.data
   }
 }

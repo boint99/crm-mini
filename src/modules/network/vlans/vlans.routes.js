@@ -4,17 +4,17 @@ import { vlansValidate } from './vlans.validate.js'
 
 const Router = express.Router()
 
-// GET - /api/vlans/lists
-Router.get('/vlan', vlansController.lists)
+// GET /api/vlans
+Router.get('/', vlansController.lists)
 
-// // POST /api/vlans
-Router.post('/vlan/create', vlansValidate.create, vlansController.create)
+// POST /api/vlans
+Router.post('/', vlansValidate.create, vlansController.create)
 
-// Update PUT /api/vlans
-Router.put('/vlan/update', vlansValidate.update, vlansController.update)
+// PUT /api/vlans/:id
+Router.put('/:id', vlansValidate.update, vlansController.update)
 
 // DELETE /api/vlans/:id
-// NOTE: id: VLAN_ID
-Router.delete('/vlan/delete/:id', vlansValidate.delete, vlansController.delete)
+Router.delete('/:id', vlansValidate.delete, vlansController.delete)
 
 export const vlansRoutes = Router
+

@@ -4,16 +4,17 @@ import ViettelBranchValidate from './viettelBranch.validate.js'
 
 const Router = express.Router()
 
-// GET - /api/viettel-branches
+// GET /api/viettel-branches
 Router.get('/', viettelBranchController.lists)
 
-// POST /api/viettel-branches/create
-Router.post('/create', ViettelBranchValidate.create, viettelBranchController.create)
+// POST /api/viettel-branches
+Router.post('/', ViettelBranchValidate.create, viettelBranchController.create)
 
-// PUT /api/viettel-branches/update
-Router.put('/update', ViettelBranchValidate.update, viettelBranchController.update)
+// PUT /api/viettel-branches/:id
+Router.put('/:id', ViettelBranchValidate.update, viettelBranchController.update)
 
 // DELETE /api/viettel-branches/:id
 Router.delete('/:id', ViettelBranchValidate.delete, viettelBranchController.delete)
 
 export const viettelBranchRoutes = Router
+

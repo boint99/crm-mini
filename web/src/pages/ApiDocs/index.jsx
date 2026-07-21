@@ -10,7 +10,7 @@ export default function ApiDocs() {
     return () => clearInterval(timer)
   }, [])
 
-  const docUrl = '/api-docs'
+  const docUrl = '/api/docs/v1'
 
   const handleRefresh = () => {
     setIframeKey((prev) => prev + 1)
@@ -27,10 +27,10 @@ export default function ApiDocs() {
         <div className="iframe-header-left">
           <div className="iframe-header-dot" />
           <h1 className="iframe-header-title">API Documentation (Swagger)</h1>
-          <span className="iframe-header-badge">Swagger UI</span>
+          <span className="iframe-header-badge">Swagger UI v1</span>
           <span className="hidden sm:inline-flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md font-medium border border-emerald-200">
             <ShieldCheck size={12} />
-            Đã xác thực & Phân quyền
+            Hỗ trợ Đăng nhập & Test API (Bearer Token)
           </span>
         </div>
 

@@ -4,16 +4,17 @@ import PermissionsValidate from './permissions.validate.js'
 
 const Router = express.Router()
 
-// GET - Lấy danh sách các quyền
+// GET /api/permissions
 Router.get('/', permissionsController.lists)
 
-// POST - Tạo mới một quyền
-Router.post('/create', PermissionsValidate.create, permissionsController.create)
+// POST /api/permissions
+Router.post('/', PermissionsValidate.create, permissionsController.create)
 
-// PUT - Cập nhật một quyền
-Router.put('/update', PermissionsValidate.update, permissionsController.update)
+// PUT /api/permissions/:id
+Router.put('/:id', PermissionsValidate.update, permissionsController.update)
 
-// DELETE - Xóa mềm một quyền
-Router.delete('/delete/:id', PermissionsValidate.delete, permissionsController.delete)
+// DELETE /api/permissions/:id
+Router.delete('/:id', PermissionsValidate.delete, permissionsController.delete)
 
 export const permissionsRoutes = Router
+

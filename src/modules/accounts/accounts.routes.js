@@ -4,19 +4,20 @@ import { accountsController } from './accounts.controller.js'
 
 const Router = express.Router()
 
-// GET /api/accounts/lists
+// GET /api/accounts
 Router.get('/', accountsController.lists)
 
-// POST /api/accounts/create
-Router.post('/create', AccountsValidate.create.bind(AccountsValidate), accountsController.create)
+// POST /api/accounts
+Router.post('/', AccountsValidate.create.bind(AccountsValidate), accountsController.create)
 
-// PUT /api/accounts/update
-Router.put('/update', AccountsValidate.update.bind(AccountsValidate), accountsController.update)
+// PUT /api/accounts/:id
+Router.put('/:id', AccountsValidate.update.bind(AccountsValidate), accountsController.update)
 
-// PATCH /api/accounts/reset-password
-Router.patch('/reset-password', AccountsValidate.resetPassword.bind(AccountsValidate), accountsController.resetPassword)
+// PATCH /api/accounts/:id/reset-password (action route)
+Router.patch('/:id/reset-password', AccountsValidate.resetPassword.bind(AccountsValidate), accountsController.resetPassword)
 
 // DELETE /api/accounts/:id
-Router.delete('/delete/:id', AccountsValidate.delete.bind(AccountsValidate), accountsController.delete)
+Router.delete('/:id', AccountsValidate.delete.bind(AccountsValidate), accountsController.delete)
 
 export const accountsRoutes = Router
+

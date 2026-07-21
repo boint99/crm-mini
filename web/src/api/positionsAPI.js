@@ -2,36 +2,37 @@ import axios from 'axios'
 
 
 export const positionsAPI = {
+  // GET /api/positions
   getLists: async (params) => {
     const res = await axios.get('/positions', { params })
     return res.data
   },
 
-  // CREATE
+  // POST /api/positions
   create: async (payload) => {
-    const res = await axios.post('/positions/create', payload)
+    const res = await axios.post('/positions', payload)
     return res.data
   },
 
-  // UPDATE
-  update: async (payload) => {
-    const res = await axios.put('/positions/update', payload)
+  // PUT /api/positions/:id
+  update: async (id, payload) => {
+    const res = await axios.put(`/positions/${id}`, payload)
     return res.data
   },
 
-  // DELETE
-  delete: async (payload) => {
-    const res = await axios.delete(`/positions/delete/${payload}`)
+  // DELETE /api/positions/:id
+  delete: async (id) => {
+    const res = await axios.delete(`/positions/${id}`)
     return res.data
   },
 
-  // IMPORT PREVIEW
+  // Action: Import preview
   importPreview: async (payload) => {
     const res = await axios.post('/positions/import-preview', payload)
     return res.data
   },
 
-  // IMPORT CONFIRM
+  // Action: Import confirm
   importConfirm: async (payload) => {
     const res = await axios.post('/positions/import-confirm', payload)
     return res.data

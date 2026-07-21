@@ -37,7 +37,8 @@ export const updateEmployee = createAsyncThunk(
   'employeesViettel/updateEmployee',
   async (payload , { rejectWithValue }) => {
     try {
-      await EmployeeViettelAPI.update(payload)
+      const id = payload.id || payload.EMPLOYEE_ID || payload.EMPLOYEE_CODE || payload.employeeId
+      await EmployeeViettelAPI.update(id, payload)
       return payload
     } catch (error) {
       return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.update.error))

@@ -5,20 +5,21 @@ import { validateImportFile } from '../../middleware/fileValidation.middleware.j
 
 const Router = express.Router()
 
-// GET - /api/positions
+// GET /api/positions
 Router.get('/', positionsController.lists)
 
 // POST /api/positions
-Router.post('/create', PositionsValidate.create, positionsController.create)
+Router.post('/', PositionsValidate.create, positionsController.create)
+
+// Action routes (non-CRUD)
 Router.post('/import-preview', validateImportFile, positionsController.importPreview)
 Router.post('/import-confirm', positionsController.importConfirm)
 
-// Update PUT /api/positions
-// Note: add POSITION_NAME
-Router.put('/update', PositionsValidate.update, positionsController.update)
+// PUT /api/positions/:id
+Router.put('/:id', PositionsValidate.update, positionsController.update)
 
 // DELETE /api/positions/:id
-// NOTE: id: POSITION_ID
-Router.delete('/delete/:id', PositionsValidate.delete, positionsController.delete)
+Router.delete('/:id', PositionsValidate.delete, positionsController.delete)
 
 export const positionsRoutes = Router
+

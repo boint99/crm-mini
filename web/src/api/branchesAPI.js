@@ -1,29 +1,28 @@
 import axios from 'axios'
 
 
-
 export const branchesAPI = {
-  // GET list
+  // GET /api/branches
   getLists: async () => {
     const res = await axios.get('/branches')
     return res.data
   },
 
-  // CREATE
+  // POST /api/branches
   create: async (payload) => {
-    const res = await axios.post('/branches/create', payload)
+    const res = await axios.post('/branches', payload)
     return res.data
   },
 
-  // UPDATE
-  update: async (payload) => {
-    const res = await axios.put('/branches/update', payload)
+  // PUT /api/branches/:id
+  update: async (id, payload) => {
+    const res = await axios.put(`/branches/${id}`, payload)
     return res.data
   },
 
-  // DELETE
-  delete: async (payload) => {
-    const res = await axios.delete(`/branches/delete/${payload}`)
+  // DELETE /api/branches/:id
+  delete: async (id) => {
+    const res = await axios.delete(`/branches/${id}`)
     return res.data
   }
 }

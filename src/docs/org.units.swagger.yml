@@ -2,7 +2,7 @@ paths:
   # ========================
   # ORG UNITS APIs
   # ========================
-  /api/org-units/lists:
+  /api/organizations:
     get:
       summary: Get org unit list
       description: Retrieve list of all org units.
@@ -22,7 +22,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/org-units:
     post:
       summary: Create org unit
       description: Create a new org unit using request body data.
@@ -54,11 +53,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/organizations/{id}:
     put:
       summary: Update org unit
-      description: Update org unit information. ORG_UNIT_ID is required in request body.
+      description: Update org unit information. ORG_UNIT_ID is required as path parameter.
       tags:
         - Org Units
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ORG_UNIT_ID of the org unit to update
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
@@ -91,7 +98,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/org-units/{id}:
     delete:
       summary: Delete org unit
       description: Delete an org unit by ORG_UNIT_ID passed as a path parameter.

@@ -38,7 +38,8 @@ export const updateBranch = createAsyncThunk(
   'branches/updateBranch',
   async (payload , { rejectWithValue }) => {
     try {
-      await branchesAPI.update(payload)
+      const id = payload.id || payload.BRANCH_ID || payload.branchId
+      await branchesAPI.update(id, payload)
       return payload
     } catch (error) {
       return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.update.error))

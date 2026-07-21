@@ -34,7 +34,8 @@ export const updateIp = createAsyncThunk(
   'ips/updateIp',
   async (payload, { rejectWithValue }) => {
     try {
-      await ipsAPI.update(payload)
+      const id = payload.id || payload.IP_ADDRESS_ID || payload.ipId
+      await ipsAPI.update(id, payload)
       return payload
     } catch (error) {
       return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.update.error))

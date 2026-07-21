@@ -2,7 +2,7 @@ paths:
   # ========================
   # BRANCH APIs
   # ========================
-  /api/branches/lists:
+  /api/branches:
     get:
       summary: Get branch list
       description: Retrieve list of all branches.
@@ -22,7 +22,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/branches:
     post:
       summary: Create branch
       description: Create a new branch using request body data.
@@ -54,11 +53,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/branches/{id}:
     put:
       summary: Update branch
-      description: Update branch information. BRANCH_ID is required in request body.
+      description: Update branch information. BRANCH_ID is required as path parameter.
       tags:
         - Branches
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: BRANCH_ID of the branch to update
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
@@ -91,7 +98,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/branches/{id}:
     delete:
       summary: Delete branch
       description: Delete a branch by BRANCH_ID passed as path parameter.

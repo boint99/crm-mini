@@ -5,8 +5,8 @@ dotenv.config({ override: true })
 export const environments = {
   // Backend dev
   API_PORT: process.env.NODE_ENV === 'production'
-    ? process.env.PROD_PORT_BE
-    : process.env.DEV_PORT_BE,
+    ? process.env.PORT_BE
+    : process.env.PORT_FE,
 
   // Database
   DB_HOST:  process.env.DB_HOST,

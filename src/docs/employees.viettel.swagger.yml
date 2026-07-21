@@ -2,7 +2,7 @@ paths:
   # ========================
   # VIETTEL EMPLOYEE APIs
   # ========================
-  /api/viettel-employees/lists:
+  /api/viettel-employees:
     get:
       summary: Get Viettel employee list
       description: Retrieve list of all Viettel employees.
@@ -22,7 +22,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ViettelErrorResponse'
 
-  /api/viettel-employees:
     post:
       summary: Create Viettel employee
       description: Create a new Viettel employee. VIETTEL_CODE must be exactly 6 characters and unique. VIETTEL_EMAIL must use an allowed domain.
@@ -54,11 +53,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/ViettelErrorResponse'
 
+  /api/viettel-employees/{id}:
     put:
       summary: Update Viettel employee
-      description: Update Viettel employee information. VIETTEL_ID is required in request body.
+      description: Update Viettel employee information. VIETTEL_ID is required as path parameter.
       tags:
         - Viettel Employees
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: VIETTEL_ID of the employee to update
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
@@ -91,7 +98,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ViettelErrorResponse'
 
-  /api/viettel-employees/{id}:
     delete:
       summary: Delete Viettel employee
       description: Delete a Viettel employee by VIETTEL_ID passed as path parameter.

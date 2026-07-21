@@ -1,37 +1,37 @@
 import axios from 'axios'
 
 export const employeesAPI = {
-  // GET list
+  // GET /api/employees
   getLists: async (params) => {
     const res = await axios.get('/employees', { params })
     return res.data
   },
 
-  // CREATE
+  // POST /api/employees
   create: async (payload) => {
-    const res = await axios.post('/employees/create', payload)
+    const res = await axios.post('/employees', payload)
     return res.data
   },
 
-  // UPDATE
-  update: async (payload) => {
-    const res = await axios.put('/employees/update', payload)
+  // PUT /api/employees/:id
+  update: async (id, payload) => {
+    const res = await axios.put(`/employees/${id}`, payload)
     return res.data
   },
 
-  // DELETE
-  delete: async (payload) => {
-    const res = await axios.delete(`/employees/delete/${payload}`)
+  // DELETE /api/employees/:id
+  delete: async (id) => {
+    const res = await axios.delete(`/employees/${id}`)
     return res.data
   },
 
-  // IMPORT PREVIEW
+  // Action: Import preview
   importPreview: async (payload) => {
     const res = await axios.post('/employees/import-preview', payload)
     return res.data
   },
 
-  // IMPORT CONFIRM
+  // Action: Import confirm
   importConfirm: async (payload) => {
     const res = await axios.post('/employees/import-confirm', payload)
     return res.data

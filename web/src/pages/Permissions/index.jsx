@@ -217,7 +217,7 @@ export default function PermissionsPage() {
             fetchData()
           }
         } else if (modalAction === 'edit') {
-          const res = await permissionsAPI.update({
+          const res = await permissionsAPI.update(selectedItem.id, {
             id: selectedItem.id,
             perCode: perCode.trim(),
             perName: perName.trim(),
@@ -256,7 +256,7 @@ export default function PermissionsPage() {
             fetchData()
           }
         } else if (modalAction === 'edit') {
-          const res = await rolesAPI.update({
+          const res = await rolesAPI.update(selectedItem.id, {
             id: selectedItem.id,
             roleCode: roleCode.trim(),
             roleName: roleName.trim(),
