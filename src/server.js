@@ -35,9 +35,13 @@ const START_SERVER = async () => {
   app.use('/api-docs', authMiddleware, dynamicPermissionMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerSpec))
   app.use(errorMiddleware)
 
-  app.listen(port, environments.HOST, () => {
-    console.log(`🚀 CRM mini APIs is running at http://${environments.HOST}:${port}`)
-    console.log(`🚀 CRM mini DOCs is running at http://${environments.HOST}:${port}/api-docs`)
+  const host = (process.env.NODE_ENV === 'production' || !environments.HOST || environments.HOST === 'localhost' || environments.HOST === '127.0.0.1')
+    ? '0.0.0.0'
+    : environments.HOST
+
+  app.listen(port, host, () => {
+    console.log(`🚀 CRM mini APIs is running at http://${host}:${port}`)
+    console.log(`🚀 CRM mini DOCs is running at http://${host}:${port}/api-docs`)
   })
 }
 (async () => {

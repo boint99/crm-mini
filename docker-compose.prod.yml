@@ -42,8 +42,6 @@ services:
       - SMTP_PASS=${SMTP_PASS}
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?schema=public
     restart: always
-    ports:
-      - "${PORT_BE:-8017}:${PORT_BE:-8017}"
     depends_on:
       db:
         condition: service_healthy
@@ -149,7 +147,7 @@ services:
       - "traefik.http.middlewares.rate-limit.ratelimit.burst=50"
 
       # Security - IP Allowlist Middleware
-      - "traefik.http.middlewares.ip-allowlist.ipallowlist.sourcerange=10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16"
+      - "traefik.http.middlewares.ip-allowlist.ipallowlist.sourcerange=${ALLOWED_IP:-0.0.0.0/0}"
     ports:
       - "80:80"
       - "443:443"
