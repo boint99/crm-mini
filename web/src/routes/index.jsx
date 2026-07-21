@@ -20,6 +20,9 @@ const ViettelBranch = lazy(() => import('@/pages/Viettel/branch'))
 const Permissions = lazy(() => import('@/pages/Permissions'))
 const NotPermistion = lazy(() => import('@/pages/NotPermistion'))
 const Profile = lazy(() => import('@/pages/Profile'))
+const HostingVienThongACT = lazy(() => import('@/pages/Hosting/VienThongACT'))
+const HostingACTES = lazy(() => import('@/pages/Hosting/ACTES'))
+const HostingACTIDS = lazy(() => import('@/pages/Hosting/ACTIDS'))
 
 const Login = lazy(() => import('@/pages/Auth/Login'))
 const Register = lazy(() => import('@/pages/Auth/Register'))
@@ -158,6 +161,30 @@ const routes = [
         element: (
           <WithSpinner>
             <NotPermistion />
+          </WithSpinner>
+        )
+      },
+      {
+        path: 'hosting/vienthongact',
+        element: (
+          <WithSpinner>
+            <HostingVienThongACT />
+          </WithSpinner>
+        )
+      },
+      {
+        path: 'hosting/actes',
+        element: (
+          <WithSpinner>
+            <HostingACTES />
+          </WithSpinner>
+        )
+      },
+      {
+        path: 'hosting/actids',
+        element: (
+          <WithSpinner>
+            <HostingACTIDS />
           </WithSpinner>
         )
       },

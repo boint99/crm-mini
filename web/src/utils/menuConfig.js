@@ -7,7 +7,8 @@ import {
   Folder,
   Shield,
   Building2,
-  MapPinned
+  MapPinned,
+  ExternalLink
 } from 'lucide-react'
 
 export const NAV_GROUPS = [
@@ -66,6 +67,14 @@ export const NAV_GROUPS = [
     items: [
       { id: 'employee',   label: 'Employee',   icon: Users, path: '/viettel-employees' },
       { id: 'branch',   label: 'Branch',   icon: MapPinned, path: '/viettel-branches' }
+    ]
+  },
+  {
+    group: 'Hosting',
+    items: [
+      { id: 'vienthongacts', label: 'VIENTHONGACT', icon: ExternalLink, path: '/hosting/vienthongact', externalUrl: 'https://cpanel.vienthongact.vn' },
+      { id: 'actes',         label: 'ACTES',        icon: ExternalLink, path: '/hosting/actes',        externalUrl: 'https://cpanel.actes.vn' },
+      { id: 'actids',        label: 'ACTIDS',       icon: ExternalLink, path: '/hosting/actids',       externalUrl: 'https://cpanel.actids.vn' }
     ]
   },
   {
