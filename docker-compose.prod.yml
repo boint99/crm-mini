@@ -31,7 +31,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=${PORT_BE:-8017}
-      - HOST=0.0.0.0
+      - HOST=${HOST:-0.0.0.0}
       - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
@@ -41,8 +41,6 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?schema=public
-    ports:
-      - "${PORT_BE:-8017}:${PORT_BE:-8017}"
     restart: always
     depends_on:
       db:
@@ -95,7 +93,7 @@ services:
 
   traefik:
     image: traefik:v3.7
-    container_name: traefik
+    container_name: traefik-gateway
     restart: always
     command:
       # Docker provider
@@ -134,7 +132,7 @@ services:
       - "--serverstransport.insecureskipverify=false"
     labels:
       - "traefik.enable=true"
-      
+
       # Security - Headers Middleware
       - "traefik.http.middlewares.sec-headers.headers.customframeoptionsvalue=SAMEORIGIN"
       - "traefik.http.middlewares.sec-headers.headers.contenttypenosniff=true"
@@ -143,11 +141,11 @@ services:
       - "traefik.http.middlewares.sec-headers.headers.stsseconds=31536000"
       - "traefik.http.middlewares.sec-headers.headers.stsincludesubdomains=true"
       - "traefik.http.middlewares.sec-headers.headers.stspreload=true"
-      
+
       # Security - Rate Limit Middleware
       - "traefik.http.middlewares.rate-limit.ratelimit.average=100"
       - "traefik.http.middlewares.rate-limit.ratelimit.burst=50"
-      
+
       # Security - IP Allowlist Middleware
       - "traefik.http.middlewares.ip-allowlist.ipallowlist.sourcerange=10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16"
     ports:
