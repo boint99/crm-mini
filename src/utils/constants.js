@@ -12,9 +12,8 @@ export const ALLOWED_EMAIL_DOMAINS = [
 
 export const WHITELIST_DOMAINS = [
   'http://localhost:5173',
-  'http://localhost:3000',
   'http://127.0.0.1:5173',
-  'http://127.0.0.1:3000',
+  'http://127.0.0.1:8017',
   'http://localhost:8080',
   'https://it-heodesk.vienthongact.vn',
   'http://it-heodesk.vienthongact.vn'
