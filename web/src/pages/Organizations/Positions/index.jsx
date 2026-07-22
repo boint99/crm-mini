@@ -1,64 +1,152 @@
 import LoadingItem from '@/components/ui/LoadingItem'
-import { StatCard, FilterDropdown, StatusBadge, SearchBar, ActionButton, EmptyState, TableHeader, TableHeaderRight } from '@/components/ui/PageLayout'
+import { StatCard, FilterDropdown, StatusBadge, ActionButton, TableHeader, TableHeaderRight } from '@/components/ui/PageLayout'
 import { dispatchWithToast } from '@/components/ui/dispatchWithToast'
 import { useAppDispatch } from '@/hook/useAppDispatch'
+import { useDynamicTab } from '@/hook/useDynamicTab'
 import {
   createPosition,
   deletePosition,
   getPositions,
   selectPositions,
+  selectPositionsTotal,
   selectLoading,
   updatePosition
 } from '@/redux/slice/positionsSlice'
 import { selectCompanies, getCompanies } from '@/redux/slice/companiesSilce'
 import { formatDateTime, CUSTOM_MESSAGES } from '@/utils/contants'
-import { Award, BriefcaseBusiness, Pencil, Plus, Trash2, UserCheck, UserX, Upload } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { Award, BriefcaseBusiness, Pencil, Plus, Trash2, UserCheck, UserX, Upload, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useSearchParams } from 'react-router-dom'
 import PositionModel from '@/pages/Organizations/Positions/Action/PositionModel'
 import ImportPositionModal from '@/pages/Organizations/Positions/Action/ImportPositionModal'
 
 function Positions() {
+  useDynamicTab('Danh sách chức vụ | CRM Mini')
   const [openModal, setOpenModal] = useState(false)
   const [query, setQuery] = useState('')
+  const [searchKeyword, setSearchKeyword] = useState('')
   const [selectedPosition, setSelectedPosition] = useState(null)
   const [action, setAction] = useState('create')
   const [selectedCompany, setSelectedCompany] = useState('')
   const [openImportModal, setOpenImportModal] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const page = Number(searchParams.get('page')) || 1
+
+  const setPage = useCallback((newPage) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('page', String(newPage))
+      return next
+    })
+  }, [setSearchParams])
+
+  const PAGE_SIZE = 30
 
   const dispatchAsync = useAppDispatch()
   const dispatch = useDispatch()
   const positions = useSelector(selectPositions)
+  const totalPositions = useSelector(selectPositionsTotal)
   const loading = useSelector(selectLoading)
   const companies = useSelector(selectCompanies)
+  const debounceRef = useRef(null)
 
   useEffect(() => {
-    dispatchAsync(getPositions())
     dispatchAsync(getCompanies())
+  }, [dispatchAsync])
+
+  useEffect(() => {
+    if (!searchParams.get('page')) {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev)
+        next.set('page', '1')
+        return next
+      }, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
+
+  // Dynamic layout adjustments for MainLayout wrapper to prevent page-level scrollbars
+  useEffect(() => {
+    const contentArea = document.querySelector('.content-area')
+    const layoutMain = document.querySelector('.layout-main')
+    let innerDiv = null
+
+    if (contentArea) {
+      innerDiv = contentArea.querySelector('.flex.min-h-full.flex-col') || contentArea.firstElementChild
+      contentArea.style.overflow = 'hidden'
+    }
+    if (innerDiv) {
+      innerDiv.style.height = '100%'
+      innerDiv.style.minHeight = 'auto'
+    }
+    if (layoutMain) {
+      layoutMain.style.height = 'calc(100% - 41px)'
+    }
+
+    return () => {
+      if (contentArea) {
+        contentArea.style.overflow = ''
+      }
+      if (innerDiv) {
+        innerDiv.style.height = ''
+        innerDiv.style.minHeight = ''
+      }
+      if (layoutMain) {
+        layoutMain.style.height = ''
+      }
+    }
   }, [])
 
-  const filteredRows = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    let list = positions
+  // Fetch positions
+  const fetchPositions = useCallback(() => {
+    const params = {
+      page,
+      limit: PAGE_SIZE
+    }
     if (selectedCompany) {
-      list = list.filter((pos) => pos.company?.id === selectedCompany)
+      params.companyId = selectedCompany
     }
     if (selectedStatus) {
-      list = list.filter((pos) => pos.status === selectedStatus)
+      params.status = selectedStatus
     }
-    if (!q) return list
-    return list.filter((position) => {
-      const companyName = position.company?.companyName || ''
-      const hay = [position.positionCode, position.positionName, position.level, companyName, position.status]
-        .filter(Boolean).join(' ').toLowerCase()
-      return hay.includes(q)
-    })
-  }, [positions, query, selectedCompany, selectedStatus])
+    if (searchKeyword.trim()) {
+      params.search = searchKeyword.trim()
+    }
+    dispatchAsync(getPositions(params))
+  }, [selectedCompany, selectedStatus, searchKeyword, page, dispatchAsync])
 
-  const totalPositions = positions.length
+  useEffect(() => {
+    fetchPositions()
+  }, [fetchPositions])
+
+  // Debounce search
+  const handleSearchChange = (e) => {
+    const value = e.target.value
+    setQuery(value)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      setSearchKeyword(value)
+      setPage(1)
+    }, 400)
+  }
+
+  const handleCompanyChange = (companyId) => {
+    setSelectedCompany(companyId)
+    setPage(1)
+  }
+
+  const handleStatusChange = (status) => {
+    setSelectedStatus(status)
+    setPage(1)
+  }
+
   const activePositions = positions.filter((p) => p.status === 'ENABLE').length
-  const inactivePositions = totalPositions - activePositions
+  const inactivePositions = Math.max(0, totalPositions - activePositions)
+
+  const totalPages = Math.max(1, Math.ceil(totalPositions / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
 
   const handleAction = (act, position = null) => {
     setAction(act)
@@ -81,7 +169,20 @@ function Positions() {
       payload,
       messages: messages[action] || CUSTOM_MESSAGES.create
     })
+    fetchPositions()
     handleCloseModal()
+  }
+
+  const getPageNumbers = () => {
+    const pages = []
+    const maxVisible = 3
+    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2))
+    let end = Math.min(totalPages, start + maxVisible - 1)
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1)
+    }
+    for (let i = start; i <= end; i++) pages.push(i)
+    return pages
   }
 
   return (
@@ -115,7 +216,7 @@ function Positions() {
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 mb-6">
         <StatCard label="Tổng chức vụ" value={totalPositions} icon={BriefcaseBusiness} accentColor="indigo" />
-        <StatCard label="Đang hoạt động" value={activePositions} icon={UserCheck} accentColor="emerald" subtitle="Chức vụ hiện tại" />
+        <StatCard label="Đang hoạt động" value={activePositions} icon={UserCheck} accentColor="emerald" subtitle="Chức vụ trang này" />
         <StatCard label="Ngưng hoạt động" value={inactivePositions} icon={UserX} accentColor="rose" />
       </div>
 
@@ -126,24 +227,37 @@ function Positions() {
             label="Tất cả công ty"
             options={companies.map((c) => ({ value: c.id, label: c.companyName }))}
             value={selectedCompany}
-            onChange={setSelectedCompany}
+            onChange={handleCompanyChange}
           />
           <FilterDropdown
             label="Trạng thái: Tất cả"
             options={[{ value: 'ENABLE', label: 'Hoạt động' }, { value: 'DISABLE', label: 'Ngưng hoạt động' }]}
             value={selectedStatus}
-            onChange={setSelectedStatus}
+            onChange={handleStatusChange}
           />
         </div>
         <p className="text-sm text-slate-500">
-          Hiển thị <span className="font-semibold text-slate-700">{filteredRows.length}</span> trong tổng số{' '}
+          Hiển thị <span className="font-semibold text-slate-700">{positions.length}</span> trong tổng số{' '}
           <span className="font-semibold text-slate-700">{totalPositions}</span> chức vụ
         </p>
       </div>
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
-        <SearchBar value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tìm theo tên, cấp bậc..." />
+        {/* Search Bar */}
+        <div className="p-4 border-b border-slate-100 flex items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <input
+              type="text"
+              value={query}
+              onChange={handleSearchChange}
+              placeholder="Tìm theo tên chức vụ, cấp bậc..."
+              className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:bg-white transition"
+            />
+          </div>
+        </div>
+
         <div className="flex-1 min-h-0 overflow-auto">
           <table className="min-w-full text-sm">
             <thead>
@@ -159,34 +273,88 @@ function Positions() {
             </thead>
             {loading ? (
               <tbody><tr><td colSpan={7}><LoadingItem /></td></tr></tbody>
-            ) : !filteredRows.length ? (
-              <EmptyState icon={Award} message="Không có dữ liệu chức vụ" />
+            ) : !positions.length ? (
+              <tbody>
+                <tr>
+                  <td colSpan={7}>
+                    <div className="flex h-48 flex-col items-center justify-center gap-3 text-slate-400">
+                      <Award className="h-12 w-12 text-slate-300" />
+                      <p className="text-sm font-medium">
+                        {query ? 'Không tìm thấy chức vụ phù hợp' : 'Không có dữ liệu chức vụ'}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
             ) : (
               <tbody className="divide-y divide-slate-50">
-                {filteredRows.map((position, i) => (
-                  <tr key={position.id} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="px-5 py-4 text-slate-500 font-medium whitespace-nowrap">{String(i + 1).padStart(2, '0')}</td>
-                    <td className="px-5 py-4 font-semibold text-slate-900 whitespace-nowrap">{position.positionName || '-'}</td>
-                    <td className="px-5 py-4 text-slate-600 whitespace-nowrap">{position.level || '-'}</td>
-                    <td className="px-5 py-4 text-slate-600 whitespace-nowrap">{position.company?.companyName || '-'}</td>
-                    <td className="px-5 py-4 text-slate-500 whitespace-nowrap">{position.createdAt ? formatDateTime(position.createdAt).split(' ')[0] : '-'}</td>
-                    <td className="px-5 py-4 whitespace-nowrap"><StatusBadge status={position.status} /></td>
-                    <td className="px-5 py-4 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1">
-                        <ActionButton icon={Pencil} onClick={() => handleAction('edit', position)} title="Chỉnh sửa" />
-                        <ActionButton icon={Trash2} onClick={() => handleAction('delete', position)} variant="delete" title="Xóa" />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {positions.map((position, index) => {
+                  const stt = (currentPage - 1) * PAGE_SIZE + index + 1
+                  return (
+                    <tr key={position.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="px-5 py-4 text-slate-500 font-medium whitespace-nowrap">{String(stt).padStart(2, '0')}</td>
+                      <td className="px-5 py-4 font-semibold text-slate-900 whitespace-nowrap">{position.positionName || '-'}</td>
+                      <td className="px-5 py-4 text-slate-600 whitespace-nowrap">{position.level || '-'}</td>
+                      <td className="px-5 py-4 text-slate-600 whitespace-nowrap">{position.company?.companyName || '-'}</td>
+                      <td className="px-5 py-4 text-slate-500 whitespace-nowrap">{position.createdAt ? formatDateTime(position.createdAt).split(' ')[0] : '-'}</td>
+                      <td className="px-5 py-4 whitespace-nowrap"><StatusBadge status={position.status} /></td>
+                      <td className="px-5 py-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1">
+                          <ActionButton icon={Pencil} onClick={() => handleAction('edit', position)} title="Chỉnh sửa" />
+                          <ActionButton icon={Trash2} onClick={() => handleAction('delete', position)} variant="delete" title="Xóa" />
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             )}
           </table>
         </div>
+
+        {/* ── Pagination Footer ── */}
+        {!loading && positions.length > 0 && (
+          <div className="border-t border-slate-100 px-5 py-3 flex items-center justify-between">
+            <p className="text-sm text-slate-500">
+              Trang <span className="font-semibold text-slate-700">{currentPage}</span> / {totalPages}
+            </p>
+            <div className="flex items-center gap-1">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setPage(currentPage - 1)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                aria-label="Trang trước"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              {getPageNumbers().map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`inline-flex h-8 min-w-[32px] items-center justify-center rounded-lg text-sm font-semibold transition cursor-pointer ${
+                    p === currentPage
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'border border-slate-200 text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setPage(currentPage + 1)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                aria-label="Trang sau"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <PositionModel open={openModal} onClose={handleCloseModal} onSubmit={handleSubmit} mode={action} initialValues={selectedPosition} />
-      <ImportPositionModal isOpen={openImportModal} onClose={() => setOpenImportModal(false)} onImportSuccess={() => dispatchAsync(getPositions())} />
+      <ImportPositionModal isOpen={openImportModal} onClose={() => setOpenImportModal(false)} onImportSuccess={() => fetchPositions()} />
     </div>
   )
 }

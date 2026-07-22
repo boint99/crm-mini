@@ -6,29 +6,68 @@ class PositionsModel extends BaseModel {
     super('pOSITIONS', 'positionName')
   }
 
-  async lists(where = null) {
+  async lists(options = {}) {
+    const { companyId, search, status, page, limit } = options || {}
     const prismaWhere = {
       deletedAt: null
     }
-    if (where) {
-      if (where.companyId !== undefined) {
-        if (where.companyId) {
-          // If companyId is a UUID string, look up the company record to find its internal integer ID
-          const company = await PRISMA.cOMPANY.findUnique({
-            where: { id: where.companyId }
-          })
-          prismaWhere.companyId = company ? company.companyId : null
-        } else {
-          prismaWhere.companyId = null
-        }
+
+    if (companyId) {
+      const isUuid = typeof companyId === 'string' && companyId.length === 36 && companyId.includes('-')
+      if (isUuid) {
+        const company = await PRISMA.cOMPANY.findUnique({
+          where: { id: companyId }
+        })
+        prismaWhere.companyId = company ? company.companyId : null
+      } else if (!isNaN(Number(companyId))) {
+        prismaWhere.companyId = Number(companyId)
       }
     }
-    return await PRISMA.pOSITIONS.findMany({
+
+    if (status) {
+      prismaWhere.status = status
+    }
+
+    if (search && search.trim()) {
+      const keywords = search.trim().split(/\s+/)
+      const searchConditions = keywords.map(keyword => ({
+        OR: [
+          { positionName: { contains: keyword, mode: 'insensitive' } },
+          { level: { contains: keyword, mode: 'insensitive' } },
+          { company: { companyName: { contains: keyword, mode: 'insensitive' } } }
+        ]
+      }))
+      prismaWhere.AND = [...(prismaWhere.AND || []), ...searchConditions]
+    }
+
+    const pageNum = page ? Number(page) : undefined
+    const limitNum = limit ? Number(limit) : undefined
+
+    const total = await PRISMA.pOSITIONS.count({
+      where: prismaWhere
+    })
+
+    const findOptions = {
       where: prismaWhere,
       include: {
         company: true
-      }
-    })
+      },
+      orderBy: { createdAt: 'desc' }
+    }
+
+    if (pageNum !== undefined && limitNum !== undefined) {
+      const maxPage = Math.max(1, Math.ceil(total / limitNum))
+      const correctedPage = pageNum > maxPage ? maxPage : pageNum
+      findOptions.skip = (correctedPage - 1) * limitNum
+      findOptions.take = limitNum
+    }
+
+    const list = await PRISMA.pOSITIONS.findMany(findOptions)
+
+    return {
+      total,
+      list
+    }
   }
 
   async create(data) {

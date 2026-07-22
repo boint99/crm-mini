@@ -10,10 +10,10 @@ const getErrorMessage = (error, fallback = 'Có lỗi xảy ra') => {
 // GET LIST
 export const getPositions = createAsyncThunk(
   'positions/getPositions',
-  async (_, { rejectWithValue }) => {
+  async (params, { rejectWithValue }) => {
     try {
-      const data = await positionsAPI.getLists()
-      return data.data || []
+      const data = await positionsAPI.getLists(params)
+      return data.data
     } catch (error) {
       return rejectWithValue(getErrorMessage(error, CUSTOM_MESSAGES.get.error))
     }
@@ -62,6 +62,7 @@ export const deletePosition = createAsyncThunk(
 
 const initialState = {
   items: [],
+  total: 0,
   loading: false,
   error: null,
   message: null
@@ -82,7 +83,14 @@ const positionsSlice = createSlice({
       })
       .addCase(getPositions.fulfilled, (state, action) => {
         state.loading = false
-        state.items = action.payload
+        const resData = action.payload
+        if (Array.isArray(resData)) {
+          state.items = resData
+          state.total = resData.length
+        } else {
+          state.items = resData?.list || []
+          state.total = resData?.total || 0
+        }
         state.message = CUSTOM_MESSAGES.get.success
       })
       .addCase(getPositions.rejected, (state, action) => {
@@ -136,6 +144,7 @@ const positionsSlice = createSlice({
 })
 
 export const selectPositions = (state) => state.positions.items || []
+export const selectPositionsTotal = (state) => state.positions.total || 0
 export const selectLoading = (state) => state.positions.loading || false
 export const selectPositionMessage = (state) => state.positions.message || ''
 

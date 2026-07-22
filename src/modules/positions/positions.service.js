@@ -8,12 +8,18 @@ import { PRISMA } from '../../configs/db.config.js'
 class PositionsServices {
 
   async lists(params = {}) {
-    const { companyId } = params
-    const query = {}
-    if (companyId) {
-      query.companyId = companyId
-    }
-    return await positionsModel.lists(query)
+    const { companyId, page, limit, limitVal, pageSize, search, keyword, status } = params
+    const resolvedSearch = search || keyword
+    const resolvedLimit = limit || limitVal || pageSize
+    const queryStatus = status ? status.toUpperCase() : undefined
+
+    return await positionsModel.lists({
+      companyId,
+      search: resolvedSearch,
+      status: queryStatus,
+      page,
+      limit: resolvedLimit
+    })
   }
 
   /**
