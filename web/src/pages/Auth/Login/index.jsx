@@ -13,7 +13,6 @@ function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
 
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -108,16 +107,7 @@ function LoginPage() {
           </div>
         </div>
 
-        <div className={styles.optionsRow}>
-          <label className={styles.rememberMe}>
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className={styles.checkbox}
-            />
-            <span>Remember me</span>
-          </label>
+        <div className="flex justify-end">
           <button
             type="button"
             onClick={() => navigate('/auth/forgot-password')}
