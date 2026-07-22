@@ -46,11 +46,21 @@ export default function DepartmentModel({
   useEffect(() => {
     if (isOpen) {
       if (mode === 'edit' && data) {
+        const targetCompanyId =
+          data.company?.id ||
+          companies.find(
+            (c) =>
+              c.id === data.companyId ||
+              c.companyId === data.companyId ||
+              String(c.companyId) === String(data.companyId)
+          )?.id ||
+          ''
+
         reset({
           orgUnitCode: data.orgUnitCode || '',
           unitName: data.unitName || '',
           unitType: data.unitType || '',
-          companyId: data.company?.id || '',
+          companyId: targetCompanyId,
           branchId: data.branch?.id || '',
           parentUnitId: data.parentUnit?.id || '',
           status: data.status || 'ENABLE'
@@ -67,7 +77,7 @@ export default function DepartmentModel({
         })
       }
     }
-  }, [isOpen, mode, data, reset])
+  }, [isOpen, mode, data, companies, reset])
 
   const handleFormSubmit = (formData) => {
     if (mode === 'delete') {

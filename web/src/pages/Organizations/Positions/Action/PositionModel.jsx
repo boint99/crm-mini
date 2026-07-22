@@ -37,11 +37,21 @@ export default function PositionModel({
   useEffect(() => {
     if (isOpen) {
       if (mode === 'edit' && data) {
+        const targetCompanyId =
+          data.company?.id ||
+          companies.find(
+            (c) =>
+              c.id === data.companyId ||
+              c.companyId === data.companyId ||
+              String(c.companyId) === String(data.companyId)
+          )?.id ||
+          ''
+
         reset({
           positionName: data.positionName || '',
           level: data.level || '',
           status: data.status || 'ENABLE',
-          companyId: data.company?.id || ''
+          companyId: targetCompanyId
         })
       } else if (mode === 'create') {
         reset({
@@ -52,7 +62,7 @@ export default function PositionModel({
         })
       }
     }
-  }, [isOpen, mode, data, reset])
+  }, [isOpen, mode, data, companies, reset])
 
   const handleFormSubmit = (formData) => {
     if (mode === 'delete') {

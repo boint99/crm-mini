@@ -254,6 +254,18 @@ export default function EmployeeModel({
   useEffect(() => {
     if (isOpen) {
       if (mode === 'edit' && data) {
+        const targetCompanyId =
+          data.orgUnit?.company?.id ||
+          data.position?.company?.id ||
+          data.company?.id ||
+          companies.find(
+            (c) =>
+              c.id === data.companyId ||
+              c.companyId === data.companyId ||
+              String(c.companyId) === String(data.companyId)
+          )?.id ||
+          ''
+
         reset({
           employeeCode: data.employeeCode || '',
           firstName: data.firstName || '',
@@ -261,7 +273,7 @@ export default function EmployeeModel({
           phone: data.phone || '',
           email: data.email || '',
           birthDate: data.birthDate ? String(data.birthDate).slice(0, 10) : '',
-          companyId: data.orgUnit?.company?.id || data.position?.company?.id || data.companyId || '',
+          companyId: targetCompanyId,
           unitId: data.orgUnit?.id || data.unitId || '',
           viettelCode: data.viettelCode || '',
           positionId: data.position?.id || data.positionId || '',
@@ -287,7 +299,7 @@ export default function EmployeeModel({
         })
       }
     }
-  }, [isOpen, mode, data, reset])
+  }, [isOpen, mode, data, companies, reset])
 
   const handleFormSubmit = (formData) => {
     if (mode === 'delete') {
