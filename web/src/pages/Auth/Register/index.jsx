@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { useForm, useWatch } from 'react-hook-form'
 import { authAPI } from '@/api/auth'
 import { toast } from 'react-toastify'
+import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import styles from '../AuthLayout.module.css'
+import logoImg from '@/assets/images/logo.png'
 
 function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -54,8 +56,16 @@ function RegisterPage() {
   }
 
   return (
-    <>
-      <h2 className={styles.title}>Đăng ký tài khoản</h2>
+    <div className={styles.loginCardInner}>
+      {/* Logo ở đầu card đăng ký */}
+      <div className={styles.avatarHeader}>
+        <div className={styles.avatarCircle} style={{ background: '#ffffff', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+          <img src={logoImg} alt="Logo" className="w-full h-full object-contain p-1" />
+        </div>
+      </div>
+
+      <h2 className={styles.welcomeTitle}>Đăng ký tài khoản</h2>
+      <p className={styles.welcomeSubtitle}>Tạo tài khoản mới để truy cập và quản lý hệ thống của bạn</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
         {errorMsg && (
@@ -67,84 +77,84 @@ function RegisterPage() {
         {/* Hàng Họ và Tên */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
           <div className={styles.formGroup}>
-            <label className={styles.label} htmlFor="lastName">
-              Họ và tên đệm
-            </label>
-            <input
-              id="lastName"
-              type="text"
-              disabled={isLoading}
-              className={styles.input}
-              placeholder="Nguyễn Văn"
-              {...register('lastName', {
-                required: 'Vui lòng nhập họ và tên đệm!'
-              })}
-            />
+            <div className={styles.inputWrapper}>
+              <User size={18} className={styles.inputIcon} />
+              <input
+                id="lastName"
+                type="text"
+                disabled={isLoading}
+                className={styles.inputWithIcon}
+                placeholder="Họ và tên đệm"
+                {...register('lastName', {
+                  required: 'Vui lòng nhập họ và tên đệm!'
+                })}
+              />
+            </div>
             {errors.lastName && (
-              <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+              <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem', paddingLeft: '0.5rem' }}>
                 {errors.lastName.message}
               </p>
             )}
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label} htmlFor="firstName">
-              Tên
-            </label>
-            <input
-              id="firstName"
-              type="text"
-              disabled={isLoading}
-              className={styles.input}
-              placeholder="A"
-              {...register('firstName', {
-                required: 'Vui lòng nhập tên!'
-              })}
-            />
+            <div className={styles.inputWrapper}>
+              <User size={18} className={styles.inputIcon} />
+              <input
+                id="firstName"
+                type="text"
+                disabled={isLoading}
+                className={styles.inputWithIcon}
+                placeholder="Tên"
+                {...register('firstName', {
+                  required: 'Vui lòng nhập tên!'
+                })}
+              />
+            </div>
             {errors.firstName && (
-              <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+              <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem', paddingLeft: '0.5rem' }}>
                 {errors.firstName.message}
               </p>
             )}
           </div>
         </div>
 
+        {/* Địa chỉ Email */}
         <div className={styles.formGroup}>
-          <label className={styles.label} htmlFor="email">
-            Địa chỉ Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            disabled={isLoading}
-            className={styles.input}
-            placeholder="you@example.com"
-            {...register('email', {
-              required: 'Vui lòng nhập email!',
-              pattern: {
-                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: 'Địa chỉ email không hợp lệ!'
-              }
-            })}
-          />
+          <div className={styles.inputWrapper}>
+            <Mail size={18} className={styles.inputIcon} />
+            <input
+              id="email"
+              type="email"
+              disabled={isLoading}
+              className={styles.inputWithIcon}
+              placeholder="you@example.com"
+              {...register('email', {
+                required: 'Vui lòng nhập email!',
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: 'Địa chỉ email không hợp lệ!'
+                }
+              })}
+            />
+          </div>
           {errors.email && (
-            <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+            <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem', paddingLeft: '0.5rem' }}>
               {errors.email.message}
             </p>
           )}
         </div>
 
+        {/* Mật khẩu */}
         <div className={styles.formGroup}>
-          <label className={styles.label} htmlFor="password">
-            Mật khẩu
-          </label>
-          <div className={styles.passwordWrapper}>
+          <div className={styles.inputWrapper}>
+            <Lock size={18} className={styles.inputIcon} />
             <input
               id="password"
               type={showPassword ? 'text' : 'password'}
               disabled={isLoading}
-              className={styles.passwordInput}
-              placeholder="••••••••"
+              className={styles.passwordInputWithIcon}
+              placeholder="Mật khẩu"
               {...register('password', {
                 required: 'Vui lòng nhập mật khẩu!',
                 minLength: {
@@ -156,29 +166,29 @@ function RegisterPage() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className={styles.togglePassword}
+              className={styles.togglePasswordBtn}
+              tabIndex="-1"
             >
-              {showPassword ? 'Ẩn' : 'Hiện'}
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
           {errors.password && (
-            <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+            <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem', paddingLeft: '0.5rem' }}>
               {errors.password.message}
             </p>
           )}
         </div>
 
+        {/* Nhập lại mật khẩu */}
         <div className={styles.formGroup}>
-          <label className={styles.label} htmlFor="confirmPassword">
-            Nhập lại mật khẩu
-          </label>
-          <div className={styles.passwordWrapper}>
+          <div className={styles.inputWrapper}>
+            <Lock size={18} className={styles.inputIcon} />
             <input
               id="confirmPassword"
               type={showConfirmPassword ? 'text' : 'password'}
               disabled={isLoading}
-              className={styles.passwordInput}
-              placeholder="••••••••"
+              className={styles.passwordInputWithIcon}
+              placeholder="Nhập lại mật khẩu"
               {...register('confirmPassword', {
                 required: 'Vui lòng nhập lại mật khẩu!',
                 validate: (value) =>
@@ -188,13 +198,14 @@ function RegisterPage() {
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className={styles.togglePassword}
+              className={styles.togglePasswordBtn}
+              tabIndex="-1"
             >
-              {showConfirmPassword ? 'Ẩn' : 'Hiện'}
+              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
           {errors.confirmPassword && (
-            <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+            <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem', paddingLeft: '0.5rem' }}>
               {errors.confirmPassword.message}
             </p>
           )}
@@ -203,7 +214,7 @@ function RegisterPage() {
         <button
           type="submit"
           disabled={isLoading}
-          className={`${styles.loginButton} mt-2`}
+          className={styles.loginButton}
         >
           {isLoading ? (
             <span className={styles.loadingSpinner}>
@@ -211,10 +222,10 @@ function RegisterPage() {
                 <circle className={styles.spinnerCircle} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                 <path className={styles.spinnerPath} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
-              Đang đăng ký...
+              Đang tạo tài khoản...
             </span>
           ) : (
-            'Đăng ký'
+            'Đăng ký tài khoản'
           )}
         </button>
 
@@ -225,11 +236,14 @@ function RegisterPage() {
             onClick={() => navigate('/auth/login')}
             className={styles.registerButton}
           >
-            Đăng nhập
+            Đăng nhập ngay
           </button>
         </div>
       </form>
-    </>
+      <div className={styles.copyrightText}>
+        © 2026 IT-Helpdesk System
+      </div>
+    </div>
   )
 }
 
