@@ -573,7 +573,33 @@ class AuthService {
         },
         accountRoles: {
           where: { deletedAt: null },
-          include: { role: true }
+          include: {
+            role: {
+              include: {
+                rolePermissions: {
+                  where: {
+                    deletedAt: null,
+                    OR: [
+                      { revokedAt: null },
+                      { revokedAt: { gt: new Date() } }
+                    ]
+                  },
+                  include: {
+                    permission: {
+                      select: {
+                        perId: true,
+                        perCode: true,
+                        perName: true,
+                        method: true,
+                        apiPath: true,
+                        status: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     })
@@ -581,6 +607,16 @@ class AuthService {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Profile not found!')
     }
     delete profile.password
+
+    // Flatten permissions từ tất cả các role để FE sử dụng trực tiếp
+    const permissions = profile.accountRoles
+      .flatMap(ar => ar.role?.rolePermissions || [])
+      .map(rp => rp.permission)
+      .filter(p => p && p.status === 'ENABLE')
+      .filter((p, i, arr) => arr.findIndex(x => x.perCode === p.perCode) === i) // Loại trùng
+
+    profile.permissions = permissions
+
     return profile
   }
 

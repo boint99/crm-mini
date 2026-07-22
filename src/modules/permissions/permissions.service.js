@@ -5,8 +5,47 @@ import { permissionsModel } from './permissions.model.js'
 import { v7 as uuidv7 } from 'uuid'
 
 class PermissionsServices {
-  async lists() {
-    return await permissionsModel.lists()
+  async lists(params = {}) {
+    const limit = Number(params.limit) || 20
+    const page = Number(params.page) || 1
+    const search = params.search ? String(params.search).trim() : ''
+    const nopaginate = params.nopaginate === 'true' || params.nopaginate === true
+
+    const queryOptions = {
+      where: {},
+      orderBy: { perId: 'asc' }
+    }
+
+    if (search) {
+      queryOptions.where.perName = {
+        contains: search,
+        mode: 'insensitive'
+      }
+    }
+
+    // Lấy tổng số bản ghi
+    const total = await permissionsModel.model.count({
+      where: {
+        ...queryOptions.where,
+        deletedAt: null
+      }
+    })
+
+    if (!nopaginate) {
+      queryOptions.skip = (page - 1) * limit
+      queryOptions.take = limit
+    }
+
+    const list = await permissionsModel.lists(queryOptions)
+
+    if (nopaginate) {
+      return list
+    }
+
+    return {
+      total,
+      list
+    }
   }
 
   /**

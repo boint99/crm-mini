@@ -5,8 +5,8 @@ class PermissionsModel extends BaseModel {
     super('pERMISSIONS', 'perName')
   }
 
-  async lists() {
-    return await super.LISTALL()
+  async lists(options = {}) {
+    return await super.LISTQUERY(options)
   }
 
   async create(data) {

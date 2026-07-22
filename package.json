@@ -12,7 +12,12 @@
     "prisma:migrate:status": "prisma migrate status",
     "prisma:db:push": "prisma db push",
     "create-superadmin": "node src/scripts/create-superadmin.js",
-    "test:jwt": "node src/scripts/test-auth-jwt.js"
+    "test:jwt": "node src/scripts/test-auth-jwt.js",
+    "test:rbac": "node src/scripts/test-rbac-verification.js",
+    "test:permissions-sync": "node src/scripts/test-permissions-sync.js",
+    "test:permissions-endpoints": "node src/scripts/test-permissions-endpoints.js",
+    "seed:permissions": "node src/scripts/seed-permissions.js",
+    "seed:assign-permissions": "node src/scripts/seed-assign-permissions.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.4.2",

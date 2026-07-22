@@ -13,7 +13,9 @@ import {
   XCircle,
   Settings,
   ShieldCheck,
-  UserCheck
+  UserCheck,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import { permissionsAPI } from '@/api/permissionsAPI'
 import { rolesAPI } from '@/api/rolesAPI'
@@ -53,6 +55,11 @@ export default function PermissionsPage() {
 
   // Data State
   const [permissions, setPermissions] = useState([])
+  const [allPermissions, setAllPermissions] = useState([])
+  const [page, setPage] = useState(1)
+  const [totalPermissions, setTotalPermissions] = useState(0)
+  const [onlyShowAssigned, setOnlyShowAssigned] = useState(false)
+
   const [roles, setRoles] = useState([])
   const [assignments, setAssignments] = useState([])
   const [accounts, setAccounts] = useState([])
@@ -88,21 +95,47 @@ export default function PermissionsPage() {
   const [assignAccountId, setAssignAccountId] = useState('')
   const [assignRoleId, setAssignRoleId] = useState('')
 
+  // Fetch permissions page
+  const fetchPermissionsPage = async (pageNumber, searchVal) => {
+    setLoading(true)
+    try {
+      const res = await permissionsAPI.getLists({
+        page: pageNumber,
+        limit: 20,
+        search: searchVal
+      })
+      if (res?.success) {
+        setPermissions(res.data?.list || [])
+        setTotalPermissions(res.data?.total || 0)
+      }
+    } catch (error) {
+      console.error('Không thể tải trang quyền hạn:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Fetch all data
   const fetchData = async () => {
     setLoading(true)
     try {
-      const [permsRes, rolesRes, assignsRes, accountsRes] = await Promise.all([
-        permissionsAPI.getLists(),
+      const [permsRes, rolesRes, assignsRes, accountsRes, allPermsRes] = await Promise.all([
+        permissionsAPI.getLists({ page: 1, limit: 20 }),
         rolesAPI.getLists(),
         accountRolesAPI.getLists(),
-        accountsAPI.getLists()
+        accountsAPI.getLists(),
+        permissionsAPI.getLists({ nopaginate: true })
       ])
 
-      if (permsRes?.success) setPermissions(permsRes.data)
+      if (permsRes?.success) {
+        setPermissions(permsRes.data?.list || [])
+        setTotalPermissions(permsRes.data?.total || 0)
+        setPage(1)
+      }
       if (rolesRes?.success) setRoles(rolesRes.data)
       if (assignsRes?.success) setAssignments(assignsRes.data)
       if (accountsRes?.success) setAccounts(accountsRes.data)
+      if (allPermsRes?.success) setAllPermissions(allPermsRes.data || [])
     } catch (error) {
       if (error?.response?.status !== 403 && error?.status !== 403) {
         toast.error('Không thể tải danh sách dữ liệu!')
@@ -111,6 +144,55 @@ export default function PermissionsPage() {
       setLoading(false)
     }
   }
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage)
+    fetchPermissionsPage(newPage, searchQuery)
+  }
+
+  // Effect để tự động tìm kiếm phía backend khi searchQuery thay đổi (chỉ cho permissions tab)
+  useEffect(() => {
+    if (activeTab !== 'permissions') return
+
+    const delayDebounce = setTimeout(async () => {
+      await fetchPermissionsPage(1, searchQuery)
+      setPage(1)
+    }, 300)
+
+    return () => clearTimeout(delayDebounce)
+  }, [searchQuery, activeTab])
+
+  // Dynamic layout adjustments for MainLayout wrapper to prevent page-level scrollbars
+  useEffect(() => {
+    const contentArea = document.querySelector('.content-area')
+    const layoutMain = document.querySelector('.layout-main')
+    let innerDiv = null
+
+    if (contentArea) {
+      innerDiv = contentArea.querySelector('.flex.min-h-full.flex-col') || contentArea.firstElementChild
+      contentArea.style.overflow = 'hidden'
+    }
+    if (innerDiv) {
+      innerDiv.style.height = '100%'
+      innerDiv.style.minHeight = 'auto'
+    }
+    if (layoutMain) {
+      layoutMain.style.height = 'calc(100% - 41px)'
+    }
+
+    return () => {
+      if (contentArea) {
+        contentArea.style.overflow = ''
+      }
+      if (innerDiv) {
+        innerDiv.style.height = ''
+        innerDiv.style.minHeight = ''
+      }
+      if (layoutMain) {
+        layoutMain.style.height = ''
+      }
+    }
+  }, [])
 
   useEffect(() => {
     Promise.resolve().then(() => {
@@ -179,6 +261,7 @@ export default function PermissionsPage() {
     setModalAction('assignPermissions')
     setRolePermissionsLoading(true)
     setSelectedPermissionIds([])
+    setOnlyShowAssigned(false)
     setModalOpen(true)
     try {
       const res = await rolesAPI.getPermissions(role.id)
@@ -303,15 +386,8 @@ export default function PermissionsPage() {
 
   // Filter items based on search query
   const filteredPermissions = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim()
-    if (!q) return permissions
-    return permissions.filter(
-      (p) =>
-        p.perName.toLowerCase().includes(q) ||
-        p.perCode.toLowerCase().includes(q) ||
-        (p.apiPath && p.apiPath.toLowerCase().includes(q))
-    )
-  }, [permissions, searchQuery])
+    return permissions
+  }, [permissions])
 
   const filteredRoles = useMemo(() => {
     const q = searchQuery.toLowerCase().trim()
@@ -342,6 +418,21 @@ export default function PermissionsPage() {
       if (modalType === 'assignment') return 'Gán vai trò'
     }
     return 'Cập nhật'
+  }
+
+  const totalPages = Math.max(1, Math.ceil(totalPermissions / 20))
+  const currentPage = Math.min(page, totalPages)
+
+  const getPageNumbers = () => {
+    const pages = []
+    const maxVisible = 3
+    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2))
+    let end = Math.min(totalPages, start + maxVisible - 1)
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1)
+    }
+    for (let i = start; i <= end; i++) pages.push(i)
+    return pages
   }
 
   return (
@@ -407,7 +498,7 @@ export default function PermissionsPage() {
 
       {/* Stats summary cards */}
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <StatCard label="Tổng quyền hạn" value={permissions.length} icon={Shield} accentColor="indigo" />
+        <StatCard label="Tổng quyền hạn" value={allPermissions.length} icon={Shield} accentColor="indigo" />
         <StatCard label="Số lượng vai trò" value={roles.length} icon={ShieldCheck} accentColor="emerald" />
         <StatCard label="Liên kết gán vai trò" value={assignments.length} icon={UserCheck} accentColor="rose" />
       </div>
@@ -474,57 +565,97 @@ export default function PermissionsPage() {
           <div className="flex-1 min-h-0 overflow-auto">
             {/* 1. PERMISSIONS TABLE */}
             {activeTab === 'permissions' && (
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-100">
-                    <TableHeader>#</TableHeader>
-                    <TableHeader>Mã quyền</TableHeader>
-                    <TableHeader>Tên quyền</TableHeader>
-                    <TableHeader>API Path</TableHeader>
-                    <TableHeader>Method</TableHeader>
-                    <TableHeader>Ghi chú</TableHeader>
-                    <TableHeader>Trạng thái</TableHeader>
-                    <TableHeaderRight>Thao tác</TableHeaderRight>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {!filteredPermissions.length ? (
-                    <tr>
-                      <td colSpan={8} className="px-5 py-8 text-center text-slate-400">
-                        Không có dữ liệu quyền hạn nào.
-                      </td>
+              <>
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <TableHeader>#</TableHeader>
+                      <TableHeader>Mã quyền</TableHeader>
+                      <TableHeader>Tên quyền</TableHeader>
+                      <TableHeader>API Path</TableHeader>
+                      <TableHeader>Method</TableHeader>
+                      <TableHeader>Ghi chú</TableHeader>
+                      <TableHeader>Trạng thái</TableHeader>
+                      <TableHeaderRight>Thao tác</TableHeaderRight>
                     </tr>
-                  ) : (
-                    filteredPermissions.map((p, idx) => {
-                      return (
-                        <tr key={p.id} className="hover:bg-slate-50/60 transition-colors">
-                          <td className="px-5 py-4 text-slate-500 font-medium whitespace-nowrap">{idx + 1}</td>
-                          <td className="px-5 py-4 font-semibold text-slate-800 whitespace-nowrap">{p.perCode}</td>
-                          <td className="px-5 py-4 text-slate-900 font-medium whitespace-nowrap">{p.perName}</td>
-                          <td className="px-5 py-4 text-indigo-600 font-mono text-xs whitespace-nowrap">{p.apiPath || '—'}</td>
-                          <td className="px-5 py-4 whitespace-nowrap">
-                            {p.method ? (
-                              <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-800 font-mono border border-slate-200">
-                                {p.method}
-                              </span>
-                            ) : '—'}
-                          </td>
-                          <td className="px-5 py-4 text-slate-500 text-xs truncate max-w-xs">{p.notes || '—'}</td>
-                          <td className="px-5 py-4 whitespace-nowrap">
-                            <StatusBadge status={p.status} />
-                          </td>
-                          <td className="px-5 py-4 text-right whitespace-nowrap">
-                            <div className="flex justify-end gap-1">
-                              <ActionButton icon={Pencil} onClick={() => handleEditOpen('permission', p)} title="Chỉnh sửa" />
-                              <ActionButton icon={Trash2} onClick={() => handleDeleteOpen('permission', p)} variant="delete" title="Xóa" />
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    })
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {!filteredPermissions.length ? (
+                      <tr>
+                        <td colSpan={8} className="px-5 py-8 text-center text-slate-400">
+                          Không có dữ liệu quyền hạn nào.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredPermissions.map((p, idx) => {
+                        return (
+                          <tr key={p.id} className="hover:bg-slate-50/60 transition-colors">
+                            <td className="px-5 py-4 text-slate-500 font-medium whitespace-nowrap">{idx + 1}</td>
+                            <td className="px-5 py-4 font-semibold text-slate-800 whitespace-nowrap">{p.perCode}</td>
+                            <td className="px-5 py-4 text-slate-900 font-medium whitespace-nowrap">{p.perName}</td>
+                            <td className="px-5 py-4 text-indigo-600 font-mono text-xs whitespace-nowrap">{p.apiPath || '—'}</td>
+                            <td className="px-5 py-4 whitespace-nowrap">
+                              {p.method ? (
+                                <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-800 font-mono border border-slate-200">
+                                  {p.method}
+                                </span>
+                              ) : '—'}
+                            </td>
+                            <td className="px-5 py-4 text-slate-500 text-xs truncate max-w-xs">{p.notes || '—'}</td>
+                            <td className="px-5 py-4 whitespace-nowrap">
+                              <StatusBadge status={p.status} />
+                            </td>
+                            <td className="px-5 py-4 text-right whitespace-nowrap">
+                              <div className="flex justify-end gap-1">
+                                <ActionButton icon={Pencil} onClick={() => handleEditOpen('permission', p)} title="Chỉnh sửa" />
+                                <ActionButton icon={Trash2} onClick={() => handleDeleteOpen('permission', p)} variant="delete" title="Xóa" />
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })
+                    )}
+                  </tbody>
+                </table>
+                {!loading && filteredPermissions.length > 0 && (
+                  <div className="border-t border-slate-100 px-5 py-3 flex items-center justify-between">
+                    <p className="text-sm text-slate-500">
+                      Trang <span className="font-semibold text-slate-700">{currentPage}</span> / {totalPages}
+                    </p>
+                    <div className="flex items-center gap-1">
+                      <button
+                        disabled={currentPage === 1}
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                        aria-label="Trang trước"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      {getPageNumbers().map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => handlePageChange(p)}
+                          className={`inline-flex h-8 min-w-[32px] items-center justify-center rounded-lg text-sm font-semibold transition cursor-pointer ${
+                            p === currentPage
+                              ? 'bg-indigo-600 text-white shadow-sm'
+                              : 'border border-slate-200 text-slate-700 hover:bg-slate-50'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                      <button
+                        disabled={currentPage === totalPages}
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                        aria-label="Trang sau"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             {/* 2. ROLES TABLE */}
@@ -826,20 +957,34 @@ export default function PermissionsPage() {
               {/* 4. ROLE PERMISSIONS ASSIGNMENT FORM */}
               {modalType === 'role' && modalAction === 'assignPermissions' && (
                 <div className="space-y-4">
-                  <p className="text-sm text-slate-500 mb-2">
-                    Tích chọn các quyền hạn muốn cấp cho vai trò <span className="font-semibold text-slate-900">{selectedItem?.roleName}</span>:
-                  </p>
+                  <div className="flex items-center justify-between gap-4 mb-2 flex-wrap">
+                    <p className="text-sm text-slate-500">
+                      Tích chọn các quyền hạn muốn cấp cho vai trò <span className="font-semibold text-slate-900">{selectedItem?.roleName}</span>:
+                    </p>
+                    <label className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-500 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={onlyShowAssigned}
+                        onChange={(e) => setOnlyShowAssigned(e.target.checked)}
+                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 cursor-pointer"
+                      />
+                      Chỉ hiển thị các quyền tương ứng với vai trò đã chọn
+                    </label>
+                  </div>
                   {rolePermissionsLoading ? (
                     <div className="py-8"><LoadingItem /></div>
                   ) : (
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 max-h-64 overflow-y-auto p-2 border border-slate-200 rounded-xl bg-slate-50/50">
-                      {!permissions.filter(p => p.status === 'ENABLE').length ? (
+                      {!allPermissions
+                        .filter(p => p.status === 'ENABLE')
+                        .filter(p => !onlyShowAssigned || selectedPermissionIds.includes(p.perId)).length ? (
                         <div className="sm:col-span-2 text-center text-sm text-slate-400 py-4 italic">
-                          Không có quyền hạn hoạt động nào để gán.
+                          Không có quyền hạn hoạt động nào để hiển thị.
                         </div>
                       ) : (
-                        permissions
+                        allPermissions
                           .filter(p => p.status === 'ENABLE')
+                          .filter(p => !onlyShowAssigned || selectedPermissionIds.includes(p.perId))
                           .map((p) => {
                             const isChecked = selectedPermissionIds.includes(p.perId)
                             return (
