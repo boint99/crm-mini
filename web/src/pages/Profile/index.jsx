@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { authAPI } from '@/api/auth'
 import { toast } from 'react-toastify'
 import { useDispatch } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { logout } from '@/redux/slice/authSlice'
 import {
   User,
@@ -39,7 +39,14 @@ function getInitials(name) {
 export default function Profile() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState('profile')
+  const location = useLocation()
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'profile')
+
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab)
+    }
+  }, [location.state?.activeTab])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
