@@ -56,13 +56,33 @@ export default function DepartmentModel({
           )?.id ||
           ''
 
+        const targetBranchId =
+          data.branch?.id ||
+          branches.find(
+            (b) =>
+              b.id === data.branchId ||
+              b.branchId === data.branchId ||
+              String(b.branchId) === String(data.branchId)
+          )?.id ||
+          ''
+
+        const targetParentUnitId =
+          data.parentUnit?.id ||
+          departments.find(
+            (d) =>
+              d.id === data.parentUnitId ||
+              d.orgUnitId === data.parentUnitId ||
+              String(d.orgUnitId) === String(data.parentUnitId)
+          )?.id ||
+          ''
+
         reset({
           orgUnitCode: data.orgUnitCode || '',
           unitName: data.unitName || '',
           unitType: data.unitType || '',
           companyId: targetCompanyId,
-          branchId: data.branch?.id || '',
-          parentUnitId: data.parentUnit?.id || '',
+          branchId: targetBranchId,
+          parentUnitId: targetParentUnitId,
           status: data.status || 'ENABLE'
         })
       } else if (mode === 'create') {
@@ -77,7 +97,7 @@ export default function DepartmentModel({
         })
       }
     }
-  }, [isOpen, mode, data, companies, reset])
+  }, [isOpen, mode, data, companies, branches, departments, reset])
 
   const handleFormSubmit = (formData) => {
     if (mode === 'delete') {
@@ -269,7 +289,7 @@ export default function DepartmentModel({
             <div>
               <label className={labelClass}>Đơn vị cha</label>
               <select className={inputClass} {...register('parentUnitId')}>
-                <option value="">-- Chọn đơn vị cha (Nếu để trống thì nó là đơn vị cha/gốc) --</option>
+                <option value="">-- Chọn đơn vị cha --</option>
                 {filteredParents.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.unitName}
