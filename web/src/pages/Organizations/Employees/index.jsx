@@ -221,6 +221,27 @@ function Employees() {
     }, 400)
   }
 
+  // Filter departments by selected company
+  const filteredDepartments = useMemo(() => {
+    if (!selectedCompany) return departments
+    return departments.filter((d) => {
+      const cId = d.company?.id || d.companyId
+      return cId === selectedCompany
+    })
+  }, [departments, selectedCompany])
+
+  const handleCompanyChange = (companyId) => {
+    setSelectedCompany(companyId)
+    if (companyId && selectedDepartment) {
+      const dept = departments.find((d) => d.id === selectedDepartment)
+      const deptCompanyId = dept?.company?.id || dept?.companyId
+      if (deptCompanyId && String(deptCompanyId) !== String(companyId)) {
+        setSelectedDepartment('')
+      }
+    }
+    setPage(1)
+  }
+
   // Filter by status (client-side)
   const filteredRows = useMemo(() => {
     if (!selectedStatus) return employees
@@ -406,8 +427,14 @@ function Employees() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <FilterDropdown
+            label="Tất cả công ty"
+            options={companies.map((c) => ({ value: c.id, label: c.companyName }))}
+            value={selectedCompany}
+            onChange={handleCompanyChange}
+          />
+          <FilterDropdown
             label="Tất cả phòng ban"
-            options={departments.map((d) => ({ value: d.id, label: d.unitName }))}
+            options={filteredDepartments.map((d) => ({ value: d.id, label: d.unitName }))}
             value={selectedDepartment}
             onChange={(val) => { setSelectedDepartment(val); setPage(1) }}
           />
@@ -523,7 +550,10 @@ function Employees() {
 
                       {/* Đơn vị */}
                       <td className="px-5 py-4 text-slate-600 whitespace-nowrap">
-                        {employee.unit?.unitName || employee.orgUnit?.unitName || '-'}
+                        <p className="font-medium text-slate-900">{employee.unit?.unitName || employee.orgUnit?.unitName || '-'}</p>
+                        {employee.orgUnit?.company?.companyName && (
+                          <p className="text-xs text-slate-400 font-normal">{employee.orgUnit.company.companyName}</p>
+                        )}
                       </td>
 
                       {/* Ngày tạo */}

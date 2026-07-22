@@ -28,11 +28,33 @@ class EmployeesModel extends BaseModel {
 
     // Filter theo company/unit/branch thông qua relation orgUnit
     if (unitId || companyId || branchId) {
-      where.orgUnit = {
-        ...(unitId ? { id: unitId } : {}),
-        ...(companyId ? { company: { id: companyId } } : {}),
-        ...(branchId ? { branch: { id: branchId } } : {})
+      const orgUnitFilter = {}
+
+      if (unitId) {
+        const isUnitUuid = typeof unitId === 'string' && unitId.length === 36 && unitId.includes('-')
+        const isUnitNum = !isNaN(Number(unitId))
+        if (isUnitUuid) orgUnitFilter.id = unitId
+        else if (isUnitNum) orgUnitFilter.orgUnitId = Number(unitId)
+        else orgUnitFilter.id = unitId
       }
+
+      if (companyId) {
+        const isCompUuid = typeof companyId === 'string' && companyId.length === 36 && companyId.includes('-')
+        const isCompNum = !isNaN(Number(companyId))
+        if (isCompUuid) orgUnitFilter.company = { id: companyId }
+        else if (isCompNum) orgUnitFilter.companyId = Number(companyId)
+        else orgUnitFilter.company = { id: companyId }
+      }
+
+      if (branchId) {
+        const isBranchUuid = typeof branchId === 'string' && branchId.length === 36 && branchId.includes('-')
+        const isBranchNum = !isNaN(Number(branchId))
+        if (isBranchUuid) orgUnitFilter.branch = { id: branchId }
+        else if (isBranchNum) orgUnitFilter.branchId = Number(branchId)
+        else orgUnitFilter.branch = { id: branchId }
+      }
+
+      where.orgUnit = orgUnitFilter
     }
 
     // Search theo employeeCode, firstName, lastName, email (case-insensitive)
