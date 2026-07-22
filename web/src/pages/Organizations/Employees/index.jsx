@@ -1,6 +1,7 @@
 import LoadingItem from '@/components/ui/LoadingItem'
 import { dispatchWithToast } from '@/components/ui/dispatchWithToast'
 import { useAppDispatch } from '@/hook/useAppDispatch'
+import { useDynamicTab } from '@/hook/useDynamicTab'
 import AddEmployeeModal from '@/pages/Organizations/Employees/Action/EmployeeModel'
 import ImportEmployeeModal from '@/pages/Organizations/Employees/Action/ImportEmployeeModal'
 import {
@@ -110,6 +111,7 @@ function FilterDropdown({ label, options, value, onChange }) {
 
 /* ─── Main Component ─── */
 function Employees() {
+  useDynamicTab('Danh sách nhân viên | CRM Mini')
   const [openAdd, setOpenAdd] = useState(false)
   const [openImportModal, setOpenImportModal] = useState(false)
   const [query, setQuery] = useState('')

@@ -3,8 +3,10 @@ import { Outlet } from 'react-router-dom'
 import Sidebar from '../Sidebar'
 import Header from '../Header'
 import Footer from '../Footer'
+import { useAutoSidebarTab } from '@/hook/useDynamicTab'
 
 function MainLayout() {
+  useAutoSidebarTab()
   const [collapsed, setCollapsed] = useState(false)
 
   return (
