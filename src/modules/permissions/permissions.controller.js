@@ -5,7 +5,7 @@ class PermissionsController {
   // Lấy danh sách tất cả các quyền
   async lists(req, res, next) {
     try {
-      const result = await permissionsServices.lists()
+      const result = await permissionsServices.lists(req.query)
       new SuccessResponse({
         res: res,
         data: result,

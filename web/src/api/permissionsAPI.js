@@ -2,8 +2,8 @@ import axios from 'axios'
 
 export const permissionsAPI = {
   // GET /api/permissions
-  getLists: async () => {
-    const res = await axios.get('/permissions')
+  getLists: async (params = {}) => {
+    const res = await axios.get('/permissions', { params })
     return res.data
   },
 
