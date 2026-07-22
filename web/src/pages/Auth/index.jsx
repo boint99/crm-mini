@@ -2,8 +2,10 @@ import { Outlet } from 'react-router-dom'
 import styles from './AuthLayout.module.css'
 import bgLogin from '@/assets/images/banner_image.png'
 import logoImg from '@/assets/images/logo.png'
+import { useAutoSidebarTab } from '@/hook/useDynamicTab'
 
 function Auth() {
+  useAutoSidebarTab()
   return (
     <div className={styles.loginContainer}>
       {/* Cột trái: Banner ảnh phong cảnh đẹp mắt */}
