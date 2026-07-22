@@ -22,6 +22,7 @@ export default function DepartmentModel({
     register,
     handleSubmit,
     reset,
+    setValue,
     control,
     formState: { errors, isSubmitting }
   } = useForm()
@@ -165,7 +166,7 @@ export default function DepartmentModel({
   }
 
   const inputClass =
-    'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed'
+    'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary outline-none disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed'
   const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
 
   // Filter out self and circular reference for parent unit list when editing,
@@ -197,12 +198,46 @@ export default function DepartmentModel({
         </div>
 
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+          {/* 1. Công ty - Đặt ở đầu tiên */}
+          <div>
+            <label className={labelClass}>Công ty *</label>
+            <select
+              className={inputClass}
+              {...register('companyId', {
+                required: 'Vui lòng chọn công ty trước',
+                onChange: () => {
+                  setValue('parentUnitId', '')
+                }
+              })}
+            >
+              <option value="">-- Chọn công ty --</option>
+              {companies.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.companyName}
+                </option>
+              ))}
+            </select>
+            {errors.companyId && (
+              <p className="mt-1 text-xs text-rose-500">
+                {errors.companyId.message}
+              </p>
+            )}
+          </div>
+
+          {!watchCompanyId && (
+            <p className="text-xs text-amber-600 font-medium bg-amber-50 p-2.5 rounded-lg border border-amber-200/60">
+              ⚠️ Vui lòng chọn Công ty ở trên để tiếp tục nhập các thông tin phòng ban.
+            </p>
+          )}
+
+          {/* 2. Mã & Tên phòng ban */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>Mã phòng ban *</label>
               <input
                 type="text"
-                placeholder="VD: PB001"
+                placeholder={watchCompanyId ? 'VD: PB001' : 'Vui lòng chọn công ty trước'}
+                disabled={!watchCompanyId}
                 className={inputClass}
                 {...register('orgUnitCode', {
                   required: 'Mã phòng ban là bắt buộc'
@@ -219,7 +254,8 @@ export default function DepartmentModel({
               <label className={labelClass}>Tên phòng ban *</label>
               <input
                 type="text"
-                placeholder="VD: Phòng Hành chính"
+                placeholder={watchCompanyId ? 'VD: Phòng Hành chính' : 'Vui lòng chọn công ty trước'}
+                disabled={!watchCompanyId}
                 className={inputClass}
                 {...register('unitName', {
                   required: 'Tên phòng ban là bắt buộc'
@@ -233,50 +269,11 @@ export default function DepartmentModel({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>Loại phòng ban</label>
-              <input
-                type="text"
-                placeholder="VD: Department, Team..."
-                className={inputClass}
-                {...register('unitType')}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Trạng thái</label>
-              <select className={inputClass} {...register('status')}>
-                <option value="ENABLE">ENABLE (Hoạt động)</option>
-                <option value="DISABLED">DISABLED (Ngưng hoạt động)</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className={labelClass}>Công ty *</label>
-            <select
-              className={inputClass}
-              {...register('companyId', { required: 'Vui lòng chọn công ty' })}
-            >
-              <option value="">-- Chọn công ty --</option>
-              {companies.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.companyName}
-                </option>
-              ))}
-            </select>
-            {errors.companyId && (
-              <p className="mt-1 text-xs text-rose-500">
-                {errors.companyId.message}
-              </p>
-            )}
-          </div>
-
+          {/* 3. Cơ cấu tổ chức (Chi nhánh & Đơn vị cha) */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>Chi nhánh</label>
-              <select className={inputClass} {...register('branchId')}>
+              <select className={inputClass} disabled={!watchCompanyId} {...register('branchId')}>
                 <option value="">-- Chọn chi nhánh --</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
@@ -288,7 +285,7 @@ export default function DepartmentModel({
 
             <div>
               <label className={labelClass}>Đơn vị cha</label>
-              <select className={inputClass} {...register('parentUnitId')}>
+              <select className={inputClass} disabled={!watchCompanyId} {...register('parentUnitId')}>
                 <option value="">-- Chọn đơn vị cha --</option>
                 {filteredParents.map((d) => (
                   <option key={d.id} value={d.id}>
@@ -296,12 +293,32 @@ export default function DepartmentModel({
                   </option>
                 ))}
               </select>
-              <p className="text-xs text-gray-400 mt-1">
-                Nếu để trống, phòng ban này sẽ là đơn vị gốc (cha) và chưa có đơn vị con.
-              </p>
             </div>
           </div>
 
+          {/* 4. Phân loại & Trạng thái */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Loại phòng ban</label>
+              <input
+                type="text"
+                placeholder={watchCompanyId ? 'VD: Department, Team...' : 'Vui lòng chọn công ty trước'}
+                disabled={!watchCompanyId}
+                className={inputClass}
+                {...register('unitType')}
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>Trạng thái</label>
+              <select className={inputClass} disabled={!watchCompanyId} {...register('status')}>
+                <option value="ENABLE">ENABLE (Hoạt động)</option>
+                <option value="DISABLED">DISABLED (Ngưng hoạt động)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Controls */}
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
@@ -312,7 +329,7 @@ export default function DepartmentModel({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !watchCompanyId}
               className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
             >
               {isEdit ? 'Cập nhật' : 'Tạo mới'}
