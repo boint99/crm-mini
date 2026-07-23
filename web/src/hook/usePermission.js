@@ -37,13 +37,15 @@ export function usePermission() {
     fetchPermissions()
   }, [isAuthenticated, loaded])
 
-  // Reset khi logout
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setPermissions([])
-      setLoaded(false)
-    }
-  }, [isAuthenticated])
+  // Reset state khi logout (render-phase state adjustment)
+  const [prevAuth, setPrevAuth] = useState(isAuthenticated)
+  if (!isAuthenticated && prevAuth) {
+    setPrevAuth(false)
+    setPermissions([])
+    setLoaded(false)
+  } else if (isAuthenticated && !prevAuth) {
+    setPrevAuth(true)
+  }
 
   /**
    * Kiểm tra quyền theo METHOD + API Path
