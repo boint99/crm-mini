@@ -58,11 +58,6 @@ class AuthService {
 
   // ================= CHECK DB =================
   async _ensureEmailNotExists(email) {
-    const existingEmployee = await employeesModel.findByField(email, 'email')
-    if (existingEmployee) {
-      throw new ApiError(StatusCodes.CONFLICT, 'Email already registered!')
-    }
-
     // accountName lưu email đầy đủ
     const existingAccount = await accountsModel.findByUnique(email, 'accountName')
     if (existingAccount) {
@@ -72,79 +67,123 @@ class AuthService {
 
   // ================= REGISTER =================
   async register(data) {
-    const { email, password, user_name, empolyeeCode, is_login, otp } = data
+    const { firstName, lastName, email, password, confirmPassword, user_name, empolyeeCode, is_login, otp } = data
 
-    // 1. Verify OTP
-    const cleanEmail = email.trim().toLowerCase()
-    const cleanOtp = String(otp).trim()
-
-    const checkOtp = await otpModel.model.findFirst({
-      where: {
-        email: cleanEmail,
-        otpCode: cleanOtp,
-        otpType: 'REGISTER',
-        expiredAt: { gt: new Date() }
-      }
-    })
-
-    if (!checkOtp) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'OTP is invalid or has expired!')
+    if (!email || !password) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Email and password are required!')
     }
 
-    // Delete the verified OTP
-    await otpModel.model.deleteMany({
-      where: {
-        email: cleanEmail,
-        otpType: 'REGISTER'
-      }
-    })
+    const cleanEmail = email.trim().toLowerCase()
+    const cleanPassword = password.trim()
 
-    // 2. Check duplicate email
+    if (confirmPassword && cleanPassword !== confirmPassword.trim()) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Confirm password does not match!')
+    }
+
+    // 1. Verify OTP if provided
+    if (otp) {
+      const cleanOtp = String(otp).trim()
+      const checkOtp = await otpModel.model.findFirst({
+        where: {
+          email: cleanEmail,
+          otpCode: cleanOtp,
+          otpType: 'REGISTER',
+          expiredAt: { gt: new Date() }
+        }
+      })
+
+      if (!checkOtp) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'OTP is invalid or has expired!')
+      }
+
+      await otpModel.model.deleteMany({
+        where: {
+          email: cleanEmail,
+          otpType: 'REGISTER'
+        }
+      })
+    }
+
+    // 2. Check duplicate account
     await this._ensureEmailNotExists(cleanEmail)
 
-    // 3. Resolve employee link if employeeCode or email matches
+    // 3. Resolve or create employee link
     let matchedEmployee = null
 
     if (empolyeeCode?.trim()) {
-      matchedEmployee = await employeesModel.findByField(empolyeeCode.trim(), 'employeeCode')
+      matchedEmployee = await PRISMA.eMPLOYEES.findFirst({
+        where: { employeeCode: empolyeeCode.trim(), deletedAt: null },
+        include: {
+          orgUnit: {
+            include: { company: true }
+          }
+        }
+      })
     }
+
     if (!matchedEmployee) {
-      matchedEmployee = await employeesModel.findByField(cleanEmail, 'email')
+      matchedEmployee = await PRISMA.eMPLOYEES.findFirst({
+        where: { email: cleanEmail, deletedAt: null },
+        include: {
+          orgUnit: {
+            include: { company: true }
+          }
+        }
+      })
     }
 
-    if (!matchedEmployee) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Tài khoản đăng ký phải liên kết với nhân sự tồn tại trong hệ thống để xác định công ty!')
-    }
+    if (matchedEmployee) {
+      const existingLinkedAccount = await PRISMA.aCCOUNTS.findFirst({
+        where: { employeeId: matchedEmployee.employeeId, deletedAt: null }
+      })
+      if (existingLinkedAccount) {
+        throw new ApiError(StatusCodes.CONFLICT, 'Employee already linked to an active account!')
+      }
 
-    if (!matchedEmployee.unitId) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Nhân sự liên kết không thuộc phòng ban nào, do đó không xác định được công ty!')
-    }
-
-    const employeeUnit = await PRISMA.oRG_UNITS.findUnique({
-      where: { orgUnitId: matchedEmployee.unitId }
-    })
-
-    if (!employeeUnit || !employeeUnit.companyId) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Phòng ban của nhân sự liên kết không thuộc công ty nào!')
+      if (!matchedEmployee.isAccount) {
+        await PRISMA.eMPLOYEES.update({
+          where: { employeeId: matchedEmployee.employeeId },
+          data: { isAccount: true }
+        })
+      }
+    } else {
+      // Automatic employee creation if not existing in HR
+      matchedEmployee = await PRISMA.eMPLOYEES.create({
+        data: {
+          id: uuidv7(),
+          employeeCode: empolyeeCode?.trim() || `EMP${Date.now().toString().slice(-6)}`,
+          firstName: firstName?.trim() || cleanEmail.split('@')[0],
+          lastName: lastName?.trim() || 'User',
+          email: cleanEmail,
+          isAccount: true,
+          status: 'ENABLE'
+        },
+        include: {
+          orgUnit: {
+            include: { company: true }
+          }
+        }
+      })
     }
 
     const employeeId = matchedEmployee.employeeId
+    const displayName = (firstName && lastName) ? `${firstName.trim()} ${lastName.trim()}` : (user_name?.trim() || cleanEmail)
 
-    // 4. Create account - save full email as accountName
+    // 4. Create account
     const account = await PRISMA.aCCOUNTS.create({
       data: {
         id: uuidv7(),
         accountName: cleanEmail,
-        password: await bcrypt.hash(password.trim(), saltRoundsPassword),
+        password: await bcrypt.hash(cleanPassword, saltRoundsPassword),
         employeeId: employeeId,
         isLogin: is_login !== undefined ? is_login : true,
         status: 'ENABLE',
         login: 0,
-        description: `Registered: ${user_name?.trim()}`
+        description: `Registered: ${displayName}`
       }
     })
 
-    // 5. Generate and save tokens
+    // 5. Generate tokens
     const companyId = matchedEmployee?.orgUnit?.company?.id || null
     const tokenPayload = {
       id: account.accountId,
