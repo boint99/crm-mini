@@ -58,25 +58,25 @@ jobs:
           HOST_IP=$(hostname -I | awk '{print $1}')
           echo "📍 Detected IP: $HOST_IP"
 
-          cat > .env << EOF
-          DB_USER=${{ secrets.DB_USER }}
-          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          DB_NAME=${{ secrets.DB_NAME }}
-          DB_HOST=db
-          DB_PORT=${{ secrets.DB_PORT }}
-          PORT_BE=${{ secrets.PORT_BE }}
-          PORT_FE=${{ secrets.PORT_FE }}
-          MAIL_HOST=${{ secrets.MAIL_HOST }}
-          MAIL_PORT=${{ secrets.MAIL_PORT }}
-          SMTP_USER=${{ secrets.SMTP_USER }}
-          SMTP_PASS=${{ secrets.SMTP_PASS }}
-          JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}
-          JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}
-          JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
-          JWT_REFRESH_EXPIRES_IN=${{ secrets.JWT_REFRESH_EXPIRES_IN }}
-          VITE_API_URL=${{ secrets.VITE_API_URL }}
-          HOST=${HOST_IP}
-          EOF
+          printf '%s\n' \
+            "DB_USER=${{ secrets.DB_USER }}" \
+            "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
+            "DB_NAME=${{ secrets.DB_NAME }}" \
+            "DB_HOST=db" \
+            "DB_PORT=${{ secrets.DB_PORT }}" \
+            "PORT_BE=${{ secrets.PORT_BE }}" \
+            "PORT_FE=${{ secrets.PORT_FE }}" \
+            "MAIL_HOST=${{ secrets.MAIL_HOST }}" \
+            "MAIL_PORT=${{ secrets.MAIL_PORT }}" \
+            "SMTP_USER=${{ secrets.SMTP_USER }}" \
+            "SMTP_PASS=${{ secrets.SMTP_PASS }}" \
+            "JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}" \
+            "JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}" \
+            "JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}" \
+            "JWT_REFRESH_EXPIRES_IN=${{ secrets.JWT_REFRESH_EXPIRES_IN }}" \
+            "VITE_API_URL=${{ secrets.VITE_API_URL }}" \
+            "HOST=${HOST_IP}" \
+            > .env
 
           echo "✅ Backend .env created"
 
