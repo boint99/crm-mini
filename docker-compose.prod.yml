@@ -95,45 +95,36 @@ services:
     image: traefik:v3.7
     container_name: traefik-gateway
     restart: always
-    command:
-      # Docker provider
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network=app-net"
-
-      # Entrypoints
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-
-      # Redirect HTTP -> HTTPS
-      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
-
-      # Let's Encrypt
-      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
-      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.myresolver.acme.email=boint@vienthongact.vn"
-      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-      - "--certificatesresolvers.myresolver.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
-      - "--certificatesresolvers.myresolver.acme.tlschallenge=false"
-
-      # Logging
-      - "--log.level=INFO"
-      - "--accesslog=true"
-      - "--accesslog.filepath=/var/log/traefik/access.log"
-      - "--accesslog.format=json"
-
-      # Disable dashboard (production)
-      - "--api.dashboard=false"
-
-      # Server transport (timeouts)
-      - "--serverstransport.maxidleconnsperhost=100"
-      - "--serverstransport.insecureskipverify=false"
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: |
+      if [ -f /letsencrypt/acme.json ]; then
+        chmod 600 /letsencrypt/acme.json
+        echo "✅ acme.json permissions fixed"
+      fi
+      exec /entrypoint.sh \
+        --providers.docker=true \
+        --providers.docker.exposedbydefault=false \
+        --providers.docker.network=app-net \
+        --entrypoints.web.address=:80 \
+        --entrypoints.websecure.address=:443 \
+        --entrypoints.web.http.redirections.entrypoint.to=websecure \
+        --entrypoints.web.http.redirections.entrypoint.scheme=https \
+        --entrypoints.web.http.redirections.entrypoint.permanent=true \
+        --certificatesresolvers.myresolver.acme.httpchallenge=true \
+        --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web \
+        --certificatesresolvers.myresolver.acme.email=boint@vienthongact.vn \
+        --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json \
+        --certificatesresolvers.myresolver.acme.caserver=https://acme-v02.api.letsencrypt.org/directory \
+        --certificatesresolvers.myresolver.acme.tlschallenge=false \
+        --log.level=INFO \
+        --accesslog=true \
+        --accesslog.filepath=/var/log/traefik/access.log \
+        --accesslog.format=json \
+        --api.dashboard=false \
+        --serverstransport.maxidleconnsperhost=100 \
+        --serverstransport.insecureskipverify=false
     labels:
       - "traefik.enable=true"
-
-      # Security - Headers Middleware
       - "traefik.http.middlewares.sec-headers.headers.customframeoptionsvalue=SAMEORIGIN"
       - "traefik.http.middlewares.sec-headers.headers.contenttypenosniff=true"
       - "traefik.http.middlewares.sec-headers.headers.browserxssfilter=true"
@@ -141,12 +132,8 @@ services:
       - "traefik.http.middlewares.sec-headers.headers.stsseconds=31536000"
       - "traefik.http.middlewares.sec-headers.headers.stsincludesubdomains=true"
       - "traefik.http.middlewares.sec-headers.headers.stspreload=true"
-
-      # Security - Rate Limit Middleware
       - "traefik.http.middlewares.rate-limit.ratelimit.average=100"
       - "traefik.http.middlewares.rate-limit.ratelimit.burst=50"
-
-      # Security - IP Allowlist Middleware
       - "traefik.http.middlewares.ip-allowlist.ipallowlist.sourcerange=${ALLOWED_IP:-0.0.0.0/0}"
     ports:
       - "80:80"
@@ -163,9 +150,9 @@ services:
         max-size: "10m"
         max-file: "3"
 
-volumes:
-  pgdata:
-    driver: local
+  volumes:
+    pgdata:
+      driver: local
 
 networks:
   app-net:
