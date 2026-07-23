@@ -150,9 +150,9 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  volumes:
-    pgdata:
-      driver: local
+volumes:
+  pgdata:
+    driver: local
 
 networks:
   app-net:
