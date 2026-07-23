@@ -41,12 +41,12 @@ export default function Profile() {
   const navigate = useNavigate()
   const location = useLocation()
   const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'profile')
+  const [prevLocationTab, setPrevLocationTab] = useState(location.state?.activeTab)
 
-  useEffect(() => {
-    if (location.state?.activeTab) {
-      setActiveTab(location.state.activeTab)
-    }
-  }, [location.state?.activeTab])
+  if (location.state?.activeTab && location.state.activeTab !== prevLocationTab) {
+    setPrevLocationTab(location.state.activeTab)
+    setActiveTab(location.state.activeTab)
+  }
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
