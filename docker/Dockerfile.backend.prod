@@ -25,4 +25,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
 
 EXPOSE ${PORT:-8017}
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node src/server.js"]
+CMD ["sh", "-c", "npx prisma db push && node src/server.js"]
