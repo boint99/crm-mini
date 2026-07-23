@@ -7,7 +7,6 @@ import {
   Plus,
   Pencil,
   Trash2,
-  Users,
   Search,
   X,
   XCircle,
@@ -23,18 +22,7 @@ import { accountRolesAPI } from '@/api/accountRolesAPI'
 import { accountsAPI } from '@/api/accountsAPI'
 import { customStyles } from '@/utils/contants'
 import LoadingItem from '@/components/ui/LoadingItem'
-import { StatCard, StatusBadge, SearchBar, ActionButton, EmptyState, TableHeader, TableHeaderRight } from '@/components/ui/PageLayout'
-
-const STATUS_CONFIG = {
-  ENABLE: {
-    label: 'Hoạt động',
-    className: 'bg-green-100 text-green-700 border border-green-300'
-  },
-  DISABLED: {
-    label: 'Vô hiệu hóa',
-    className: 'bg-red-100 text-red-700 border border-red-300'
-  }
-}
+import { StatCard, StatusBadge, ActionButton, TableHeader, TableHeaderRight } from '@/components/ui/PageLayout'
 
 const modalStyles = {
   ...customStyles,
@@ -108,8 +96,8 @@ export default function PermissionsPage() {
         setPermissions(res.data?.list || [])
         setTotalPermissions(res.data?.total || 0)
       }
-    } catch (error) {
-      console.error('Không thể tải trang quyền hạn:', error)
+    } catch {
+      toast.error('Không thể tải trang quyền hạn!')
     } finally {
       setLoading(false)
     }
@@ -268,7 +256,7 @@ export default function PermissionsPage() {
       if (res?.success) {
         setSelectedPermissionIds(res.data)
       }
-    } catch (error) {
+    } catch {
       toast.error('Không thể tải danh sách quyền của vai trò!')
     } finally {
       setRolePermissionsLoading(false)
@@ -377,7 +365,6 @@ export default function PermissionsPage() {
       }
       setModalOpen(false)
     } catch (error) {
-      console.error('Form submit failed:', error)
       if (error?.response?.status !== 403 && error?.status !== 403) {
         toast.error(error.response?.data?.message || 'Đã xảy ra lỗi khi thực hiện!')
       }
@@ -978,34 +965,34 @@ export default function PermissionsPage() {
                       {!allPermissions
                         .filter(p => p.status === 'ENABLE')
                         .filter(p => !onlyShowAssigned || selectedPermissionIds.includes(p.perId)).length ? (
-                        <div className="sm:col-span-2 text-center text-sm text-slate-400 py-4 italic">
+                          <div className="sm:col-span-2 text-center text-sm text-slate-400 py-4 italic">
                           Không có quyền hạn hoạt động nào để hiển thị.
-                        </div>
-                      ) : (
-                        allPermissions
-                          .filter(p => p.status === 'ENABLE')
-                          .filter(p => !onlyShowAssigned || selectedPermissionIds.includes(p.perId))
-                          .map((p) => {
-                            const isChecked = selectedPermissionIds.includes(p.perId)
-                            return (
-                              <label
-                                key={p.perId}
-                                className="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-100 bg-white hover:bg-slate-100 hover:border-slate-200 cursor-pointer transition text-sm text-slate-700"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={isChecked}
-                                  onChange={() => handlePermissionCheckboxChange(p.perId)}
-                                  className="mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer"
-                                />
-                                <div>
-                                  <div className="font-semibold text-slate-900">{p.perCode}</div>
-                                  <div className="text-xs text-slate-500">{p.perName}</div>
-                                </div>
-                              </label>
-                            )
-                          })
-                      )}
+                          </div>
+                        ) : (
+                          allPermissions
+                            .filter(p => p.status === 'ENABLE')
+                            .filter(p => !onlyShowAssigned || selectedPermissionIds.includes(p.perId))
+                            .map((p) => {
+                              const isChecked = selectedPermissionIds.includes(p.perId)
+                              return (
+                                <label
+                                  key={p.perId}
+                                  className="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-100 bg-white hover:bg-slate-100 hover:border-slate-200 cursor-pointer transition text-sm text-slate-700"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => handlePermissionCheckboxChange(p.perId)}
+                                    className="mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer"
+                                  />
+                                  <div>
+                                    <div className="font-semibold text-slate-900">{p.perCode}</div>
+                                    <div className="text-xs text-slate-500">{p.perName}</div>
+                                  </div>
+                                </label>
+                              )
+                            })
+                        )}
                     </div>
                   )}
                 </div>

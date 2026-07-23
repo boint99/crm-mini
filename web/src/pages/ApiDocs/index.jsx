@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ExternalLink, RefreshCw, FileCode, Clock, ShieldCheck } from 'lucide-react'
+import { ExternalLink, RefreshCw, Clock, ShieldCheck } from 'lucide-react'
 
 export default function ApiDocs() {
   const [currentTime, setCurrentTime] = useState(new Date())

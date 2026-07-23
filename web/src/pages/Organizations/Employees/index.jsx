@@ -30,8 +30,7 @@ import {
   UserCheck,
   UserX,
   TrendingUp,
-  TrendingDown,
-  MoreHorizontal
+  TrendingDown
 } from 'lucide-react'
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'

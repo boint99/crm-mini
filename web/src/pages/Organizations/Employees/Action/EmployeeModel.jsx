@@ -6,6 +6,7 @@ import Modal from 'react-modal'
 import { positionsAPI } from '@/api/positionsAPI'
 import { departmentsAPI } from '@/api/departmentsAPI'
 import { companiesAPI } from '@/api/companiesAPI'
+import { toast } from 'react-toastify'
 
 const modalStyles = {
   ...customStyles,
@@ -154,11 +155,12 @@ export default function EmployeeModel({
   const [positions, setPositions] = useState([])
 
   const unitOptions = useMemo(() => {
-    if (!units || units.length === 0) return []
+    const list = Array.isArray(units) ? units : (units?.list || [])
+    if (!list || list.length === 0) return []
 
     // Loại bỏ trùng lặp nếu API trả về các phần tử trùng lặp và lọc theo companyId
     const uniqueUnitsMap = {}
-    units.forEach((u) => {
+    list.forEach((u) => {
       if (u && u.id) {
         if (!companyId || u.company?.id === companyId) {
           uniqueUnitsMap[u.id] = u
@@ -211,8 +213,8 @@ export default function EmployeeModel({
   }, [units, companyId])
 
   const filteredPositions = useMemo(() => {
-    if (!positions) return []
-    return positions.filter((pos) => !companyId || !pos.company?.id || pos.company?.id === companyId)
+    const list = Array.isArray(positions) ? positions : (positions?.list || [])
+    return list.filter((pos) => !companyId || !pos.company?.id || pos.company?.id === companyId)
   }, [positions, companyId])
 
   useEffect(() => {
@@ -220,9 +222,12 @@ export default function EmployeeModel({
       companiesAPI
         .getLists()
         .then((res) => {
-          setCompanies(res.data || [])
+          const list = Array.isArray(res.data) ? res.data : (res.data?.list || res.data || [])
+          setCompanies(Array.isArray(list) ? list : [])
         })
-        .catch((err) => console.error('Failed to load companies:', err))
+        .catch(() => {
+          toast.error('Không thể tải danh sách công ty!')
+        })
     }
   }, [isOpen])
 
@@ -232,16 +237,22 @@ export default function EmployeeModel({
         departmentsAPI
           .getLists({ companyid: companyId })
           .then((res) => {
-            setUnits(res.data || [])
+            const list = Array.isArray(res.data) ? res.data : (res.data?.list || res.data || [])
+            setUnits(Array.isArray(list) ? list : [])
           })
-          .catch((err) => console.error('Failed to load units:', err))
+          .catch(() => {
+            toast.error('Không thể tải danh sách đơn vị!')
+          })
 
         positionsAPI
           .getLists({ companyId: companyId })
           .then((res) => {
-            setPositions(res.data || [])
+            const list = Array.isArray(res.data) ? res.data : (res.data?.list || res.data || [])
+            setPositions(Array.isArray(list) ? list : [])
           })
-          .catch((err) => console.error('Failed to load positions:', err))
+          .catch(() => {
+            toast.error('Không thể tải danh sách chức vụ!')
+          })
       } else {
         Promise.resolve().then(() => {
           setUnits([])

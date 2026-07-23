@@ -32,7 +32,7 @@ export default function ViettelModel({
     if (isOpen) {
       dispatchAsync(getBranches())
     }
-  }, [isOpen])
+  }, [isOpen, dispatchAsync])
 
   useEffect(() => {
     if (isOpen) {

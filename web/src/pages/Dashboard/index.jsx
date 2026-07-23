@@ -14,12 +14,8 @@ import {
   ArrowUpRight,
   TrendingUp,
   TrendingDown,
-  Activity,
   Calendar,
-  Sparkles,
-  Server,
-  Monitor,
-  Laptop
+  Server
 } from 'lucide-react'
 import {
   ResponsiveContainer,

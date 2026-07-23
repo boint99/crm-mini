@@ -13,7 +13,7 @@ import {
   Maximize2,
   Minimize2
 } from 'lucide-react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useAppDispatch } from '@/hook/useAppDispatch'
 import { getCompanies, selectCompanies } from '@/redux/slice/companiesSilce'
 import { getBranches, selectBranches } from '@/redux/slice/branchesSlice'
@@ -33,17 +33,6 @@ const TreeNode = ({
   const isExpanded = expandedIds.has(node.id)
   const isSelected = selectedId === node.id
   const hasChildren = node.children && node.children.length > 0
-
-  const getIcon = (type) => {
-    switch (type) {
-    case 'COMPANY':
-      return <Building2 className="w-4 h-4 text-blue-600" />
-    case 'DIVISION':
-      return <Layers className="w-4 h-4 text-indigo-500" />
-    default:
-      return <Users className="w-4 h-4 text-slate-500" />
-    }
-  }
 
   return (
     <div className="select-none">

@@ -3,10 +3,9 @@ import { NAV_GROUPS } from '@/utils/menuConfig'
 import NavGroupItem from '@/components/navigate/NavGroupItem'
 import NavItem from '@/components/navigate/NavItem'
 import NavGroupCollapsed from '@/components/navigate/NavGroupCollapsed'
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import logoImg from '@/assets/images/logo.png'
 
-export default function Sidebar({ collapsed, setCollapsed }) {
+export default function Sidebar({ collapsed }) {
   const [openId, setOpenId] = useState(null)
 
   return (

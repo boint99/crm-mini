@@ -15,7 +15,7 @@ export function useDynamicTab(title, faviconUrl = logoImg) {
     }
 
     if (faviconUrl) {
-      let link = document.querySelector("link[rel*='icon']")
+      let link = document.querySelector('link[rel*=\'icon\']')
       if (!link) {
         link = document.createElement('link')
         link.rel = 'shortcut icon'
@@ -71,7 +71,7 @@ export function useAutoSidebarTab() {
     // Đặt Tiêu đề Tab và Favicon
     document.title = `${pageLabel}`
 
-    let link = document.querySelector("link[rel*='icon']")
+    let link = document.querySelector('link[rel*=\'icon\']')
     if (!link) {
       link = document.createElement('link')
       link.rel = 'shortcut icon'

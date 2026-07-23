@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ExternalLink, RefreshCw, Globe, Clock, ArrowUpRight } from 'lucide-react'
+import { ExternalLink, Globe, Clock, ArrowUpRight } from 'lucide-react'
 
 function IframePage({ title, url }) {
   const [currentTime, setCurrentTime] = useState(new Date())

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { loginThunk, clearError } from '@/redux/slice/authSlice'
 import { selectIsAuthLoading, selectAuthError, selectIsAuthenticated } from '@/redux/selectors/authSelectors'
 import { toast } from 'react-toastify'
-import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import styles from '../AuthLayout.module.css'
 import logoImg from '@/assets/images/logo.png'
 

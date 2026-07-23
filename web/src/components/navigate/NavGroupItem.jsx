@@ -12,7 +12,7 @@ function NavGroupItem({ item, openId, setOpenId }) {
 
   useEffect(() => {
     if (isChildActive) setOpenId(item.id)
-  }, [location.pathname, isChildActive])
+  }, [location.pathname, isChildActive, item.id, setOpenId])
 
   return (
     <li>

@@ -15,7 +15,7 @@ function NavItem({ item, collapsed }) {
         ].join(' ')
       }
     >
-      {({ isActive }) => (
+      {() => (
         <>
           <Icon
             size={18}

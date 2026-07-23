@@ -61,7 +61,7 @@ function Viettel() {
 
   useEffect(() => {
     dispatchAsync(getEmployees())
-  }, [])
+  }, [dispatchAsync])
 
   useEffect(() => {
     if (!searchParams.get('page')) {

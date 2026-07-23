@@ -1,7 +1,7 @@
- 
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { getCookie, setCookie, deleteCookie } from '@/utils/cookie'
 import { authAPI } from '@/api/auth'
+import { toast } from 'react-toastify'
 
 // Helper to get initial user from localStorage
 const getInitialUser = () => {
@@ -54,7 +54,7 @@ export const logoutThunk = createAsyncThunk(
       // Call backend logout API to revoke refreshToken
       await authAPI.logout()
     } catch (error) {
-      console.error('Backend logout failed:', error)
+      toast.error(error.response?.data?.message || 'Logout failed')
     } finally {
       // Always clear local auth cookies & localStorage regardless of backend response
       deleteCookie('accessToken')

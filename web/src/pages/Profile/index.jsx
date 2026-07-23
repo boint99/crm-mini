@@ -87,9 +87,8 @@ export default function Profile() {
         setPhone(data.employee.phone || '')
       }
       setAvatar(data.avatar || '')
-    } catch (error) {
+    } catch {
       toast.error('Không thể tải thông tin hồ sơ!')
-      console.error(error)
     } finally {
       setLoading(false)
     }

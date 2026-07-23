@@ -29,8 +29,8 @@ const Login = lazy(() => import('@/pages/Auth/Login'))
 const Register = lazy(() => import('@/pages/Auth/Register'))
 const ForgotPassword = lazy(() => import('@/pages/Auth/ForgotPassword'))
 
-// Wrapper dùng chung
-const WithSpinner = ({ children }) => (
+// Helper Suspense wrapper
+const withSuspense = (children) => (
   <Suspense fallback={<Loading />}>{children}</Suspense>
 )
 
@@ -45,160 +45,82 @@ const routes = [
     children: [
       {
         index: true,
-        element: (
-          <WithSpinner>
-            <Dashboard />
-          </WithSpinner>
-        )
+        element: withSuspense(<Dashboard />)
       },
       {
         path: 'organizations',
-        element: (
-          <WithSpinner>
-            <Organizations />
-          </WithSpinner>
-        ),
+        element: withSuspense(<Organizations />),
         children: [
           {
             path: 'companies',
-            element: (
-              <WithSpinner>
-                <Companies />
-              </WithSpinner>
-            )
+            element: withSuspense(<Companies />)
           },
           {
             path: 'positions',
-            element: (
-              <WithSpinner>
-                <Positions />
-              </WithSpinner>
-            )
+            element: withSuspense(<Positions />)
           },
           {
             path: 'employees',
-            element: (
-              <WithSpinner>
-                <Employees />
-              </WithSpinner>
-            )
+            element: withSuspense(<Employees />)
           },
           {
             path: 'branches',
-            element: (
-              <WithSpinner>
-                <Branches />
-              </WithSpinner>
-            )
+            element: withSuspense(<Branches />)
           },
           {
             path: 'organization',
-            element: (
-              <WithSpinner>
-                <Organization />
-              </WithSpinner>
-            )
+            element: withSuspense(<Organization />)
           },
           {
             path: 'departments',
-            element: (
-              <WithSpinner>
-                <Departments />
-              </WithSpinner>
-            )
+            element: withSuspense(<Departments />)
           }
         ]
       },
       {
         path: 'viettel-employees',
-        element: (
-          <WithSpinner>
-            <ViettelEmployee />
-          </WithSpinner>
-        )
+        element: withSuspense(<ViettelEmployee />)
       },
       {
         path: 'viettel-branches',
-        element: (
-          <WithSpinner>
-            <ViettelBranch />
-          </WithSpinner>
-        )
+        element: withSuspense(<ViettelBranch />)
       },
       {
         path: 'network-management',
-        element: (
-          <WithSpinner>
-            <Networks />
-          </WithSpinner>
-        )
+        element: withSuspense(<Networks />)
       },
       {
         path: 'accounts',
-        element: (
-          <WithSpinner>
-            <Accounts />
-          </WithSpinner>
-        )
+        element: withSuspense(<Accounts />)
       },
       {
         path: 'permissions',
-        element: (
-          <WithSpinner>
-            <Permissions />
-          </WithSpinner>
-        )
+        element: withSuspense(<Permissions />)
       },
       {
         path: 'profile',
-        element: (
-          <WithSpinner>
-            <Profile />
-          </WithSpinner>
-        )
+        element: withSuspense(<Profile />)
       },
       {
         path: 'not-permission',
-        element: (
-          <WithSpinner>
-            <NotPermistion />
-          </WithSpinner>
-        )
+        element: withSuspense(<NotPermistion />)
       },
       {
         path: 'hosting/vienthongact',
-        element: (
-          <WithSpinner>
-            <HostingVienThongACT />
-          </WithSpinner>
-        )
+        element: withSuspense(<HostingVienThongACT />)
       },
       {
         path: 'hosting/actes',
-        element: (
-          <WithSpinner>
-            <HostingACTES />
-          </WithSpinner>
-        )
+        element: withSuspense(<HostingACTES />)
       },
       {
         path: 'hosting/actids',
-        element: (
-          <WithSpinner>
-            <HostingACTIDS />
-          </WithSpinner>
-        )
+        element: withSuspense(<HostingACTIDS />)
       },
-
       {
         path: 'api-docs',
-        element: (
-          <WithSpinner>
-            <ApiDocs />
-          </WithSpinner>
-        )
+        element: withSuspense(<ApiDocs />)
       },
-
       { path: '*', element: <NotFound /> }
     ]
   },
@@ -209,27 +131,15 @@ const routes = [
     children: [
       {
         path: 'login',
-        element: (
-          <WithSpinner>
-            <Login />
-          </WithSpinner>
-        )
+        element: withSuspense(<Login />)
       },
       {
         path: 'register',
-        element: (
-          <WithSpinner>
-            <Register />
-          </WithSpinner>
-        )
+        element: withSuspense(<Register />)
       },
       {
         path: 'forgot-password',
-        element: (
-          <WithSpinner>
-            <ForgotPassword />
-          </WithSpinner>
-        )
+        element: withSuspense(<ForgotPassword />)
       },
       { path: '*', element: <NotFound /> }
     ]

@@ -31,7 +31,9 @@ function request(method, path, body = null, headers = {}) {
           let parsedData = data
           try {
             parsedData = JSON.parse(data)
-          } catch {}
+          } catch {
+            // Ignore non-JSON response
+          }
           resolve({
             status: res.statusCode,
             headers: res.headers,

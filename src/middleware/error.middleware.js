@@ -26,7 +26,7 @@ class PrismaErrorHandler {
   }
 }
 
-export const errorMiddleware = (err, req, res, next) => {
+export const errorMiddleware = (err, req, res) => {
   let statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR
   let message = err.message || 'Internal Server Error'
   console.error('Error caught in errorMiddleware:', err)

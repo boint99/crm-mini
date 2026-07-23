@@ -101,7 +101,6 @@ axios.interceptors.response.use(
           throw new Error('Refresh token response failed or token is missing')
         }
       } catch (refreshError) {
-        console.error('Refresh token failed:', refreshError)
         processQueue(refreshError, null)
 
         // If refresh token fails, log user out
@@ -109,9 +108,8 @@ axios.interceptors.response.use(
           const { store } = await import('../redux/store')
           const { logout } = await import('../redux/slice/authSlice')
           store.dispatch(logout())
-        } catch (logoutError) {
+        } catch {
           // Fallback: xóa cookie thủ công nếu import store bị lỗi
-          console.error('Logout dispatch failed:', logoutError)
           const { deleteCookie } = await import('./cookie')
           deleteCookie('accessToken')
           localStorage.removeItem('user')

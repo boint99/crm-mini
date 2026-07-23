@@ -156,7 +156,6 @@ export default function UploadCompanyModel({
         await onSubmit?.(item)
         success.push(item)
       } catch (err) {
-        console.error('Lỗi import dòng ' + i, err)
         const msg = err?.response?.data?.message || err?.message || 'Lỗi hệ thống không xác định'
         failed.push({
           ...item,

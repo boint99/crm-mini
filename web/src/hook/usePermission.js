@@ -67,7 +67,7 @@ export function usePermission() {
    * @param {string} roleCode - Mã vai trò (ADMIN_ROLE, MANAGER, ...)
    * @returns {boolean}
    */
-  const hasRole = useCallback((roleCode) => {
+  const hasRole = useCallback((_roleCode) => {
     if (user?.id === 1) return true
     // roles chưa được lưu trong login response hiện tại
     // Có thể mở rộng sau khi login response trả thêm roles

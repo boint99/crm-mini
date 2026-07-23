@@ -70,7 +70,7 @@ export default function ImportEmployeeModal({ isOpen, onClose, onImportSuccess }
         }
       }
       reader.readAsText(file)
-    } catch (err) {
+    } catch {
       toast.error('Không thể đọc tệp tin!')
       setLoading(false)
     }

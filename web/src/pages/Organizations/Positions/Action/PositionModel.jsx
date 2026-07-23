@@ -28,7 +28,8 @@ export default function PositionModel({
       companiesAPI
         .getLists()
         .then((res) => {
-          setCompanies(res.data || [])
+          const list = Array.isArray(res.data) ? res.data : (res.data?.list || res.data || [])
+          setCompanies(Array.isArray(list) ? list : [])
         })
         .catch((err) => console.error('Failed to load companies:', err))
     }
