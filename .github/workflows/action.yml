@@ -136,6 +136,7 @@ jobs:
         with:
           name: env-files
           path: .env
+          include-hidden-files: true
           retention-days: 1
   # ==================== JOB 3: BUILD BACKEND ====================
   build-backend:
