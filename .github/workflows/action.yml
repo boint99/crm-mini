@@ -134,7 +134,7 @@ jobs:
       - name: Upload .env as artifact (optional)
         uses: actions/upload-artifact@v4
         with:
-          name: env-file
+          name: env-files
           path: .env
           retention-days: 1
   # ==================== JOB 3: BUILD BACKEND ====================
