@@ -116,14 +116,27 @@ export default function PermissionsPage() {
       ])
 
       if (permsRes?.success) {
-        setPermissions(permsRes.data?.list || [])
-        setTotalPermissions(permsRes.data?.total || 0)
+        const list = Array.isArray(permsRes.data) ? permsRes.data : (permsRes.data?.list || [])
+        setPermissions(list)
+        setTotalPermissions(permsRes.data?.total || list.length || 0)
         setPage(1)
       }
-      if (rolesRes?.success) setRoles(rolesRes.data)
-      if (assignsRes?.success) setAssignments(assignsRes.data)
-      if (accountsRes?.success) setAccounts(accountsRes.data)
-      if (allPermsRes?.success) setAllPermissions(allPermsRes.data || [])
+      if (rolesRes?.success) {
+        const list = Array.isArray(rolesRes.data) ? rolesRes.data : (rolesRes.data?.list || [])
+        setRoles(list)
+      }
+      if (assignsRes?.success) {
+        const list = Array.isArray(assignsRes.data) ? assignsRes.data : (assignsRes.data?.list || [])
+        setAssignments(list)
+      }
+      if (accountsRes?.success) {
+        const list = Array.isArray(accountsRes.data) ? accountsRes.data : (accountsRes.data?.list || [])
+        setAccounts(list)
+      }
+      if (allPermsRes?.success) {
+        const list = Array.isArray(allPermsRes.data) ? allPermsRes.data : (allPermsRes.data?.list || [])
+        setAllPermissions(list)
+      }
     } catch (error) {
       if (error?.response?.status !== 403 && error?.status !== 403) {
         toast.error('Không thể tải danh sách dữ liệu!')
@@ -207,8 +220,10 @@ export default function PermissionsPage() {
       setRoleDesc('')
       setStatus('ENABLE')
     } else if (type === 'assignment') {
-      setAssignAccountId(accounts[0]?.accountId || '')
-      setAssignRoleId(roles[0]?.roleId || '')
+      const accList = Array.isArray(accounts) ? accounts : (accounts?.list || [])
+      const roleList = Array.isArray(roles) ? roles : (roles?.list || [])
+      setAssignAccountId(accList[0]?.accountId || '')
+      setAssignRoleId(roleList[0]?.roleId || '')
     }
     setModalOpen(true)
   }
@@ -377,20 +392,22 @@ export default function PermissionsPage() {
   }, [permissions])
 
   const filteredRoles = useMemo(() => {
+    const list = Array.isArray(roles) ? roles : (roles?.list || [])
     const q = searchQuery.toLowerCase().trim()
-    if (!q) return roles
-    return roles.filter(
+    if (!q) return list
+    return list.filter(
       (r) =>
-        r.roleName.toLowerCase().includes(q) ||
-        r.roleCode.toLowerCase().includes(q) ||
+        r.roleName?.toLowerCase().includes(q) ||
+        r.roleCode?.toLowerCase().includes(q) ||
         (r.description && r.description.toLowerCase().includes(q))
     )
   }, [roles, searchQuery])
 
   const filteredAssignments = useMemo(() => {
+    const list = Array.isArray(assignments) ? assignments : (assignments?.list || [])
     const q = searchQuery.toLowerCase().trim()
-    if (!q) return assignments
-    return assignments.filter(
+    if (!q) return list
+    return list.filter(
       (a) =>
         (a.account?.accountName && a.account.accountName.toLowerCase().includes(q)) ||
         (a.role?.roleName && a.role.roleName.toLowerCase().includes(q))
@@ -485,9 +502,9 @@ export default function PermissionsPage() {
 
       {/* Stats summary cards */}
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <StatCard label="Tổng quyền hạn" value={allPermissions.length} icon={Shield} accentColor="indigo" />
-        <StatCard label="Số lượng vai trò" value={roles.length} icon={ShieldCheck} accentColor="emerald" />
-        <StatCard label="Liên kết gán vai trò" value={assignments.length} icon={UserCheck} accentColor="rose" />
+        <StatCard label="Tổng quyền hạn" value={(Array.isArray(allPermissions) ? allPermissions : (allPermissions?.list || [])).length} icon={Shield} accentColor="indigo" />
+        <StatCard label="Số lượng vai trò" value={(Array.isArray(roles) ? roles : (roles?.list || [])).length} icon={ShieldCheck} accentColor="emerald" />
+        <StatCard label="Liên kết gán vai trò" value={(Array.isArray(assignments) ? assignments : (assignments?.list || [])).length} icon={UserCheck} accentColor="rose" />
       </div>
 
       {/* Tables based on active tab */}
@@ -962,14 +979,14 @@ export default function PermissionsPage() {
                     <div className="py-8"><LoadingItem /></div>
                   ) : (
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 max-h-64 overflow-y-auto p-2 border border-slate-200 rounded-xl bg-slate-50/50">
-                      {!allPermissions
+                      {(Array.isArray(allPermissions) ? allPermissions : (allPermissions?.list || []))
                         .filter(p => p.status === 'ENABLE')
-                        .filter(p => !onlyShowAssigned || selectedPermissionIds.includes(p.perId)).length ? (
+                        .filter(p => !onlyShowAssigned || selectedPermissionIds.includes(p.perId)).length === 0 ? (
                           <div className="sm:col-span-2 text-center text-sm text-slate-400 py-4 italic">
                           Không có quyền hạn hoạt động nào để hiển thị.
                           </div>
                         ) : (
-                          allPermissions
+                          (Array.isArray(allPermissions) ? allPermissions : (allPermissions?.list || []))
                             .filter(p => p.status === 'ENABLE')
                             .filter(p => !onlyShowAssigned || selectedPermissionIds.includes(p.perId))
                             .map((p) => {
@@ -1010,7 +1027,7 @@ export default function PermissionsPage() {
                       required
                     >
                       <option value="" disabled>-- Chọn tài khoản --</option>
-                      {accounts
+                      {(Array.isArray(accounts) ? accounts : (accounts?.list || []))
                         .filter(a => a.status === 'ENABLE')
                         .map(a => (
                           <option key={a.accountId} value={a.accountId}>
@@ -1028,7 +1045,7 @@ export default function PermissionsPage() {
                       required
                     >
                       <option value="" disabled>-- Chọn vai trò --</option>
-                      {roles
+                      {(Array.isArray(roles) ? roles : (roles?.list || []))
                         .filter(r => r.status === 'ENABLE')
                         .map(r => (
                           <option key={r.roleId} value={r.roleId}>
