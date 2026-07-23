@@ -43,7 +43,7 @@ function BranchList() {
 
   useEffect(() => {
     dispatchAsync(getBranches())
-  }, [])
+  }, [dispatchAsync])
 
   useEffect(() => {
     if (!searchParams.get('page')) {

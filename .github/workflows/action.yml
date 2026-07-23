@@ -43,155 +43,100 @@ jobs:
   setup-env:
     name: Setup Backend Environment
     runs-on: self-hosted
+    needs: lint
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Create backend .env from GitHub Secrets
         run: |
-          cat > script.sh << 'SCRIPT'
-          #!/bin/bash
-          set -e
+          echo "========================================="
+          echo "  SETUP BACKEND .ENV FROM SECRETS"
+          echo "========================================="
+
+          # Lấy IP tự động
+          HOST_IP=$(hostname -I | awk '{print $1}')
+          echo "📍 Detected IP: $HOST_IP"
+
+          printf '%s\n' \
+            "DB_USER=${{ secrets.DB_USER }}" \
+            "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
+            "DB_NAME=${{ secrets.DB_NAME }}" \
+            "DB_HOST=db" \
+            "DB_PORT=${{ secrets.DB_PORT }}" \
+            "PORT_BE=${{ secrets.PORT_BE }}" \
+            "PORT_FE=${{ secrets.PORT_FE }}" \
+            "MAIL_HOST=${{ secrets.MAIL_HOST }}" \
+            "MAIL_PORT=${{ secrets.MAIL_PORT }}" \
+            "SMTP_USER=${{ secrets.SMTP_USER }}" \
+            "SMTP_PASS=${{ secrets.SMTP_PASS }}" \
+            "JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}" \
+            "JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}" \
+            "JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}" \
+            "JWT_REFRESH_EXPIRES_IN=${{ secrets.JWT_REFRESH_EXPIRES_IN }}" \
+            "VITE_API_URL=${{ secrets.VITE_API_URL }}" \
+            "HOST=${HOST_IP}" \
+            > .env
+
+          echo "✅ Backend .env created"
+
+          echo "[2/2] Generating DATABASE_URL..."
+          set -a
+          source .env
+          set +a
+
+          if command -v python3 &> /dev/null; then
+              DB_PASSWORD_ENCODED=$(python3 -c "import urllib.parse, os; print(urllib.parse.quote(os.environ.get('DB_PASSWORD', ''), safe=''))")
+              echo "✅ Password encoded using Python"
+          else
+              DB_PASSWORD_ENCODED=$(echo "${DB_PASSWORD}" | sed 's/ /%20/g' | sed 's/#/%23/g' | sed 's/?/%3F/g' | sed 's/&/%26/g' | sed 's/=/%3D/g')
+              echo "⚠️ Python not found, using manual encoding"
+          fi
+
+          DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD_ENCODED}@${DB_HOST}:${DB_PORT}/${DB_NAME}?schema=public"
+
+          if grep -q "^DATABASE_URL=" .env; then
+              sed -i "s|^DATABASE_URL=.*|DATABASE_URL=\"$DATABASE_URL\"|" .env
+          else
+              echo "DATABASE_URL=\"$DATABASE_URL\"" >> .env
+          fi
+
+          echo "✅ DATABASE_URL updated"
 
           echo "========================================="
-            echo "  SETUP BACKEND .ENV FROM SECRETS"
-            echo "========================================="
-
-            # ==========================================
-            # 1. Tạo backend .env
-            # ==========================================
-            echo ""
-            echo "[1/2] Creating backend .env..."
-
-            # Lấy IP tự động
-            HOST_IP=$(hostname -I | awk '{print $1}')
-            echo "📍 Detected IP: $HOST_IP"
-
-            cat > .env << EOF
-            # ==========================================
-            # DATABASE CONFIGURATION
-            # ==========================================
-            DB_USER=${{ secrets.DB_USER }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            DB_NAME=${{ secrets.DB_NAME }}
-            DB_HOST=db
-            DB_PORT=${{ secrets.DB_PORT }}
-
-            # ==========================================
-            # APPLICATION PORTS
-            # ==========================================
-            PORT_BE=${{ secrets.PORT_BE }}
-            PORT_FE=${{ secrets.PORT_FE }}
-
-            # ==========================================
-            # EMAIL CONFIGURATION
-            # ==========================================
-            MAIL_HOST=${{ secrets.MAIL_HOST }}
-            MAIL_PORT=${{ secrets.MAIL_PORT }}
-            SMTP_USER=${{ secrets.SMTP_USER }}
-            SMTP_PASS=${{ secrets.SMTP_PASS }}
-
-            # ==========================================
-            # JWT CONFIGURATION
-            # ==========================================
-            JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}
-            JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}
-            JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
-            JWT_REFRESH_EXPIRES_IN=${{ secrets.JWT_REFRESH_EXPIRES_IN }}
-
-            # ==========================================
-            # FRONTEND CONFIGURATION
-            # ==========================================
-            VITE_API_URL=${{ secrets.VITE_API_URL }}
-            # ==========================================
-            # HOST (auto-detected)
-            # ==========================================
-            HOST=${HOST_IP}
-            EOF
-
-            echo "✅ Backend .env created"
-
-            # ==========================================
-            # 2. Cập nhật DATABASE_URL
-            # ==========================================
-            echo ""
-            echo "[2/2] Generating DATABASE_URL..."
-
-            # Load biến từ .env
-            set -a
-            source .env
-            set +a
-
-            # Encode password
-            if command -v python3 &> /dev/null; then
-                DB_PASSWORD_ENCODED=$(python3 -c "import urllib.parse, os; print(urllib.parse.quote(os.environ.get('DB_PASSWORD', ''), safe=''))")
-                echo "✅ Password encoded using Python"
-            else
-                # Fallback: thay thế thủ công
-                DB_PASSWORD_ENCODED=$(echo "${DB_PASSWORD}" | sed 's/ /%20/g' | sed 's/#/%23/g' | sed 's/?/%3F/g' | sed 's/&/%26/g' | sed 's/=/%3D/g')
-                echo "⚠️ Python not found, using manual encoding"
-            fi
-
-            DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD_ENCODED}@${DB_HOST}:${DB_PORT}/${DB_NAME}?schema=public"
-
-            # Cập nhật DATABASE_URL
-            if grep -q "^DATABASE_URL=" .env; then
-                sed -i "s|^DATABASE_URL=.*|DATABASE_URL=\"$DATABASE_URL\"|" .env
-            else
-                echo "DATABASE_URL=\"$DATABASE_URL\"" >> .env
-            fi
-
-            echo "✅ DATABASE_URL updated"
-            echo "   $DATABASE_URL"
-
-            # ==========================================
-            # 3. Verification
-            # ==========================================
-            echo ""
-            echo "========================================="
-            echo "  VERIFICATION"
-            echo "========================================="
-            echo ""
-            echo "📁 Backend .env:"
-            ls -la .env
-            echo ""
-            echo "🔑 DATABASE_URL:"
-            grep "^DATABASE_URL=" .env | sed 's/DB_PASSWORD=[^@]*/DB_PASSWORD=********/'
-            echo ""
-            echo "📧 HOST:"
-            grep "^HOST=" .env
-            echo ""
-            echo "========================================="
-            echo "✅ Backend environment setup completed!"
-            echo "========================================="
-
-            SCRIPT
-
-            chmod +x script.sh
-            ./script.sh
+          echo "  VERIFICATION"
+          echo "========================================="
+          ls -la .env
+          grep "^HOST=" .env
+          echo "✅ Backend environment setup completed!"
 
       - name: Display .env content (masked)
         run: |
           echo "========================================="
           echo "  .ENV CONTENT (MASKED)"
           echo "========================================="
-          # Hiển thị file .env nhưng mask thông tin nhạy cảm
-          while IFS= read -r line; do
-            if [[ "$line" =~ ^[[:space:]]*# ]] || [[ -z "$line" ]]; then
-              echo "$line"
-            elif [[ "$line" =~ ^[[:space:]]*(DB_PASSWORD|JWT_ACCESS_SECRET|JWT_REFRESH_SECRET|SMTP_PASS)= ]]; then
-              key="${line%%=*}"
-              echo "$key=********"
-            else
-              echo "$line"
-            fi
-          done < .env
+          if [ -f .env ]; then
+            while IFS= read -r line || [ -n "$line" ]; do
+              if [[ "$line" =~ ^[[:space:]]*# ]] || [[ -z "$line" ]]; then
+                echo "$line"
+              elif [[ "$line" =~ ^[[:space:]]*(DB_PASSWORD|JWT_ACCESS_SECRET|JWT_REFRESH_SECRET|SMTP_PASS|DATABASE_URL)= ]]; then
+                key="${line%%=*}"
+                echo "$key=********"
+              else
+                echo "$line"
+              fi
+            done < .env
+          else
+            echo "❌ .env file not found!"
+            exit 1
+          fi
 
       - name: Upload .env as artifact (optional)
         uses: actions/upload-artifact@v4
         with:
-          name: env-file
+          name: env-files
           path: .env
+          include-hidden-files: true
           retention-days: 1
   # ==================== JOB 3: BUILD BACKEND ====================
   build-backend:

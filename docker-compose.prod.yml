@@ -93,36 +93,38 @@ services:
 
   traefik:
     image: traefik:v3.7
-    container_name: traefik-gateway
+    container_name: traefik
     restart: always
-    entrypoint: [ "/bin/sh", "-c" ]
-    command: |
-      if [ -f /letsencrypt/acme.json ]; then
-        chmod 600 /letsencrypt/acme.json
-        echo "✅ acme.json permissions fixed"
-      fi
-      exec /entrypoint.sh \
-        --providers.docker=true \
-        --providers.docker.exposedbydefault=false \
-        --providers.docker.network=app-net \
-        --entrypoints.web.address=:80 \
-        --entrypoints.websecure.address=:443 \
-        --entrypoints.web.http.redirections.entrypoint.to=websecure \
-        --entrypoints.web.http.redirections.entrypoint.scheme=https \
-        --entrypoints.web.http.redirections.entrypoint.permanent=true \
-        --certificatesresolvers.myresolver.acme.httpchallenge=true \
-        --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web \
-        --certificatesresolvers.myresolver.acme.email=boint@vienthongact.vn \
-        --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json \
-        --certificatesresolvers.myresolver.acme.caserver=https://acme-v02.api.letsencrypt.org/directory \
-        --certificatesresolvers.myresolver.acme.tlschallenge=false \
-        --log.level=INFO \
-        --accesslog=true \
-        --accesslog.filepath=/var/log/traefik/access.log \
-        --accesslog.format=json \
-        --api.dashboard=false \
-        --serverstransport.maxidleconnsperhost=100 \
-        --serverstransport.insecureskipverify=false
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        if [ -f /letsencrypt/acme.json ]; then
+          chmod 600 /letsencrypt/acme.json
+          echo "✅ acme.json permissions fixed"
+        fi
+        exec /entrypoint.sh traefik \
+          --providers.docker=true \
+          --providers.docker.exposedbydefault=false \
+          --providers.docker.network=app-net \
+          --entrypoints.web.address=:80 \
+          --entrypoints.websecure.address=:443 \
+          --entrypoints.web.http.redirections.entrypoint.to=websecure \
+          --entrypoints.web.http.redirections.entrypoint.scheme=https \
+          --entrypoints.web.http.redirections.entrypoint.permanent=true \
+          --certificatesresolvers.myresolver.acme.httpchallenge=true \
+          --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web \
+          --certificatesresolvers.myresolver.acme.email=boint@vienthongact.vn \
+          --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json \
+          --certificatesresolvers.myresolver.acme.caserver=https://acme-v02.api.letsencrypt.org/directory \
+          --certificatesresolvers.myresolver.acme.tlschallenge=false \
+          --log.level=INFO \
+          --accesslog=true \
+          --accesslog.filepath=/var/log/traefik/access.log \
+          --accesslog.format=json \
+          --api.dashboard=false \
+          --serverstransport.maxidleconnsperhost=100 \
+          --serverstransport.insecureskipverify=false
     labels:
       - "traefik.enable=true"
       - "traefik.http.middlewares.sec-headers.headers.customframeoptionsvalue=SAMEORIGIN"
@@ -150,9 +152,9 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  volumes:
-    pgdata:
-      driver: local
+volumes:
+  pgdata:
+    driver: local
 
 networks:
   app-net:
