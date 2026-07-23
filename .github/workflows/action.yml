@@ -137,62 +137,62 @@ jobs:
           name: env-file
           path: .env
           retention-days: 1
-  # # ==================== JOB 3: BUILD BACKEND ====================
-  # build-backend:
-  #   name: Build Backend
-  #   runs-on: self-hosted
-  #   needs: setup-env
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
+  # ==================== JOB 3: BUILD BACKEND ====================
+  build-backend:
+    name: Build Backend
+    runs-on: self-hosted
+    needs: setup-env
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  #     - name: Setup Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 22.x
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
 
-  #     - name: Download .env files
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: env-files
-  #         path: .
+      - name: Download .env files
+        uses: actions/download-artifact@v4
+        with:
+          name: env-files
+          path: .
 
-  #     - name: Install backend dependencies
-  #       run: npm install
+      - name: Install backend dependencies
+        run: npm install
 
-  #     - name: Generate Prisma Client
-  #       run: npx prisma generate
+      - name: Generate Prisma Client
+        run: npx prisma generate
 
-  #     - name: Build backend
-  #       run: npm run build || echo "No build script for backend"
+      - name: Build backend
+        run: npm run build || echo "No build script for backend"
 
-  # # ==================== JOB 4: BUILD FRONTEND ====================
-  # build-frontend:
-  #   name: Build Frontend
-  #   runs-on: self-hosted
-  #   needs: setup-env
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
+  # ==================== JOB 4: BUILD FRONTEND ====================
+  build-frontend:
+    name: Build Frontend
+    runs-on: self-hosted
+    needs: setup-env
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  #     - name: Setup Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 22.x
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
 
-  #     - name: Download .env files
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: env-files
-  #         path: .
+      - name: Download .env files
+        uses: actions/download-artifact@v4
+        with:
+          name: env-files
+          path: .
 
-  #     - name: Install frontend dependencies
-  #       working-directory: ./web
-  #       run: npm install
+      - name: Install frontend dependencies
+        working-directory: ./web
+        run: npm install
 
-  #     - name: Build frontend
-  #       working-directory: ./web
-  #       run: npm run build
+      - name: Build frontend
+        working-directory: ./web
+        run: npm run build
 
   # # ==================== JOB 5: DEPLOY ====================
   # deploy:
