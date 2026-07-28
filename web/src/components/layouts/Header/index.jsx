@@ -79,9 +79,11 @@ function Header({ collapsed: _collapsed, setCollapsed: _setCollapsed }) {
     }
   }
 
+  const avatarUrl = profile?.avatar || profile?.employee?.avatar || user?.avatar
   const lastName = profile?.employee?.lastName || ''
   const firstName = profile?.employee?.firstName || ''
-  const displayName = (firstName || lastName) ? `${firstName} ${lastName}`.trim() : (user?.accountName || 'Admin')
+  const accountName = profile?.accountName || user?.username || user?.email || user?.accountName || 'Admin'
+  const displayName = (firstName || lastName) ? `${firstName} ${lastName}`.trim() : accountName
   const roleNames = profile?.accountRoles
     ? profile.accountRoles.map((ar) => ar.role?.roleName || ar.role?.roleCode).filter(Boolean).join(', ')
     : 'Quản trị hệ thống'
@@ -128,10 +130,19 @@ function Header({ collapsed: _collapsed, setCollapsed: _setCollapsed }) {
               onClick={() => setOpen((v) => !v)}
             >
               <div
-                className="grid h-10 w-10 place-items-center rounded-full text-sm font-bold text-white shadow-sm border border-white"
-                style={{ backgroundColor: avatarColor }}
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-sm font-bold text-white shadow-sm border border-white overflow-hidden bg-slate-100"
+                style={{ backgroundColor: avatarUrl ? 'transparent' : avatarColor }}
               >
-                {initials}
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt={displayName}
+                    className="h-full w-full object-cover"
+                    onError={(e) => { e.currentTarget.style.display = 'none' }}
+                  />
+                ) : (
+                  initials
+                )}
               </div>
               <div className="hidden sm:block leading-tight">
                 <div
@@ -154,10 +165,19 @@ function Header({ collapsed: _collapsed, setCollapsed: _setCollapsed }) {
                 {/* Profile summary header */}
                 <div className="bg-slate-50/70 p-3 rounded-xl mb-1.5 flex items-center gap-3 border border-slate-100/50">
                   <div
-                    className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-base font-bold text-white shadow-sm border-2 border-white"
-                    style={{ backgroundColor: avatarColor }}
+                    className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-base font-bold text-white shadow-sm border-2 border-white overflow-hidden bg-slate-100"
+                    style={{ backgroundColor: avatarUrl ? 'transparent' : avatarColor }}
                   >
-                    {initials}
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt={displayName}
+                        className="h-full w-full object-cover"
+                        onError={(e) => { e.currentTarget.style.display = 'none' }}
+                      />
+                    ) : (
+                      initials
+                    )}
                   </div>
                   <div className="overflow-hidden">
                     <div className="text-sm font-bold text-slate-800 truncate leading-snug">

@@ -3,7 +3,7 @@ import { authAPI } from '@/api/auth'
 import { toast } from 'react-toastify'
 import { useDispatch } from 'react-redux'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { logout } from '@/redux/slice/authSlice'
+import { logout, updateUser } from '@/redux/slice/authSlice'
 import {
   User,
   KeyRound,
@@ -14,7 +14,9 @@ import {
   Save,
   Loader2,
   Eye,
-  EyeOff
+  EyeOff,
+  Upload,
+  Trash2
 } from 'lucide-react'
 
 
@@ -100,6 +102,20 @@ export default function Profile() {
     })
   }, [])
 
+  const handleAvatarFileChange = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Kích thước ảnh tối đa 2MB!')
+      return
+    }
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setAvatar(reader.result)
+    }
+    reader.readAsDataURL(file)
+  }
+
   const handleUpdateProfile = async (e) => {
     e.preventDefault()
     setSaving(true)
@@ -111,6 +127,7 @@ export default function Profile() {
         avatar
       })
       setProfile(updated.data)
+      dispatch(updateUser(updated.data))
       toast.success('Cập nhật hồ sơ thành công!')
     } catch (error) {
       toast.error(error.response?.data?.message || 'Cập nhật hồ sơ thất bại!')
@@ -203,17 +220,63 @@ export default function Profile() {
                   <p className="text-xs text-slate-400 mt-0.5">Cập nhật họ tên, ảnh đại diện và số điện thoại.</p>
                 </div>
 
-                {/* Avatar Display */}
-                <div className="flex items-center gap-4">
+                {/* Avatar Display & Control */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-xl border border-slate-100 bg-slate-50/50 p-4">
                   <div
-                    className="h-20 w-20 rounded-full flex items-center justify-center text-white text-2xl font-bold ring-4 ring-indigo-50 shadow-sm"
-                    style={{ backgroundColor: avatarColor }}
+                    className="relative h-20 w-20 shrink-0 rounded-full flex items-center justify-center text-white text-2xl font-bold ring-4 ring-white shadow-sm overflow-hidden bg-slate-200"
+                    style={{ backgroundColor: avatar ? 'transparent' : avatarColor }}
                   >
-                    {initials}
+                    {avatar ? (
+                      <img
+                        src={avatar}
+                        alt={fullName}
+                        className="h-full w-full object-cover"
+                        onError={(e) => { e.currentTarget.style.display = 'none' }}
+                      />
+                    ) : (
+                      initials
+                    )}
                   </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-800">Ảnh đại diện</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Ảnh hồ sơ hiện tại của tài khoản.</p>
+
+                  <div className="flex-1 space-y-2 w-full">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-800">Ảnh đại diện</h3>
+                      <p className="text-xs text-slate-500">Tải lên từ máy tính hoặc nhập đường dẫn ảnh (URL).</p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 transition-colors cursor-pointer">
+                        <Upload size={14} />
+                        Tải ảnh lên
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleAvatarFileChange}
+                        />
+                      </label>
+
+                      {avatar && (
+                        <button
+                          type="button"
+                          onClick={() => setAvatar('')}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 hover:bg-rose-100 transition-colors cursor-pointer"
+                        >
+                          <Trash2 size={14} />
+                          Xóa ảnh
+                        </button>
+                      )}
+                    </div>
+
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Hoặc dán URL ảnh (https://...)"
+                        value={avatar}
+                        onChange={(e) => setAvatar(e.target.value)}
+                        className="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-xs outline-none focus:border-indigo-500 bg-white"
+                      />
+                    </div>
                   </div>
                 </div>
 
