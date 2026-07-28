@@ -230,11 +230,8 @@ class AccountsService {
 
     await refreshTokenModel.revokeAllAccountTokens(account.accountId)
 
-    const isSuperadmin = account.accountId === 1
-
     return Serializer.sanitize(await accountsModel.updateById(account.id, {
       password: await bcrypt.hash(newPassword.trim(), saltRoundsPassword),
-      isLogin: isSuperadmin ? true : false, // Giữ kích hoạt cho superadmin để không bị khóa
       login: 0
     }), ['password', 'deletedAt'])
   }
