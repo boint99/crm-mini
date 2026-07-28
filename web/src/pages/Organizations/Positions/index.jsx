@@ -9,6 +9,8 @@ import {
   getPositions,
   selectPositions,
   selectPositionsTotal,
+  selectActivePositionsTotal,
+  selectInactivePositionsTotal,
   selectLoading,
   updatePosition
 } from '@/redux/slice/positionsSlice'
@@ -49,6 +51,8 @@ function Positions() {
   const dispatch = useDispatch()
   const positions = useSelector(selectPositions)
   const totalPositions = useSelector(selectPositionsTotal)
+  const activePositions = useSelector(selectActivePositionsTotal)
+  const inactivePositions = useSelector(selectInactivePositionsTotal)
   const loading = useSelector(selectLoading)
   const companies = useSelector(selectCompanies)
   const debounceRef = useRef(null)
@@ -142,9 +146,6 @@ function Positions() {
     setPage(1)
   }
 
-  const activePositions = positions.filter((p) => p.status === 'ENABLE').length
-  const inactivePositions = Math.max(0, totalPositions - activePositions)
-
   const totalPages = Math.max(1, Math.ceil(totalPositions / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
 
@@ -216,7 +217,7 @@ function Positions() {
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 mb-6">
         <StatCard label="Tổng chức vụ" value={totalPositions} icon={BriefcaseBusiness} accentColor="indigo" />
-        <StatCard label="Đang hoạt động" value={activePositions} icon={UserCheck} accentColor="emerald" subtitle="Chức vụ trang này" />
+        <StatCard label="Đang hoạt động" value={activePositions} icon={UserCheck} accentColor="emerald" />
         <StatCard label="Ngưng hoạt động" value={inactivePositions} icon={UserX} accentColor="rose" />
       </div>
 

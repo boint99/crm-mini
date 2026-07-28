@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChevronDown, User, Bell, Menu, KeyRound, LogOut } from 'lucide-react'
+import { ChevronDown, User, Menu, KeyRound, LogOut } from 'lucide-react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { selectUser } from '@/redux/selectors/authSelectors'
@@ -108,17 +108,6 @@ function Header({ collapsed: _collapsed, setCollapsed: _setCollapsed }) {
 
         {/* Right tools (Notifications, Profile) */}
         <div className="flex items-center gap-4">
-          {/* Notifications */}
-          <button
-            type="button"
-            className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer text-slate-600"
-            aria-label="Notifications"
-          >
-            <Bell size={20} />
-            <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white">
-              3
-            </span>
-          </button>
 
           {/* User dropdown */}
           <div className="relative" ref={menuRef}>

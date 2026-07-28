@@ -8,7 +8,7 @@ class PositionsModel extends BaseModel {
 
   async lists(options = {}) {
     const { companyId, search, status, page, limit } = options || {}
-    const prismaWhere = {
+    const baseWhere = {
       deletedAt: null
     }
 
@@ -18,14 +18,10 @@ class PositionsModel extends BaseModel {
         const company = await PRISMA.cOMPANY.findUnique({
           where: { id: companyId }
         })
-        prismaWhere.companyId = company ? company.companyId : null
+        baseWhere.companyId = company ? company.companyId : null
       } else if (!isNaN(Number(companyId))) {
-        prismaWhere.companyId = Number(companyId)
+        baseWhere.companyId = Number(companyId)
       }
-    }
-
-    if (status) {
-      prismaWhere.status = status
     }
 
     if (search && search.trim()) {
@@ -37,15 +33,22 @@ class PositionsModel extends BaseModel {
           { company: { companyName: { contains: keyword, mode: 'insensitive' } } }
         ]
       }))
-      prismaWhere.AND = [...(prismaWhere.AND || []), ...searchConditions]
+      baseWhere.AND = [...(baseWhere.AND || []), ...searchConditions]
+    }
+
+    const prismaWhere = {
+      ...baseWhere,
+      ...(status ? { status } : {})
     }
 
     const pageNum = page ? Number(page) : undefined
     const limitNum = limit ? Number(limit) : undefined
 
-    const total = await PRISMA.pOSITIONS.count({
-      where: prismaWhere
-    })
+    const [total, activeTotal, inactiveTotal] = await Promise.all([
+      PRISMA.pOSITIONS.count({ where: prismaWhere }),
+      PRISMA.pOSITIONS.count({ where: { ...baseWhere, status: 'ENABLE' } }),
+      PRISMA.pOSITIONS.count({ where: { ...baseWhere, status: 'DISABLE' } })
+    ])
 
     const findOptions = {
       where: prismaWhere,
@@ -66,6 +69,8 @@ class PositionsModel extends BaseModel {
 
     return {
       total,
+      activeTotal,
+      inactiveTotal,
       list
     }
   }

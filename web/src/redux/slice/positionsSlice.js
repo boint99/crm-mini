@@ -63,6 +63,8 @@ export const deletePosition = createAsyncThunk(
 const initialState = {
   items: [],
   total: 0,
+  activeTotal: 0,
+  inactiveTotal: 0,
   loading: false,
   error: null,
   message: null
@@ -87,9 +89,13 @@ const positionsSlice = createSlice({
         if (Array.isArray(resData)) {
           state.items = resData
           state.total = resData.length
+          state.activeTotal = resData.filter((i) => i.status === 'ENABLE').length
+          state.inactiveTotal = resData.filter((i) => i.status === 'DISABLE').length
         } else {
           state.items = resData?.list || []
           state.total = resData?.total || 0
+          state.activeTotal = resData?.activeTotal ?? 0
+          state.inactiveTotal = resData?.inactiveTotal ?? 0
         }
         state.message = CUSTOM_MESSAGES.get.success
       })
@@ -145,6 +151,8 @@ const positionsSlice = createSlice({
 
 export const selectPositions = (state) => state.positions.items || []
 export const selectPositionsTotal = (state) => state.positions.total || 0
+export const selectActivePositionsTotal = (state) => state.positions.activeTotal || 0
+export const selectInactivePositionsTotal = (state) => state.positions.inactiveTotal || 0
 export const selectLoading = (state) => state.positions.loading || false
 export const selectPositionMessage = (state) => state.positions.message || ''
 
