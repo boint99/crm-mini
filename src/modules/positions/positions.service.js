@@ -11,7 +11,8 @@ class PositionsServices {
     const { companyId, page, limit, limitVal, pageSize, search, keyword, status } = params
     const resolvedSearch = search || keyword
     const resolvedLimit = limit || limitVal || pageSize
-    const queryStatus = status ? status.toUpperCase() : undefined
+    let queryStatus = status ? status.toUpperCase() : undefined
+    if (queryStatus === 'DISABLE') queryStatus = 'DISABLED'
 
     return await positionsModel.lists({
       companyId,

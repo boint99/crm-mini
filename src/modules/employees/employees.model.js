@@ -10,19 +10,17 @@ class EmployeesModel extends BaseModel {
   }
 
   async listQuery(status, info, unitId, companyId, branchId, search, page, limit) {
-    const where = {
-      ...(status ? { status } : {})
-    }
+    const baseWhere = {}
 
     if (info) {
       const isUuid = typeof info === 'string' && info.length === 36 && info.includes('-')
       const isNumber = !isNaN(Number(info))
       if (isUuid) {
-        where.id = info
+        baseWhere.id = info
       } else if (isNumber) {
-        where.employeeId = Number(info)
+        baseWhere.employeeId = Number(info)
       } else {
-        where.employeeCode = info
+        baseWhere.employeeCode = info
       }
     }
 
@@ -54,7 +52,7 @@ class EmployeesModel extends BaseModel {
         else orgUnitFilter.branch = { id: branchId }
       }
 
-      where.orgUnit = orgUnitFilter
+      baseWhere.orgUnit = orgUnitFilter
     }
 
     // Search theo employeeCode, firstName, lastName, email (case-insensitive)
@@ -68,7 +66,12 @@ class EmployeesModel extends BaseModel {
           { email: { contains: keyword, mode: 'insensitive' } }
         ]
       }))
-      where.AND = [...(where.AND || []), ...searchConditions]
+      baseWhere.AND = [...(baseWhere.AND || []), ...searchConditions]
+    }
+
+    const where = {
+      ...baseWhere,
+      ...(status ? { status } : {})
     }
 
     if (info) {
@@ -166,9 +169,17 @@ class EmployeesModel extends BaseModel {
       orderBy: { [this.defaultOrderBy]: 'asc' }
     }
 
-    const total = await this.model.count({
-      where: this._buildWhere(Object.keys(where).length ? where : undefined)
-    })
+    const [total, activeTotal, inactiveTotal] = await Promise.all([
+      this.model.count({
+        where: this._buildWhere(Object.keys(where).length ? where : undefined)
+      }),
+      this.model.count({
+        where: this._buildWhere({ ...baseWhere, status: 'ENABLE' })
+      }),
+      this.model.count({
+        where: this._buildWhere({ ...baseWhere, status: 'DISABLED' })
+      })
+    ])
 
     if (pageNum !== undefined && limitNum !== undefined) {
       const maxPage = Math.max(1, Math.ceil(total / limitNum))
@@ -181,6 +192,8 @@ class EmployeesModel extends BaseModel {
 
     return {
       total,
+      activeTotal,
+      inactiveTotal,
       list
     }
   }

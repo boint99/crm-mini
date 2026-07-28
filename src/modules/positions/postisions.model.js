@@ -47,7 +47,7 @@ class PositionsModel extends BaseModel {
     const [total, activeTotal, inactiveTotal] = await Promise.all([
       PRISMA.pOSITIONS.count({ where: prismaWhere }),
       PRISMA.pOSITIONS.count({ where: { ...baseWhere, status: 'ENABLE' } }),
-      PRISMA.pOSITIONS.count({ where: { ...baseWhere, status: 'DISABLE' } })
+      PRISMA.pOSITIONS.count({ where: { ...baseWhere, status: 'DISABLED' } })
     ])
 
     const findOptions = {

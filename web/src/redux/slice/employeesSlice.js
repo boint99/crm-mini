@@ -86,9 +86,13 @@ const employeesSlice = createSlice({
         if (Array.isArray(resData)) {
           state.items = resData
           state.total = resData.length
+          state.activeTotal = resData.filter((i) => i.status === 'ENABLE').length
+          state.inactiveTotal = resData.filter((i) => i.status === 'DISABLED' || i.status === 'DISABLE').length
         } else {
           state.items = resData?.list || []
           state.total = resData?.total || 0
+          state.activeTotal = resData?.activeTotal ?? 0
+          state.inactiveTotal = resData?.inactiveTotal ?? 0
         }
         state.message = CUSTOM_MESSAGES.get.success
       })
@@ -144,6 +148,8 @@ const employeesSlice = createSlice({
 
 export const selectEmployees = (state) => state.employees.items || []
 export const selectEmployeesTotal = (state) => state.employees.total || 0
+export const selectActiveEmployeesTotal = (state) => state.employees.activeTotal || 0
+export const selectInactiveEmployeesTotal = (state) => state.employees.inactiveTotal || 0
 export const selectLoading = (state) => state.employees.loading || false
 export const selectEmployeeMessage = (state) => state.employees.message || ''
 

@@ -443,7 +443,7 @@ function Employees() {
             label="Trạng thái: Tất cả"
             options={[
               { value: 'ENABLE', label: 'Đang hoạt động' },
-              { value: 'DISABLE', label: 'Nghỉ việc/Tạm dừng' }
+              { value: 'DISABLED', label: 'Nghỉ việc/Tạm dừng' }
             ]}
             value={selectedStatus}
             onChange={(val) => { setSelectedStatus(val); setPage(1) }}

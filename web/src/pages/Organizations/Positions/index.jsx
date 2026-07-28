@@ -232,7 +232,7 @@ function Positions() {
           />
           <FilterDropdown
             label="Trạng thái: Tất cả"
-            options={[{ value: 'ENABLE', label: 'Hoạt động' }, { value: 'DISABLE', label: 'Ngưng hoạt động' }]}
+            options={[{ value: 'ENABLE', label: 'Hoạt động' }, { value: 'DISABLED', label: 'Ngưng hoạt động' }]}
             value={selectedStatus}
             onChange={handleStatusChange}
           />

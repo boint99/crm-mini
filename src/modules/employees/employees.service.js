@@ -106,7 +106,8 @@ class EmployeesServices {
     const resolvedSearch = search || keyword
     const resolvedLimit = limit || limitVal || pageSize
 
-    const queryStatus = status ? status.toUpperCase() : undefined
+    let queryStatus = status ? status.toUpperCase() : undefined
+    if (queryStatus === 'DISABLE') queryStatus = 'DISABLED'
 
     if (queryStatus) {
       CHECK_ENUM(queryStatus, ALLOWED_STATUS, StatusCodes.BAD_REQUEST, 'Invalid status.')
